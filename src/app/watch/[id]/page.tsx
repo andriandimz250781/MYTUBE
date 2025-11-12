@@ -1,7 +1,7 @@
 'use client';
 
 import { notFound } from 'next/navigation';
-import { videos as trendingVideos, getVideo, getChannel, getImage } from '@/app/lib/data';
+import { getTrendingVideos, getVideo, getChannel, getImage } from '@/app/lib/data';
 import type { Video } from '@/app/lib/data';
 import Link from 'next/link';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -32,7 +32,7 @@ export default function WatchPage({ params }: { params: { id: string } }) {
       setVideo(videoData);
 
       // Untuk sementara, video terkait diambil dari data trending
-      const trending = await trendingVideos;
+      const { videos: trending } = await getTrendingVideos();
       setRelatedVideos(trending.filter(v => v.id !== params.id));
       
       setLoading(false);
