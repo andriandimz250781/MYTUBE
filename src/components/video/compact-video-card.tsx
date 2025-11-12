@@ -1,26 +1,24 @@
 import Link from 'next/link';
 import Image from 'next/image';
 import type { Video } from '@/app/lib/data';
-import { getImage } from '@/app/lib/data';
 
 type CompactVideoCardProps = {
   video: Video;
 };
 
 export function CompactVideoCard({ video }: CompactVideoCardProps) {
-  const thumbnail = getImage(video.thumbnailId);
+  const thumbnailUrl = video.thumbnailUrl;
 
   return (
     <Link href={`/watch/${video.id}`} className="flex gap-3 group">
       <div className="relative h-fit w-40 shrink-0 overflow-hidden rounded-lg">
-        {thumbnail ? (
+        {thumbnailUrl ? (
           <Image
-            src={thumbnail.imageUrl}
-            alt={thumbnail.description}
+            src={thumbnailUrl}
+            alt={video.title}
             width={160}
             height={90}
             className="aspect-video h-full w-full object-cover"
-            data-ai-hint={thumbnail.imageHint}
           />
         ) : (
           <div className="aspect-video w-full bg-muted"></div>

@@ -17,7 +17,8 @@ type VideoCardProps = {
 };
 
 export function VideoCard({ video }: VideoCardProps) {
-  const thumbnail = getImage(video.thumbnailId);
+  // Thumbnail dari data.ts sekarang adalah URL langsung
+  const thumbnailUrl = video.thumbnailUrl;
   const channelAvatar = getImage(video.channelAvatarId);
 
   return (
@@ -25,13 +26,12 @@ export function VideoCard({ video }: VideoCardProps) {
       <Link href={`/watch/${video.id}`} className="block">
         <CardContent className="p-0">
           <div className="relative aspect-video">
-            {thumbnail ? (
+            {thumbnailUrl ? (
               <Image
-                src={thumbnail.imageUrl}
-                alt={thumbnail.description}
+                src={thumbnailUrl}
+                alt={video.title}
                 fill
                 className="rounded-t-lg object-cover"
-                data-ai-hint={thumbnail.imageHint}
                 sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
               />
             ) : (

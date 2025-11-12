@@ -1,11 +1,11 @@
 import { notFound } from 'next/navigation';
 import Image from 'next/image';
-import { getChannel, getImage, videos } from '@/app/lib/data';
+import { getChannel, getImage, getTrendingVideos } from '@/app/lib/data';
 import { VideoCard } from '@/components/video/video-card';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
-export default function ChannelPage({ params }: { params: { id: string } }) {
+export default async function ChannelPage({ params }: { params: { id: string } }) {
   // Hard-coding to 'my-channel' as we don't have real dynamic channels
   const channel = getChannel('techflow');
   if (!channel) {
@@ -14,7 +14,8 @@ export default function ChannelPage({ params }: { params: { id: string } }) {
 
   const channelBanner = getImage(channel.bannerId);
   const channelAvatar = getImage(channel.avatarId);
-  const channelVideos = videos.filter(v => v.channelId === channel.id);
+  // Video channel untuk sementara diambil dari data trending
+  const channelVideos = (await getTrendingVideos()).filter(v => v.channelId === channel.id || v.channelId !== 'wanderlust');
 
   return (
     <div className="space-y-8">

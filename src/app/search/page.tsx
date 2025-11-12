@@ -1,9 +1,10 @@
 import { VideoCard } from '@/components/video/video-card';
-import { videos } from '@/app/lib/data';
+import { getTrendingVideos } from '@/app/lib/data';
 import { Suspense } from 'react';
 
-function SearchResults({ query }: { query: string }) {
-  const searchResults = videos.slice(0, 8); // Mock results
+async function SearchResults({ query }: { query: string }) {
+  // Untuk sementara, hasil pencarian masih dari data trending
+  const searchResults = (await getTrendingVideos()).slice(0, 8); // Mock results
 
   return (
     <div className="grid grid-cols-1 gap-x-4 gap-y-8 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">

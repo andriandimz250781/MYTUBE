@@ -1,14 +1,16 @@
 import { PlaceHolderImages } from '@/lib/placeholder-images';
+import { YOUTUBE_API_KEYS } from '@/config/apiKeys';
 
+// --- Tipe Data ---
 export type Video = {
   id: string;
   title: string;
-  thumbnailId: string;
-  duration: string;
+  thumbnailUrl: string;
+  duration: string; // Akan kita kosongkan sementara
   channelName: string;
   channelId: string;
-  channelAvatarId: string;
-  views: string;
+  channelAvatarId: string; // Akan kita gunakan data statis sementara
+  views: string; // Akan kita kosongkan sementara
   uploadedAt: string;
   description: string;
   tags: string[];
@@ -24,182 +26,16 @@ export type Channel = {
   description: string;
 };
 
+// --- Variabel & Konfigurasi API ---
+let currentApiKeyIndex = 0;
+const YOUTUBE_API_URL = 'https://www.googleapis.com/youtube/v3';
+
+// --- Data Statis (untuk fallback & data channel) ---
 const LOREM_IPSUM =
   'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed non risus. Suspendisse lectus tortor, dignissim sit amet, adipiscing nec, ultricies sed, dolor. Cras elementum ultrices diam. Maecenas ligula massa, varius a, semper congue, euismod non, mi.';
 
-export const videos: Video[] = [
-  {
-    id: '1',
-    title: 'Ultimate Tech Gadgets of 2024',
-    thumbnailId: 'video-thumb-1',
-    duration: '12:34',
-    channelName: 'TechFlow',
-    channelId: 'techflow',
-    channelAvatarId: 'channel-avatar-1',
-    views: '1.2M',
-    uploadedAt: '2 weeks ago',
-    description: LOREM_IPSUM,
-    tags: ['tech', 'gadgets', '2024'],
-    videoUrl: 'https://www.youtube.com/embed/aqz-KE-bpKQ',
-  },
-  {
-    id: '2',
-    title: 'Exploring the Swiss Alps',
-    thumbnailId: 'video-thumb-2',
-    duration: '24:10',
-    channelName: 'Wanderlust',
-    channelId: 'wanderlust',
-    channelAvatarId: 'channel-avatar-2',
-    views: '876K',
-    uploadedAt: '1 month ago',
-    description: LOREM_IPSUM,
-    tags: ['travel', 'switzerland', 'alps'],
-    videoUrl: 'https://www.youtube.com/embed/gWw23eyfk9U',
-  },
-  {
-    id: '3',
-    title: 'The Perfect Sourdough Bread',
-    thumbnailId: 'video-thumb-3',
-    duration: '8:52',
-    channelName: 'KitchenCraft',
-    channelId: 'kitchencraft',
-    channelAvatarId: 'channel-avatar-3',
-    views: '2.5M',
-    uploadedAt: '3 days ago',
-    description: LOREM_IPSUM,
-    tags: ['cooking', 'baking', 'sourdough'],
-    videoUrl: 'https://www.youtube.com/embed/d-h21m3Mdfk',
-  },
-  {
-    id: '4',
-    title: 'Cyberpunk 2077 Full Playthrough',
-    thumbnailId: 'video-thumb-4',
-    duration: '3:45:11',
-    channelName: 'GamerX',
-    channelId: 'gamerx',
-    channelAvatarId: 'channel-avatar-1',
-    views: '5M',
-    uploadedAt: '1 year ago',
-    description: LOREM_IPSUM,
-    tags: ['gaming', 'cyberpunk', 'playthrough'],
-    videoUrl: 'https://www.youtube.com/embed/Lq594Xmpj84',
-  },
-  {
-    id: '5',
-    title: 'DIY Smart Mirror with Raspberry Pi',
-    thumbnailId: 'video-thumb-5',
-    duration: '15:05',
-    channelName: 'MakeIt',
-    channelId: 'makeit',
-    channelAvatarId: 'channel-avatar-2',
-    views: '980K',
-    uploadedAt: '5 months ago',
-    description: LOREM_IPSUM,
-    tags: ['diy', 'raspberry pi', 'smart home'],
-    videoUrl: 'https://www.youtube.com/embed/DIZgo20qA7I',
-  },
-  {
-    id: '6',
-    title: 'Acoustic Cover of a Pop Hit',
-    thumbnailId: 'video-thumb-6',
-    duration: '3:21',
-    channelName: 'MusicVibes',
-    channelId: 'musicvibes',
-    channelAvatarId: 'channel-avatar-3',
-    views: '12M',
-    uploadedAt: '6 months ago',
-    description: LOREM_IPSUM,
-    tags: ['music', 'cover', 'acoustic'],
-    videoUrl: 'https://www.youtube.com/embed/Ho32Fk6a37Y',
-  },
-  {
-    id: '7',
-    title: '30-Minute Full Body Workout',
-    thumbnailId: 'video-thumb-7',
-    duration: '30:00',
-    channelName: 'FitLife',
-    channelId: 'fitlife',
-    channelAvatarId: 'channel-avatar-1',
-    views: '4.1M',
-    uploadedAt: '10 days ago',
-    description: LOREM_IPSUM,
-    tags: ['fitness', 'workout', 'health'],
-    videoUrl: 'https://www.youtube.com/embed/gC_L9qAHVJ8',
-  },
-  {
-    id: '8',
-    title: 'The History of Ancient Rome',
-    thumbnailId: 'video-thumb-8',
-    duration: '45:19',
-    channelName: 'HistoryUncovered',
-    channelId: 'historyuncovered',
-    channelAvatarId: 'channel-avatar-2',
-    views: '2.2M',
-    uploadedAt: '3 months ago',
-    description: LOREM_IPSUM,
-    tags: ['history', 'rome', 'documentary'],
-    videoUrl: 'https://www.youtube.com/embed/8q7ueigG9iA',
-  },
-  {
-    id: '9',
-    title: 'Awkward Office Moments (Comedy)',
-    thumbnailId: 'video-thumb-9',
-    duration: '5:43',
-    channelName: 'LaughTrack',
-    channelId: 'laughtrack',
-    channelAvatarId: 'channel-avatar-3',
-    views: '7.8M',
-    uploadedAt: '4 weeks ago',
-    description: LOREM_IPSUM,
-    tags: ['comedy', 'sketch', 'office humor'],
-    videoUrl: 'https://www.youtube.com/embed/37y4mAl2HWA',
-  },
-  {
-    id: '10',
-    title: 'Secrets of the Amazon Rainforest',
-    thumbnailId: 'video-thumb-10',
-    duration: '55:01',
-    channelName: 'WildWorld',
-    channelId: 'wildworld',
-    channelAvatarId: 'channel-avatar-1',
-    views: '3.9M',
-    uploadedAt: '2 months ago',
-    description: LOREM_IPSUM,
-    tags: ['nature', 'documentary', 'amazon'],
-    videoUrl: 'https://www.youtube.com/embed/JEsE6rhVu4k',
-  },
-  {
-    id: '11',
-    title: 'Inception: Explained',
-    thumbnailId: 'video-thumb-11',
-    duration: '18:22',
-    channelName: 'Cinephile',
-    channelId: 'cinephile',
-    channelAvatarId: 'channel-avatar-2',
-    views: '6.1M',
-    uploadedAt: '1 year ago',
-    description: LOREM_IPSUM,
-    tags: ['movies', 'film analysis', 'inception'],
-    videoUrl: 'https://www.youtube.com/embed/E-p2WWU_1FY',
-  },
-  {
-    id: '12',
-    title: 'The Little Knight - Animated Short',
-    thumbnailId: 'video-thumb-12',
-    duration: '4:15',
-    channelName: 'PixelPlay',
-    channelId: 'pixelplay',
-    channelAvatarId: 'channel-avatar-3',
-    views: '21M',
-    uploadedAt: '2 years ago',
-    description: LOREM_IPSUM,
-    tags: ['animation', 'short film', '3d'],
-    videoUrl: 'https://www.youtube.com/embed/yW-3_2f0g-s',
-  },
-];
-
 export const channels: Channel[] = [
-  {
+    {
     id: 'techflow',
     name: 'TechFlow',
     avatarId: 'channel-avatar-1',
@@ -223,9 +59,146 @@ export const channels: Channel[] = [
   },
 ];
 
+
+// --- Fungsi Helper ---
+
 export const getImage = (id: string | undefined) =>
   PlaceHolderImages.find(img => img.id === id);
+
 export const getVideo = (id: string | undefined) =>
-  videos.find(vid => vid.id === id);
+  fetchVideoDetails(id);
+
 export const getChannel = (id: string | undefined) =>
   channels.find(ch => ch.id === id);
+
+
+// --- Fungsi Pengambilan Data dari YouTube API ---
+
+/**
+ * Mengambil data dari YouTube API dengan rotasi kunci otomatis.
+ */
+async function fetchFromYouTubeAPI(endpoint: string, params: Record<string, string>) {
+  let apiKey = YOUTUBE_API_KEYS[currentApiKeyIndex];
+  const query = new URLSearchParams({ ...params, key: apiKey }).toString();
+  let url = `${YOUTUBE_API_URL}/${endpoint}?${query}`;
+
+  try {
+    let response = await fetch(url);
+
+    // Jika kuota habis (403), coba kunci berikutnya
+    if (response.status === 403 && currentApiKeyIndex < YOUTUBE_API_KEYS.length - 1) {
+      console.warn(`API key ${currentApiKeyIndex + 1} limit reached. Trying next key.`);
+      currentApiKeyIndex++;
+      apiKey = YOUTUBE_API_KEYS[currentApiKeyIndex];
+      const newQuery = new URLSearchParams({ ...params, key: apiKey }).toString();
+      url = `${YOUTUBE_API_URL}/${endpoint}?${newQuery}`;
+      response = await fetch(url);
+    }
+
+    if (!response.ok) {
+        const errorData = await response.json();
+        console.error('YouTube API Error:', errorData);
+        throw new Error(`YouTube API request failed: ${response.statusText}`);
+    }
+
+    return await response.json();
+
+  } catch (error) {
+    console.error("Failed to fetch from YouTube API:", error);
+    return null; // Mengembalikan null jika ada error
+  }
+}
+
+
+/**
+ * Mengambil daftar video trending dari YouTube.
+ */
+export async function getTrendingVideos(): Promise<Video[]> {
+    const data = await fetchFromYouTubeAPI('videos', {
+        part: 'snippet,contentDetails,statistics',
+        chart: 'mostPopular',
+        regionCode: 'ID',
+        maxResults: '20',
+    });
+
+    if (!data || !data.items) {
+        return []; // Mengembalikan array kosong jika tidak ada data
+    }
+    
+    return data.items.map((item: any): Video => ({
+        id: item.id,
+        title: item.snippet.title,
+        thumbnailUrl: item.snippet.thumbnails.medium.url,
+        duration: formatDuration(item.contentDetails.duration),
+        channelName: item.snippet.channelTitle,
+        channelId: item.snippet.channelId,
+        channelAvatarId: 'channel-avatar-1', // Placeholder
+        views: formatViews(item.statistics.viewCount),
+        uploadedAt: new Date(item.snippet.publishedAt).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' }),
+        description: item.snippet.description || LOREM_IPSUM,
+        tags: item.snippet.tags || [],
+        videoUrl: `https://www.youtube.com/watch?v=${item.id}`,
+    }));
+}
+
+/**
+ * Mengambil detail satu video dari YouTube.
+ */
+async function fetchVideoDetails(videoId: string | undefined): Promise<Video | null> {
+  if (!videoId) return null;
+
+  const data = await fetchFromYouTubeAPI('videos', {
+    part: 'snippet,contentDetails,statistics',
+    id: videoId,
+  });
+
+  if (!data || !data.items || data.items.length === 0) {
+    return null;
+  }
+
+  const item = data.items[0];
+  return {
+    id: item.id,
+    title: item.snippet.title,
+    thumbnailUrl: item.snippet.thumbnails.high.url,
+    duration: formatDuration(item.contentDetails.duration),
+    channelName: item.snippet.channelTitle,
+    channelId: item.snippet.channelId,
+    channelAvatarId: 'channel-avatar-1', // Placeholder
+    views: formatViews(item.statistics.viewCount),
+    uploadedAt: new Date(item.snippet.publishedAt).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' }),
+    description: item.snippet.description || LOREM_IPSUM,
+    tags: item.snippet.tags || [],
+    videoUrl: `https://www.youtube.com/watch?v=${item.id}`,
+  };
+}
+
+
+// --- Fungsi Utilitas Tambahan ---
+
+function formatDuration(isoDuration: string): string {
+    // Format "PT12M34S"
+    const match = isoDuration.match(/PT(?:(\d+)H)?(?:(\d+)M)?(?:(\d+)S)?/);
+    if (!match) return "0:00";
+
+    const hours = parseInt(match[1] || '0');
+    const minutes = parseInt(match[2] || '0');
+    const seconds = parseInt(match[3] || '0');
+
+    if (hours > 0) {
+        return `${hours}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+    }
+    return `${minutes}:${String(seconds).padStart(2, '0')}`;
+}
+
+function formatViews(viewCount: string): string {
+    const num = parseInt(viewCount);
+    if (num >= 1000000) return `${(num / 1000000).toFixed(1)}M`;
+    if (num >= 1000) return `${(num / 1000).toFixed(0)}K`;
+    return String(num);
+}
+
+
+// Mengganti export video statis dengan yang dari API
+// export const videos: Video[] = ...
+export const videos: Promise<Video[]> = getTrendingVideos();

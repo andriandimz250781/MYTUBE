@@ -1,7 +1,8 @@
 'use client';
 
 import { notFound } from 'next/navigation';
-import { videos, getVideo, getChannel, getImage } from '@/app/lib/data';
+import { videos as trendingVideos, getVideo, getChannel, getImage } from '@/app/lib/data';
+import type { Video } from '@/app/lib/data';
 import Link from 'next/link';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
@@ -12,15 +13,37 @@ import { useEffect, useState } from 'react';
 
 export default function WatchPage({ params }: { params: { id: string } }) {
   const [hasWindow, setHasWindow] = useState(false);
+  const [video, setVideo] = useState<Video | null>(null);
+  const [relatedVideos, setRelatedVideos] = useState<Video[]>([]);
+  const [loading, setLoading] = useState(true);
+
   useEffect(() => {
     if (typeof window !== 'undefined') {
       setHasWindow(true);
     }
-  }, []);
+    
+    async function fetchData() {
+      setLoading(true);
+      const videoData = await getVideo(params.id);
+      if (!videoData) {
+        notFound();
+        return;
+      }
+      setVideo(videoData);
 
-  const video = getVideo(params.id);
-  if (!video) {
-    notFound();
+      // Untuk sementara, video terkait diambil dari data trending
+      const trending = await trendingVideos;
+      setRelatedVideos(trending.filter(v => v.id !== params.id));
+      
+      setLoading(false);
+    }
+
+    fetchData();
+
+  }, [params.id]);
+  
+  if (loading || !video) {
+    return <div>Loading...</div>; // Tampilkan loading state
   }
 
   const channel = getChannel(video.channelId);
@@ -99,8 +122,7 @@ export default function WatchPage({ params }: { params: { id: string } }) {
       <div className="lg:w-1/3 lg:max-w-md">
         <h2 className="font-headline text-xl font-bold mb-4">Up next</h2>
         <div className="flex flex-col gap-4">
-          {videos
-            .filter(v => v.id !== video.id)
+          {relatedVideos
             .map(relatedVideo => (
               <CompactVideoCard key={relatedVideo.id} video={relatedVideo} />
             ))}
