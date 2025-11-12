@@ -1,3 +1,5 @@
+'use client';
+
 import { notFound } from 'next/navigation';
 import { videos, getVideo, getChannel, getImage } from '@/app/lib/data';
 import Link from 'next/link';
@@ -5,8 +7,17 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { CompactVideoCard } from '@/components/video/compact-video-card';
+import ReactPlayer from 'react-player/youtube';
+import { useEffect, useState } from 'react';
 
 export default function WatchPage({ params }: { params: { id: string } }) {
+  const [hasWindow, setHasWindow] = useState(false);
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      setHasWindow(true);
+    }
+  }, []);
+
   const video = getVideo(params.id);
   if (!video) {
     notFound();
@@ -19,17 +30,21 @@ export default function WatchPage({ params }: { params: { id: string } }) {
     <div className="flex flex-col gap-8 lg:flex-row">
       <div className="flex-grow lg:w-2/3">
         <div className="aspect-video w-full overflow-hidden rounded-xl bg-muted shadow-lg">
-          <iframe
-            key={video.id}
-            className="h-full w-full object-contain bg-black"
-            src={video.videoUrl}
-            title={video.title}
-            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-            allowFullScreen
-          ></iframe>
+          {hasWindow && (
+            <ReactPlayer
+              url={video.videoUrl}
+              width="100%"
+              height="100%"
+              controls
+              playing
+              className="bg-black"
+            />
+          )}
         </div>
         <div className="py-4">
-          <h1 className="font-headline text-2xl font-bold mb-2">{video.title}</h1>
+          <h1 className="font-headline text-2xl font-bold mb-2">
+            {video.title}
+          </h1>
           <div className="flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-center">
             <div className="flex items-center gap-3">
               <Link href={`/channel/${video.channelId}`}>
