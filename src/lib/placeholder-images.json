@@ -1,3 +1,106 @@
 {
-  "placeholderImages": []
+  "placeholderImages": [
+    {
+      "id": "user-avatar-1",
+      "description": "User avatar",
+      "imageUrl": "https://images.unsplash.com/photo-1695470667338-e7e8608ff048?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw5fHxwZXJzb24lMjBmYWNlfGVufDB8fHx8MTc2Mjg4OTY0NXww&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "person face"
+    },
+    {
+      "id": "video-thumb-1",
+      "description": "Tech review thumbnail",
+      "imageUrl": "https://images.unsplash.com/photo-1643803792614-039e749d05b5?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwyfHx0ZWNoJTIwZ2FkZ2V0fGVufDB8fHx8MTc2Mjg3OTM1Mnww&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "tech gadget"
+    },
+    {
+      "id": "video-thumb-2",
+      "description": "Travel vlog thumbnail",
+      "imageUrl": "https://images.unsplash.com/photo-1611080402167-ed75bae6df32?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw0fHxtb3VudGFpbiUyMGxhbmRzY2FwZXxlbnwwfHx8fDE3NjI4MjA1ODl8MA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "mountain landscape"
+    },
+    {
+      "id": "video-thumb-3",
+      "description": "Cooking show thumbnail",
+      "imageUrl": "https://images.unsplash.com/photo-1569246294372-ed319c674f14?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw4fHxkZWxpY2lvdXMlMjBmb29kfGVufDB8fHx8MTc2Mjg1MDgyOXww&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "delicious food"
+    },
+    {
+      "id": "video-thumb-4",
+      "description": "Gaming stream thumbnail",
+      "imageUrl": "https://images.unsplash.com/photo-1579373903781-fd5c0c30c4cd?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwyfHx2aWRlbyUyMGdhbWV8ZW58MHx8fHwxNzYyODU2MDY3fDA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "video game"
+    },
+    {
+      "id": "video-thumb-5",
+      "description": "DIY project thumbnail",
+      "imageUrl": "https://images.unsplash.com/photo-1745449064670-94bd0fc13df8?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw4fHx3b3JrYmVuY2glMjB0b29sc3xlbnwwfHx8fDE3NjI4MTkzNDl8MA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "workbench tools"
+    },
+    {
+      "id": "video-thumb-6",
+      "description": "Music video thumbnail",
+      "imageUrl": "https://images.unsplash.com/photo-1563215613-bcdbce1c7234?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwxMHx8Y29uY2VydCUyMGxpZ2h0c3xlbnwwfHx8fDE3NjI4Mzg1NzJ8MA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "concert lights"
+    },
+    {
+      "id": "video-thumb-7",
+      "description": "Fitness tutorial thumbnail",
+      "imageUrl": "https://images.unsplash.com/photo-1715333148720-d1c659335b3f?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwxMHx8cGVyc29uJTIwZXhlcmNpc2luZ3xlbnwwfHx8fDE3NjI5Mjg4MDl8MA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "person exercising"
+    },
+    {
+      "id": "video-thumb-8",
+      "description": "Educational video thumbnail",
+      "imageUrl": "https://images.unsplash.com/photo-1683871268982-a19153dbb35d?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw1fHxib29rcyUyMGxpYnJhcnl8ZW58MHx8fHwxNzYyOTAzMTUxfDA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "books library"
+    },
+    {
+      "id": "video-thumb-9",
+      "description": "Comedy sketch thumbnail",
+      "imageUrl": "https://images.unsplash.com/photo-1525527834147-0f4ff3097029?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw4fHxmdW5ueSUyMGZhY2V8ZW58MHx8fHwxNzYyOTA5NzgzfDA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "funny face"
+    },
+    {
+      "id": "video-thumb-10",
+      "description": "Nature documentary thumbnail",
+      "imageUrl": "https://images.unsplash.com/photo-1598755257130-c2aaca1f061c?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwxfHx3aWxkJTIwYW5pbWFsfGVufDB8fHx8MTc2MjkyODgwOXww&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "wild animal"
+    },
+    {
+      "id": "video-thumb-11",
+      "description": "Movie review thumbnail",
+      "imageUrl": "https://images.unsplash.com/photo-1543536448-d209d2d13a1c?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw5fHxmaWxtJTIwcmVlbHxlbnwwfHx8fDE3NjI4Mzg4Mzh8MA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "film reel"
+    },
+    {
+      "id": "video-thumb-12",
+      "description": "Animation short thumbnail",
+      "imageUrl": "https://images.unsplash.com/photo-1606663889134-b1dedb5ed8b7?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw0fHxjYXJ0b29uJTIwY2hhcmFjdGVyfGVufDB8fHx8MTc2MjkwOTc4NHww&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "cartoon character"
+    },
+    {
+      "id": "channel-avatar-1",
+      "description": "Tech channel avatar",
+      "imageUrl": "https://images.unsplash.com/photo-1562408590-e32931084e23?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwxfHxjaXJjdWl0JTIwYm9hcmR8ZW58MHx8fHwxNzYyODc5NjE4fDA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "circuit board"
+    },
+    {
+      "id": "channel-avatar-2",
+      "description": "Travel channel avatar",
+      "imageUrl": "https://images.unsplash.com/photo-1594450281353-5a7a067358cc?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw4fHxnbG9iZSUyMG1hcHxlbnwwfHx8fDE3NjI4Mjc1MzB8MA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "globe map"
+    },
+    {
+      "id": "channel-avatar-3",
+      "description": "Cooking channel avatar",
+      "imageUrl": "https://images.unsplash.com/photo-1641536618422-2cf0bbd10014?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw0fHxjaGVmJTIwaGF0fGVufDB8fHx8MTc2Mjg1NTIwMHww&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "chef hat"
+    },
+    {
+      "id": "channel-banner-1",
+      "description": "Tech channel banner",
+      "imageUrl": "https://images.unsplash.com/photo-1604011237320-8e0506614fdf?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw3fHxhYnN0cmFjdCUyMHRlY2hub2xvZ3l8ZW58MHx8fHwxNzYyODY5MTA0fDA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "abstract technology"
+    }
+  ]
 }
