@@ -2,7 +2,7 @@
 
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
-import { useState } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 
 const categories = [
   'BERANDA',
@@ -18,7 +18,17 @@ const categories = [
 ];
 
 export function CategoryBar() {
-  const [selectedCategory, setSelectedCategory] = useState('BERANDA');
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const selectedCategory = searchParams.get('query')?.toUpperCase() || 'BERANDA';
+
+  const handleCategoryClick = (category: string) => {
+    if (category === 'BERANDA') {
+      router.push('/');
+    } else {
+      router.push(`/search?query=${encodeURIComponent(category)}`);
+    }
+  };
 
   return (
     <div className="border-b bg-background/95 backdrop-blur-sm">
@@ -28,12 +38,12 @@ export function CategoryBar() {
             key={category}
             variant={selectedCategory === category ? 'default' : 'outline'}
             className={cn(
-              'rounded-full px-4 py-1 h-auto text-sm transition-colors',
+              'rounded-full px-4 py-1 h-auto text-sm transition-colors shrink-0',
               selectedCategory === category
                 ? 'bg-primary text-primary-foreground hover:bg-primary/90'
                 : 'bg-secondary text-secondary-foreground hover:bg-secondary/80'
             )}
-            onClick={() => setSelectedCategory(category)}
+            onClick={() => handleCategoryClick(category)}
           >
             {category}
           </Button>

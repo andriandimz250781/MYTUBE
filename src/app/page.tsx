@@ -1,35 +1,22 @@
 import { VideoCard } from '@/components/video/video-card';
-import { getTrendingVideos, searchVideosByQuery, type Video } from '@/app/lib/data';
+import { getTrendingVideos, type Video } from '@/app/lib/data';
 import { Suspense } from 'react';
 
-async function VideoGrid({ query }: { query?: string }) {
-  const videos: Video[] = query 
-    ? await searchVideosByQuery(query)
-    : await getTrendingVideos();
+async function VideoGrid() {
+  const videos: Video[] = await getTrendingVideos();
 
   if (videos.length === 0) {
-    return <p>Tidak ada video untuk kategori ini.</p>
+    return <p>Tidak dapat memuat video trending saat ini. Coba beberapa saat lagi.</p>
   }
 
   return (
     <div className="grid grid-cols-1 gap-x-4 gap-y-8 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-      {videos.slice(0, 10).map(video => (
+      {videos.map(video => (
         <VideoCard key={video.id} video={video} />
       ))}
     </div>
   );
 }
-
-const categories = [
-  'Musik',
-  'Film',
-  'Berita',
-  'Kuliner',
-  'Komedi',
-  'Horor',
-  'Hobby',
-  'Karaoke'
-];
 
 export default function Home() {
   return (
@@ -41,16 +28,6 @@ export default function Home() {
           <VideoGrid />
         </Suspense>
       </div>
-
-      {categories.map(category => (
-        <div key={category}>
-          <h2 className="font-headline mb-4 text-2xl font-bold">{category}</h2>
-          <Suspense fallback={<p>Memuat video {category.toLowerCase()}...</p>}>
-            {/* @ts-expect-error Server Component */}
-            <VideoGrid query={category} />
-          </Suspense>
-        </div>
-      ))}
     </div>
   );
 }
