@@ -10,7 +10,6 @@ import { Button } from '@/components/ui/button';
 import { CompactVideoCard } from '@/components/video/compact-video-card';
 import ReactPlayer from 'react-player/youtube';
 import { useEffect, useState, useRef } from 'react';
-import { PlayCircle } from 'lucide-react';
 
 export default function WatchPage() {
   const params = useParams();
@@ -48,16 +47,14 @@ export default function WatchPage() {
     if (videoId) {
       fetchData(videoId);
     }
-
   }, [params.id]);
-  
+
   const handlePlayFullscreen = async () => {
     setIsPlaying(true);
     const wrapper = playerWrapperRef.current;
     if (wrapper) {
       try {
         await wrapper.requestFullscreen();
-        // Coba kunci orientasi ke landscape di mobile
         if (screen.orientation && typeof screen.orientation.lock === 'function') {
           await screen.orientation.lock('landscape');
         }
@@ -67,9 +64,19 @@ export default function WatchPage() {
     }
   };
 
+  useEffect(() => {
+    if (!loading && video && hasWindow) {
+      // Small delay to ensure the player is ready
+      const timer = setTimeout(() => {
+        handlePlayFullscreen();
+      }, 100); 
+      return () => clearTimeout(timer);
+    }
+  }, [loading, video, hasWindow]);
+
 
   if (loading || !video) {
-    return <div>Memuat video...</div>; // Tampilkan loading state
+    return <div>Memuat video...</div>;
   }
 
   const channel = getChannel(video.channelId);
@@ -92,18 +99,6 @@ export default function WatchPage() {
               onEnded={() => setIsPlaying(false)}
               className="bg-black"
             />
-          )}
-           {!isPlaying && (
-            <div className="absolute inset-0 flex items-center justify-center bg-black/50">
-              <Button
-                variant="ghost"
-                className="h-24 w-24 text-white hover:bg-white/20 hover:text-white"
-                onClick={handlePlayFullscreen}
-              >
-                <PlayCircle className="h-20 w-20" />
-                <span className="sr-only">Putar Video Fullscreen</span>
-              </Button>
-            </div>
           )}
         </div>
         <div className="py-4">
