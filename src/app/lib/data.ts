@@ -26,6 +26,11 @@ export type Channel = {
   description: string;
 };
 
+export type VideoResponse = {
+  videos: Video[];
+  nextPageToken: string | null;
+}
+
 // --- Variabel & Konfigurasi API ---
 let currentApiKeyIndex = 0;
 const YOUTUBE_API_URL = 'https://www.googleapis.com/youtube/v3';
@@ -144,7 +149,7 @@ async function fetchVideoDetailsByIds(videoIds: string[]): Promise<Video[]> {
 /**
  * Mencari video berdasarkan query.
  */
-export async function searchVideosByQuery(query: string, duration?: 'long' | 'any'): Promise<Video[]> {
+export async function searchVideosByQuery(query: string, duration?: 'long' | 'any', pageToken?: string): Promise<VideoResponse> {
     const searchParams: Record<string, string> = {
         part: 'snippet',
         q: query,
@@ -156,31 +161,45 @@ export async function searchVideosByQuery(query: string, duration?: 'long' | 'an
       searchParams.videoDuration = duration;
     }
 
+    if (pageToken) {
+      searchParams.pageToken = pageToken;
+    }
+
     const searchData = await fetchFromYouTubeAPI('search', searchParams);
 
-    if (!searchData || !searchData.items) return [];
+    if (!searchData || !searchData.items) return { videos: [], nextPageToken: null };
 
     const videoIds = searchData.items.map((item: any) => item.id.videoId).filter(Boolean);
-    return fetchVideoDetailsByIds(videoIds);
+    const videos = await fetchVideoDetailsByIds(videoIds);
+    return {
+      videos,
+      nextPageToken: searchData.nextPageToken || null
+    }
 }
 
 
 /**
  * Mengambil daftar video trending dari YouTube.
  */
-export async function getTrendingVideos(): Promise<Video[]> {
-    const data = await fetchFromYouTubeAPI('videos', {
+export async function getTrendingVideos(pageToken?: string): Promise<VideoResponse> {
+    const params: Record<string, string> = {
         part: 'snippet,contentDetails,statistics',
         chart: 'mostPopular',
         regionCode: 'ID',
         maxResults: '20',
-    });
+    };
+
+    if (pageToken) {
+      params.pageToken = pageToken;
+    }
+
+    const data = await fetchFromYouTubeAPI('videos', params);
 
     if (!data || !data.items) {
-        return []; // Mengembalikan array kosong jika tidak ada data
+        return { videos: [], nextPageToken: null };
     }
     
-    return data.items.map((item: any): Video => ({
+    const videos = data.items.map((item: any): Video => ({
         id: item.id,
         title: item.snippet.title,
         thumbnailUrl: item.snippet.thumbnails.medium.url,
@@ -194,6 +213,11 @@ export async function getTrendingVideos(): Promise<Video[]> {
         tags: item.snippet.tags || [],
         videoUrl: `https://www.youtube.com/watch?v=${item.id}`,
     }));
+
+    return {
+      videos,
+      nextPageToken: data.nextPageToken || null,
+    };
 }
 
 /**
@@ -253,8 +277,3 @@ function formatViews(viewCount: string): string {
     if (num >= 1000) return `${(num / 1000).toFixed(0)}Rb`;
     return String(num);
 }
-
-
-// Mengganti export video statis dengan yang dari API
-// export const videos: Video[] = ...
-export const videos: Promise<Video[]> = getTrendingVideos();
