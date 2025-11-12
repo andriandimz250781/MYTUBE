@@ -124,13 +124,14 @@ export default function SearchPage({
     );
   }
 
-  // Tambahkan kata "karaoke" secara eksplisit jika kategori yang dipilih adalah KARAOKE
-  const searchQuery = upperCaseQuery === 'KARAOKE' ? query + ' karaoke' : query;
+  // Untuk kategori lain seperti HOROR, MUSIK, KARAOKE, dll.
+  // Kata kunci pencarian diambil langsung dari nama kategori.
+  const searchQuery = query;
 
   return (
     <div>
       <h1 className="font-headline text-3xl font-bold mb-6">
-        Hasil pencarian untuk: <span className="text-primary">{query || '...'}</span>
+        Hasil untuk: <span className="text-primary">{query || '...'}</span>
       </h1>
       <Suspense fallback={<div>Memuat hasil pencarian...</div>}>
         <SearchResults query={searchQuery} />
