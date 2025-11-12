@@ -1,6 +1,6 @@
 'use client';
 
-import { useParams } from 'next/navigation';
+import { useParams, useRouter, useSearchParams } from 'next/navigation';
 import { getTrendingVideos, getVideo, getChannel, getImage } from '@/app/lib/data';
 import type { Video } from '@/app/lib/data';
 import Link from 'next/link';
@@ -13,6 +13,8 @@ import { useEffect, useState, useRef } from 'react';
 
 export default function WatchPage() {
   const params = useParams();
+  const router = useRouter();
+  const searchParams = useSearchParams();
   const [hasWindow, setHasWindow] = useState(false);
   const [video, setVideo] = useState<Video | null>(null);
   const [relatedVideos, setRelatedVideos] = useState<Video[]>([]);
@@ -49,9 +51,8 @@ export default function WatchPage() {
       }
     }
 
-    const videoId = params.id as string;
-    if (videoId) {
-      fetchData(videoId);
+    if (params.id) {
+       fetchData(params.id as string);
     }
   }, [params.id]);
 
@@ -71,10 +72,19 @@ export default function WatchPage() {
           });
         }
       } catch (err) {
-        console.error("Gagal masuk mode fullscreen:", err);
+        // This can fail if the user denies permission, so we just log it.
+        // It's not a critical error that should stop playback.
       }
     }
   };
+
+  const handleAutoplayNext = () => {
+    if (relatedVideos.length > 0) {
+      const nextVideo = relatedVideos[0];
+      router.push(`/watch/${nextVideo.id}?autoplay=true`);
+    }
+  };
+
 
   useEffect(() => {
     const onFullscreenChange = () => {
@@ -87,8 +97,14 @@ export default function WatchPage() {
     };
 
     document.addEventListener('fullscreenchange', onFullscreenChange);
+
+    // If autoplay=true is in the URL, try to play fullscreen automatically.
+    if (searchParams.get('autoplay') === 'true' && !loading && video) {
+      handlePlayFullscreen();
+    }
+    
     return () => document.removeEventListener('fullscreenchange', onFullscreenChange);
-  }, []);
+  }, [searchParams, loading, video]);
 
 
   if (loading || !video) {
@@ -112,7 +128,7 @@ export default function WatchPage() {
               playing={isPlaying}
               onPlay={() => setIsPlaying(true)}
               onPause={() => setIsPlaying(false)}
-              onEnded={() => setIsPlaying(false)}
+              onEnded={handleAutoplayNext}
               className="bg-black"
               light={!isPlaying ? video.thumbnailUrl : false}
               playIcon={<button onClick={handlePlayFullscreen} className="absolute inset-0 flex items-center justify-center w-full h-full bg-black/30"><svg height="100%" version="1.1" viewBox="0 0 68 48" width="100%" className="w-16 h-16"><path className="fill-black/80" d="M66.52,7.74c-0.78-2.93-2.49-5.41-5.42-6.19C55.79,.13,34,0,34,0S12.21,.13,6.9,1.55 C3.97,2.33,2.27,4.81,1.48,7.74C0.06,13.05,0,24,0,24s0.06,10.95,1.48,16.26c0.78,2.93,2.49,5.41,5.42,6.19 C12.21,47.87,34,48,34,48s21.79-0.13,27.1-1.55c2.93-0.78,4.64-3.26,5.42-6.19C67.94,34.95,68,24,68,24S67.94,13.05,66.52,7.74z"></path><path className="fill-white" d="M 45,24 27,14 27,34"></path></svg></button>}
