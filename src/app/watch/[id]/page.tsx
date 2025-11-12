@@ -1,6 +1,6 @@
 'use client';
 
-import { notFound } from 'next/navigation';
+import { notFound, useParams } from 'next/navigation';
 import { getTrendingVideos, getVideo, getChannel, getImage } from '@/app/lib/data';
 import type { Video } from '@/app/lib/data';
 import Link from 'next/link';
@@ -11,7 +11,8 @@ import { CompactVideoCard } from '@/components/video/compact-video-card';
 import ReactPlayer from 'react-player/youtube';
 import { useEffect, useState } from 'react';
 
-export default function WatchPage({ params }: { params: { id: string } }) {
+export default function WatchPage() {
+  const params = useParams();
   const [hasWindow, setHasWindow] = useState(false);
   const [video, setVideo] = useState<Video | null>(null);
   const [relatedVideos, setRelatedVideos] = useState<Video[]>([]);
@@ -39,9 +40,9 @@ export default function WatchPage({ params }: { params: { id: string } }) {
       setLoading(false);
     }
 
-    // Access params.id only inside useEffect
-    if (params.id) {
-      fetchData(params.id);
+    const videoId = params.id as string;
+    if (videoId) {
+      fetchData(videoId);
     }
 
   }, [params.id]);
