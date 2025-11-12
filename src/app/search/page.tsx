@@ -37,31 +37,29 @@ export default function SearchPage({
             <TabsTrigger value="internasional">Internasional</TabsTrigger>
             <TabsTrigger value="kriminal">Kriminal</TabsTrigger>
             <TabsTrigger value="olahraga">Olahraga</TabsTrigger>
-            <TabsTrigger value="live">Live TV</TabsTrigger>
           </TabsList>
           <TabsContent value="nasional" className="mt-6">
             <Suspense fallback={<div>Memuat berita nasional...</div>}>
+              {/* @ts-expect-error Server Component */}
               <SearchResults query="berita nasional terkini" />
             </Suspense>
           </TabsContent>
           <TabsContent value="internasional" className="mt-6">
             <Suspense fallback={<div>Memuat berita internasional...</div>}>
+              {/* @ts-expect-error Server Component */}
               <SearchResults query="berita internasional terkini" />
             </Suspense>
           </TabsContent>
           <TabsContent value="kriminal" className="mt-6">
             <Suspense fallback={<div>Memuat berita kriminal...</div>}>
+              {/* @ts-expect-error Server Component */}
               <SearchResults query="berita kriminal terkini" />
             </Suspense>
           </TabsContent>
           <TabsContent value="olahraga" className="mt-6">
             <Suspense fallback={<div>Memuat berita olahraga...</div>}>
+              {/* @ts-expect-error Server Component */}
               <SearchResults query="berita olahraga terkini" />
-            </Suspense>
-          </TabsContent>
-          <TabsContent value="live" className="mt-6">
-            <Suspense fallback={<div>Memuat siaran langsung...</div>}>
-              <SearchResults query="berita live streaming tv" />
             </Suspense>
           </TabsContent>
         </Tabs>
@@ -86,36 +84,43 @@ export default function SearchPage({
           </TabsList>
           <TabsContent value="indonesia" className="mt-6">
             <Suspense fallback={<div>Memuat film Indonesia...</div>}>
+              {/* @ts-expect-error Server Component */}
               <SearchResults query="film indonesia" />
             </Suspense>
           </TabsContent>
           <TabsContent value="malaysia" className="mt-6">
             <Suspense fallback={<div>Memuat film Malaysia...</div>}>
+              {/* @ts-expect-error Server Component */}
               <SearchResults query="film malaysia" />
             </Suspense>
           </TabsContent>
           <TabsContent value="thailand" className="mt-6">
             <Suspense fallback={<div>Memuat film Thailand...</div>}>
+              {/* @ts-expect-error Server Component */}
               <SearchResults query="film thailand" />
             </Suspense>
           </TabsContent>
           <TabsContent value="vietnam" className="mt-6">
             <Suspense fallback={<div>Memuat film Vietnam...</div>}>
+              {/* @ts-expect-error Server Component */}
               <SearchResults query="film vietnam" />
             </Suspense>
           </TabsContent>
           <TabsContent value="barat" className="mt-6">
             <Suspense fallback={<div>Memuat film Barat...</div>}>
+              {/* @ts-expect-error Server Component */}
               <SearchResults query="film barat" />
             </Suspense>
           </TabsContent>
           <TabsContent value="india" className="mt-6">
             <Suspense fallback={<div>Memuat film India...</div>}>
+              {/* @ts-expect-error Server Component */}
               <SearchResults query="film india" />
             </Suspense>
           </TabsContent>
           <TabsContent value="kartun" className="mt-6">
             <Suspense fallback={<div>Memuat film Kartun...</div>}>
+              {/* @ts-expect-error Server Component */}
               <SearchResults query="film kartun" />
             </Suspense>
           </TabsContent>
@@ -136,12 +141,41 @@ export default function SearchPage({
           </TabsList>
           <TabsContent value="indonesia" className="mt-6">
             <Suspense fallback={<div>Memuat film horor Indonesia...</div>}>
+              {/* @ts-expect-error Server Component */}
               <SearchResults query="film horor indonesia" />
             </Suspense>
           </TabsContent>
           <TabsContent value="internasional" className="mt-6">
             <Suspense fallback={<div>Memuat film horor internasional...</div>}>
+              {/* @ts-expect-error Server Component */}
               <SearchResults query="film horor internasional" />
+            </Suspense>
+          </TabsContent>
+        </Tabs>
+      </div>
+    );
+  }
+
+  // Tampilan khusus untuk kategori LIVE
+  if (upperCaseQuery === 'LIVE') {
+    return (
+      <div>
+        <h1 className="font-headline text-3xl font-bold mb-6">Siaran Langsung</h1>
+        <Tabs defaultValue="lokal" className="w-full">
+          <TabsList>
+            <TabsTrigger value="lokal">TV Lokal</TabsTrigger>
+            <TabsTrigger value="mancanegara">Mancanegara</TabsTrigger>
+          </TabsList>
+          <TabsContent value="lokal" className="mt-6">
+            <Suspense fallback={<div>Memuat siaran langsung lokal...</div>}>
+              {/* @ts-expect-error Server Component */}
+              <SearchResults query="live streaming tv indonesia" />
+            </Suspense>
+          </TabsContent>
+          <TabsContent value="mancanegara" className="mt-6">
+            <Suspense fallback={<div>Memuat siaran langsung internasional...</div>}>
+              {/* @ts-expect-error Server Component */}
+              <SearchResults query="live streaming tv international" />
             </Suspense>
           </TabsContent>
         </Tabs>
@@ -151,7 +185,7 @@ export default function SearchPage({
 
   // Untuk kategori lain seperti MUSIK, KARAOKE, dll.
   // Kata kunci pencarian diambil langsung dari nama kategori.
-  const searchQuery = query.toUpperCase() === 'KARAOKE' ? `${query} karaoke` : query;
+  const searchQuery = upperCaseQuery === 'KARAOKE' ? `${query} karaoke` : query;
 
   return (
     <div>
@@ -159,6 +193,7 @@ export default function SearchPage({
         Hasil untuk: <span className="text-primary">{query || '...'}</span>
       </h1>
       <Suspense fallback={<div>Memuat hasil pencarian...</div>}>
+        {/* @ts-expect-error Server Component */}
         <SearchResults query={searchQuery} />
       </Suspense>
     </div>
