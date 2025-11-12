@@ -24,9 +24,10 @@ export default function SearchPage({
   };
 }) {
   const query = searchParams?.query || '';
+  const upperCaseQuery = query.toUpperCase();
 
   // Tampilan khusus untuk kategori BERITA
-  if (query.toUpperCase() === 'BERITA') {
+  if (upperCaseQuery === 'BERITA') {
     return (
       <div>
         <h1 className="font-headline text-3xl font-bold mb-6">Berita Terkini</h1>
@@ -68,8 +69,63 @@ export default function SearchPage({
     );
   }
 
+  // Tampilan khusus untuk kategori FILM
+  if (upperCaseQuery === 'FILM') {
+    return (
+      <div>
+        <h1 className="font-headline text-3xl font-bold mb-6">Koleksi Film</h1>
+        <Tabs defaultValue="indonesia" className="w-full">
+          <TabsList>
+            <TabsTrigger value="indonesia">INDONESIA</TabsTrigger>
+            <TabsTrigger value="malaysia">MALAYSIA</TabsTrigger>
+            <TabsTrigger value="thailand">THAILAND</TabsTrigger>
+            <TabsTrigger value="vietnam">VIETNAM</TabsTrigger>
+            <TabsTrigger value="barat">BARAT</TabsTrigger>
+            <TabsTrigger value="india">INDIA</TabsTrigger>
+            <TabsTrigger value="kartun">KARTUN</TabsTrigger>
+          </TabsList>
+          <TabsContent value="indonesia" className="mt-6">
+            <Suspense fallback={<div>Memuat film Indonesia...</div>}>
+              <SearchResults query="film indonesia" />
+            </Suspense>
+          </TabsContent>
+          <TabsContent value="malaysia" className="mt-6">
+            <Suspense fallback={<div>Memuat film Malaysia...</div>}>
+              <SearchResults query="film malaysia" />
+            </Suspense>
+          </TabsContent>
+          <TabsContent value="thailand" className="mt-6">
+            <Suspense fallback={<div>Memuat film Thailand...</div>}>
+              <SearchResults query="film thailand" />
+            </Suspense>
+          </TabsContent>
+          <TabsContent value="vietnam" className="mt-6">
+            <Suspense fallback={<div>Memuat film Vietnam...</div>}>
+              <SearchResults query="film vietnam" />
+            </Suspense>
+          </TabsContent>
+          <TabsContent value="barat" className="mt-6">
+            <Suspense fallback={<div>Memuat film Barat...</div>}>
+              <SearchResults query="film barat" />
+            </Suspense>
+          </TabsContent>
+          <TabsContent value="india" className="mt-6">
+            <Suspense fallback={<div>Memuat film India...</div>}>
+              <SearchResults query="film india" />
+            </Suspense>
+          </TabsContent>
+          <TabsContent value="kartun" className="mt-6">
+            <Suspense fallback={<div>Memuat film Kartun...</div>}>
+              <SearchResults query="film kartun" />
+            </Suspense>
+          </TabsContent>
+        </Tabs>
+      </div>
+    );
+  }
+
   // Tambahkan kata "karaoke" secara eksplisit jika kategori yang dipilih adalah KARAOKE
-  const searchQuery = query.toUpperCase() === 'KARAOKE' ? query + ' karaoke' : query;
+  const searchQuery = upperCaseQuery === 'KARAOKE' ? query + ' karaoke' : query;
 
   return (
     <div>
