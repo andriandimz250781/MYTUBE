@@ -183,8 +183,8 @@ export default function SearchPage({
     );
   }
   
-  // Penanganan khusus untuk HOBBY
-  if (upperCaseQuery === 'HOBBY') {
+  // Penanganan khusus untuk HOBBY dan KOMEDI (video panjang)
+  if (upperCaseQuery === 'HOBBY' || upperCaseQuery === 'KOMEDI') {
      return (
       <div>
         <h1 className="font-headline text-3xl font-bold mb-6">
