@@ -96,9 +96,16 @@ async function fetchFromYouTubeAPI(endpoint: string, params: Record<string, stri
     }
 
     if (!response.ok) {
-        const errorData = await response.json();
-        console.error('YouTube API Error:', errorData);
-        throw new Error(`YouTube API request failed: ${response.statusText}`);
+      let errorData = `Status: ${response.status} ${response.statusText}`;
+      try {
+        const errorJson = await response.json();
+        errorData = JSON.stringify(errorJson);
+      } catch (e) {
+        // Abaikan jika body bukan JSON, gunakan statusText saja.
+        errorData = await response.text();
+      }
+      console.error('YouTube API Error:', errorData);
+      throw new Error(`YouTube API request failed with details: ${errorData}`);
     }
 
     return await response.json();
