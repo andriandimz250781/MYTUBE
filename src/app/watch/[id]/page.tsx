@@ -43,6 +43,7 @@ export default function WatchPage() {
       setLoading(false);
     }
 
+    // Access params.id only inside useEffect
     const videoId = params.id as string;
     if (videoId) {
       fetchData(videoId);
