@@ -1,10 +1,10 @@
 import { VideoCard } from '@/components/video/video-card';
-import { getTrendingVideos, searchVideosByQuery } from '@/app/lib/data';
+import { getTrendingVideos, searchVideosByQuery, type Video } from '@/app/lib/data';
 import { Suspense } from 'react';
 
-async function VideoGrid({ category }: { category?: string }) {
-  const videos = category 
-    ? await searchVideosByQuery(category)
+async function VideoGrid({ query }: { query?: string }) {
+  const videos: Video[] = query 
+    ? await searchVideosByQuery(query)
     : await getTrendingVideos();
 
   if (videos.length === 0) {
@@ -47,7 +47,7 @@ export default function Home() {
           <h2 className="font-headline mb-4 text-2xl font-bold">{category}</h2>
           <Suspense fallback={<p>Memuat video {category.toLowerCase()}...</p>}>
             {/* @ts-expect-error Server Component */}
-            <VideoGrid category={category} />
+            <VideoGrid query={category} />
           </Suspense>
         </div>
       ))}
