@@ -1,7 +1,7 @@
 'use client';
 
 import { notFound } from 'next/navigation';
-import { getTrendingVideos, getVideo, getChannel, getImage } from '@/app/lib/data';
+import { getTrendingVideos, getVideo, getChannel, getImage, type VideoResponse } from '@/app/lib/data';
 import type { Video } from '@/app/lib/data';
 import Link from 'next/link';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -16,6 +16,7 @@ export default function WatchPage({ params }: { params: { id: string } }) {
   const [video, setVideo] = useState<Video | null>(null);
   const [relatedVideos, setRelatedVideos] = useState<Video[]>([]);
   const [loading, setLoading] = useState(true);
+  const videoId = params.id;
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
@@ -23,24 +24,25 @@ export default function WatchPage({ params }: { params: { id: string } }) {
     }
     
     async function fetchData() {
+      if (!videoId) return;
+
       setLoading(true);
-      const videoData = await getVideo(params.id);
+      const videoData = await getVideo(videoId);
       if (!videoData) {
         notFound();
         return;
       }
       setVideo(videoData);
 
-      // Untuk sementara, video terkait diambil dari data trending
       const { videos: trending } = await getTrendingVideos();
-      setRelatedVideos(trending.filter(v => v.id !== params.id));
+      setRelatedVideos(trending.filter(v => v.id !== videoId));
       
       setLoading(false);
     }
 
     fetchData();
 
-  }, [params.id]);
+  }, [videoId]);
   
   if (loading || !video) {
     return <div>Memuat video...</div>; // Tampilkan loading state
