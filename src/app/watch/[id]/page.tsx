@@ -9,7 +9,8 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { CompactVideoCard } from '@/components/video/compact-video-card';
 import ReactPlayer from 'react-player/youtube';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
+import { PlayCircle } from 'lucide-react';
 
 export default function WatchPage() {
   const params = useParams();
@@ -17,6 +18,9 @@ export default function WatchPage() {
   const [video, setVideo] = useState<Video | null>(null);
   const [relatedVideos, setRelatedVideos] = useState<Video[]>([]);
   const [loading, setLoading] = useState(true);
+  const [isPlaying, setIsPlaying] = useState(false);
+  const playerWrapperRef = useRef<HTMLDivElement>(null);
+  const playerRef = useRef<ReactPlayer>(null);
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
@@ -46,6 +50,23 @@ export default function WatchPage() {
     }
 
   }, [params.id]);
+  
+  const handlePlayFullscreen = async () => {
+    setIsPlaying(true);
+    const wrapper = playerWrapperRef.current;
+    if (wrapper) {
+      try {
+        await wrapper.requestFullscreen();
+        // Coba kunci orientasi ke landscape di mobile
+        if (screen.orientation && typeof screen.orientation.lock === 'function') {
+          await screen.orientation.lock('landscape');
+        }
+      } catch (err) {
+        console.error("Gagal masuk mode fullscreen:", err);
+      }
+    }
+  };
+
 
   if (loading || !video) {
     return <div>Memuat video...</div>; // Tampilkan loading state
@@ -57,16 +78,32 @@ export default function WatchPage() {
   return (
     <div className="flex flex-col gap-8 lg:flex-row">
       <div className="flex-grow lg:w-2/3">
-        <div className="aspect-video w-full overflow-hidden rounded-xl bg-muted shadow-lg">
+        <div ref={playerWrapperRef} className="aspect-video w-full overflow-hidden rounded-xl bg-muted shadow-lg relative">
           {hasWindow && (
             <ReactPlayer
+              ref={playerRef}
               url={video.videoUrl}
               width="100%"
               height="100%"
               controls
-              playing
+              playing={isPlaying}
+              onPlay={() => setIsPlaying(true)}
+              onPause={() => setIsPlaying(false)}
+              onEnded={() => setIsPlaying(false)}
               className="bg-black"
             />
+          )}
+           {!isPlaying && (
+            <div className="absolute inset-0 flex items-center justify-center bg-black/50">
+              <Button
+                variant="ghost"
+                className="h-24 w-24 text-white hover:bg-white/20 hover:text-white"
+                onClick={handlePlayFullscreen}
+              >
+                <PlayCircle className="h-20 w-20" />
+                <span className="sr-only">Putar Video Fullscreen</span>
+              </Button>
+            </div>
           )}
         </div>
         <div className="py-4">
