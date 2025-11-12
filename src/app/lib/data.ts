@@ -144,13 +144,19 @@ async function fetchVideoDetailsByIds(videoIds: string[]): Promise<Video[]> {
 /**
  * Mencari video berdasarkan query.
  */
-export async function searchVideosByQuery(query: string): Promise<Video[]> {
-    const searchData = await fetchFromYouTubeAPI('search', {
+export async function searchVideosByQuery(query: string, duration?: 'long' | 'any'): Promise<Video[]> {
+    const searchParams: Record<string, string> = {
         part: 'snippet',
         q: query,
         type: 'video',
         maxResults: '20',
-    });
+    };
+
+    if (duration && duration !== 'any') {
+      searchParams.videoDuration = duration;
+    }
+
+    const searchData = await fetchFromYouTubeAPI('search', searchParams);
 
     if (!searchData || !searchData.items) return [];
 
