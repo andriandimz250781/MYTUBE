@@ -83,7 +83,7 @@ async function fetchFromYouTubeAPI(endpoint: string, params: Record<string, stri
   let url = `${YOUTUBE_API_URL}/${endpoint}?${query}`;
 
   try {
-    let response = await fetch(url);
+    let response = await fetch(url, { next: { revalidate: 3600 } }); // Cache selama 1 jam
 
     // Jika kuota habis (403), coba kunci berikutnya
     if (response.status === 403 && currentApiKeyIndex < YOUTUBE_API_KEYS.length - 1) {
@@ -92,7 +92,7 @@ async function fetchFromYouTubeAPI(endpoint: string, params: Record<string, stri
       apiKey = YOUTUBE_API_KEYS[currentApiKeyIndex];
       const newQuery = new URLSearchParams({ ...params, key: apiKey }).toString();
       url = `${YOUTUBE_API_URL}/${endpoint}?${newQuery}`;
-      response = await fetch(url);
+      response = await fetch(url, { next: { revalidate: 3600 } });
     }
 
     if (!response.ok) {
@@ -114,6 +114,48 @@ async function fetchFromYouTubeAPI(endpoint: string, params: Record<string, stri
     console.error("Failed to fetch from YouTube API:", error);
     return null; // Mengembalikan null jika ada error
   }
+}
+
+async function fetchVideoDetailsByIds(videoIds: string[]): Promise<Video[]> {
+  if (videoIds.length === 0) return [];
+  const data = await fetchFromYouTubeAPI('videos', {
+      part: 'snippet,contentDetails,statistics',
+      id: videoIds.join(','),
+  });
+
+  if (!data || !data.items) return [];
+
+  return data.items.map((item: any): Video => ({
+      id: item.id,
+      title: item.snippet.title,
+      thumbnailUrl: item.snippet.thumbnails.medium.url,
+      duration: formatDuration(item.contentDetails.duration),
+      channelName: item.snippet.channelTitle,
+      channelId: item.snippet.channelId,
+      channelAvatarId: 'channel-avatar-1', // Placeholder
+      views: formatViews(item.statistics.viewCount),
+      uploadedAt: new Date(item.snippet.publishedAt).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' }),
+      description: item.snippet.description || LOREM_IPSUM,
+      tags: item.snippet.tags || [],
+      videoUrl: `https://www.youtube.com/watch?v=${item.id}`,
+  }));
+}
+
+/**
+ * Mencari video berdasarkan query.
+ */
+export async function searchVideosByQuery(query: string): Promise<Video[]> {
+    const searchData = await fetchFromYouTubeAPI('search', {
+        part: 'snippet',
+        q: query,
+        type: 'video',
+        maxResults: '20',
+    });
+
+    if (!searchData || !searchData.items) return [];
+
+    const videoIds = searchData.items.map((item: any) => item.id.videoId).filter(Boolean);
+    return fetchVideoDetailsByIds(videoIds);
 }
 
 
@@ -200,8 +242,9 @@ function formatDuration(isoDuration: string): string {
 
 function formatViews(viewCount: string): string {
     const num = parseInt(viewCount);
-    if (num >= 1000000) return `${(num / 1000000).toFixed(1)}M`;
-    if (num >= 1000) return `${(num / 1000).toFixed(0)}K`;
+    if (isNaN(num)) return "0";
+    if (num >= 1000000) return `${(num / 1000000).toFixed(1)}Jt`;
+    if (num >= 1000) return `${(num / 1000).toFixed(0)}Rb`;
     return String(num);
 }
 

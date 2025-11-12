@@ -43,7 +43,7 @@ export default function WatchPage({ params }: { params: { id: string } }) {
   }, [params.id]);
   
   if (loading || !video) {
-    return <div>Loading...</div>; // Tampilkan loading state
+    return <div>Memuat video...</div>; // Tampilkan loading state
   }
 
   const channel = getChannel(video.channelId);
@@ -89,7 +89,7 @@ export default function WatchPage({ params }: { params: { id: string } }) {
                   {video.channelName}
                 </Link>
                 <p className="text-sm text-muted-foreground">
-                  {channel?.subscribers} subscribers
+                  {channel?.subscribers} pelanggan
                 </p>
               </div>
             </div>
@@ -97,12 +97,12 @@ export default function WatchPage({ params }: { params: { id: string } }) {
               variant="default"
               className="rounded-full bg-primary px-5 text-primary-foreground hover:bg-primary/90"
             >
-              Subscribe
+              Berlangganan
             </Button>
           </div>
           <div className="mt-4 rounded-lg bg-secondary/50 p-4 text-sm transition-colors hover:bg-secondary/70">
             <p className="font-semibold">
-              {video.views} views &bull; {video.uploadedAt}
+              {video.views} kali ditonton &bull; {video.uploadedAt}
             </p>
             <p className="mt-2 whitespace-pre-wrap">{video.description}</p>
           </div>
@@ -120,7 +120,7 @@ export default function WatchPage({ params }: { params: { id: string } }) {
         </div>
       </div>
       <div className="lg:w-1/3 lg:max-w-md">
-        <h2 className="font-headline text-xl font-bold mb-4">Up next</h2>
+        <h2 className="font-headline text-xl font-bold mb-4">Berikutnya</h2>
         <div className="flex flex-col gap-4">
           {relatedVideos
             .map(relatedVideo => (

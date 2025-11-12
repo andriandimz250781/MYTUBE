@@ -66,20 +66,20 @@ export function VideoCard({ video }: VideoCardProps) {
               {video.channelName}
             </Link>
             <p className="text-xs text-muted-foreground">
-              {video.views} views &bull; {video.uploadedAt}
+              {video.views} kali ditonton &bull; {video.uploadedAt}
             </p>
           </div>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <button>
                 <MoreVertical className="h-4 w-4 text-muted-foreground" />
-                <span className="sr-only">More options</span>
+                <span className="sr-only">Opsi lainnya</span>
               </button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
-              <DropdownMenuItem>Add to queue</DropdownMenuItem>
-              <DropdownMenuItem>Save to Watch later</DropdownMenuItem>
-              <DropdownMenuItem>Report</DropdownMenuItem>
+              <DropdownMenuItem>Tambah ke antrean</DropdownMenuItem>
+              <DropdownMenuItem>Simpan ke Tonton Nanti</DropdownMenuItem>
+              <DropdownMenuItem>Laporkan</DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
         </div>
