@@ -16,7 +16,6 @@ export default function WatchPage({ params }: { params: { id: string } }) {
   const [video, setVideo] = useState<Video | null>(null);
   const [relatedVideos, setRelatedVideos] = useState<Video[]>([]);
   const [loading, setLoading] = useState(true);
-  const videoId = params.id;
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
@@ -24,6 +23,7 @@ export default function WatchPage({ params }: { params: { id: string } }) {
     }
     
     async function fetchData() {
+      const videoId = params.id;
       if (!videoId) return;
 
       setLoading(true);
@@ -42,7 +42,7 @@ export default function WatchPage({ params }: { params: { id: string } }) {
 
     fetchData();
 
-  }, [videoId]);
+  }, [params.id]);
   
   if (loading || !video) {
     return <div>Memuat video...</div>; // Tampilkan loading state
