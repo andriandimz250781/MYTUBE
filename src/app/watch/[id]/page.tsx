@@ -19,15 +19,14 @@ export default function WatchPage({ params }: { params: { id: string } }) {
     <div className="flex flex-col gap-8 lg:flex-row">
       <div className="flex-grow lg:w-2/3">
         <div className="aspect-video w-full overflow-hidden rounded-xl bg-muted shadow-lg">
-          <video
-            key={video.id} // Add key to force re-render on navigation
-            src={video.videoUrl}
-            controls
-            autoPlay
+          <iframe
+            key={video.id}
             className="h-full w-full object-contain bg-black"
-          >
-            Your browser does not support the video tag.
-          </video>
+            src={video.videoUrl}
+            title={video.title}
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+            allowFullScreen
+          ></iframe>
         </div>
         <div className="py-4">
           <h1 className="font-headline text-2xl font-bold mb-2">{video.title}</h1>

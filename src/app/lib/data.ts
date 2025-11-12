@@ -40,8 +40,7 @@ export const videos: Video[] = [
     uploadedAt: '2 weeks ago',
     description: LOREM_IPSUM,
     tags: ['tech', 'gadgets', '2024'],
-    videoUrl:
-      'https://storage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4',
+    videoUrl: 'https://www.youtube.com/embed/aqz-KE-bpKQ',
   },
   {
     id: '2',
@@ -55,8 +54,7 @@ export const videos: Video[] = [
     uploadedAt: '1 month ago',
     description: LOREM_IPSUM,
     tags: ['travel', 'switzerland', 'alps'],
-    videoUrl:
-      'https://storage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4',
+    videoUrl: 'https://www.youtube.com/embed/gWw23eyfk9U',
   },
   {
     id: '3',
@@ -70,8 +68,7 @@ export const videos: Video[] = [
     uploadedAt: '3 days ago',
     description: LOREM_IPSUM,
     tags: ['cooking', 'baking', 'sourdough'],
-    videoUrl:
-      'https://storage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4',
+    videoUrl: 'https://www.youtube.com/embed/d-h21m3Mdfk',
   },
   {
     id: '4',
@@ -85,8 +82,7 @@ export const videos: Video[] = [
     uploadedAt: '1 year ago',
     description: LOREM_IPSUM,
     tags: ['gaming', 'cyberpunk', 'playthrough'],
-    videoUrl:
-      'https://storage.googleapis.com/gtv-videos-bucket/sample/ForBiggerEscapes.mp4',
+    videoUrl: 'https://www.youtube.com/embed/Lq594Xmpj84',
   },
   {
     id: '5',
@@ -100,8 +96,7 @@ export const videos: Video[] = [
     uploadedAt: '5 months ago',
     description: LOREM_IPSUM,
     tags: ['diy', 'raspberry pi', 'smart home'],
-    videoUrl:
-      'https://storage.googleapis.com/gtv-videos-bucket/sample/ForBiggerFun.mp4',
+    videoUrl: 'https://www.youtube.com/embed/DIZgo20qA7I',
   },
   {
     id: '6',
@@ -115,8 +110,7 @@ export const videos: Video[] = [
     uploadedAt: '6 months ago',
     description: LOREM_IPSUM,
     tags: ['music', 'cover', 'acoustic'],
-    videoUrl:
-      'https://storage.googleapis.com/gtv-videos-bucket/sample/ForBiggerJoyrides.mp4',
+    videoUrl: 'https://www.youtube.com/embed/Ho32Fk6a37Y',
   },
   {
     id: '7',
@@ -130,8 +124,7 @@ export const videos: Video[] = [
     uploadedAt: '10 days ago',
     description: LOREM_IPSUM,
     tags: ['fitness', 'workout', 'health'],
-    videoUrl:
-      'https://storage.googleapis.com/gtv-videos-bucket/sample/ForBiggerMeltdowns.mp4',
+    videoUrl: 'https://www.youtube.com/embed/gC_L9qAHVJ8',
   },
   {
     id: '8',
@@ -145,7 +138,7 @@ export const videos: Video[] = [
     uploadedAt: '3 months ago',
     description: LOREM_IPSUM,
     tags: ['history', 'rome', 'documentary'],
-    videoUrl: 'https://storage.googleapis.com/gtv-videos-bucket/sample/Sintel.mp4',
+    videoUrl: 'https://www.youtube.com/embed/8q7ueigG9iA',
   },
   {
     id: '9',
@@ -159,8 +152,7 @@ export const videos: Video[] = [
     uploadedAt: '4 weeks ago',
     description: LOREM_IPSUM,
     tags: ['comedy', 'sketch', 'office humor'],
-    videoUrl:
-      'https://storage.googleapis.com/gtv-videos-bucket/sample/SubaruOutbackOnStreetAndDirt.mp4',
+    videoUrl: 'https://www.youtube.com/embed/37y4mAl2HWA',
   },
   {
     id: '10',
@@ -174,8 +166,7 @@ export const videos: Video[] = [
     uploadedAt: '2 months ago',
     description: LOREM_IPSUM,
     tags: ['nature', 'documentary', 'amazon'],
-    videoUrl:
-      'https://storage.googleapis.com/gtv-videos-bucket/sample/TearsOfSteel.mp4',
+    videoUrl: 'https://www.youtube.com/embed/JEsE6rhVu4k',
   },
   {
     id: '11',
@@ -189,8 +180,7 @@ export const videos: Video[] = [
     uploadedAt: '1 year ago',
     description: LOREM_IPSUM,
     tags: ['movies', 'film analysis', 'inception'],
-    videoUrl:
-      'https://storage.googleapis.com/gtv-videos-bucket/sample/WeAreGoingOnAnAdventure.mp4',
+    videoUrl: 'https://www.youtube.com/embed/E-p2WWU_1FY',
   },
   {
     id: '12',
@@ -204,8 +194,7 @@ export const videos: Video[] = [
     uploadedAt: '2 years ago',
     description: LOREM_IPSUM,
     tags: ['animation', 'short film', '3d'],
-    videoUrl:
-      'https://storage.googleapis.com/gtv-videos-bucket/sample/WhatCarCanYouGetForAGrand.mp4',
+    videoUrl: 'https://www.youtube.com/embed/yW-3_2f0g-s',
   },
 ];
 
