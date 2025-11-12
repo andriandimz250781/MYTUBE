@@ -22,20 +22,20 @@ export default function WatchPage() {
   const [isPlaying, setIsPlaying] = useState(false);
   const playerWrapperRef = useRef<HTMLDivElement>(null);
   const playerRef = useRef<ReactPlayer>(null);
+  const videoId = params.id as string;
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
       setHasWindow(true);
     }
 
-    async function fetchData(videoId: string) {
-      if (!videoId) return;
+    async function fetchData(id: string) {
+      if (!id) return;
 
       setLoading(true);
       try {
-        const videoData = await getVideo(videoId);
+        const videoData = await getVideo(id);
         if (!videoData) {
-          // notFound() is not available in client components
           console.error('Video not found');
           setLoading(false);
           return;
@@ -43,7 +43,7 @@ export default function WatchPage() {
         setVideo(videoData);
 
         const { videos: trending } = await getTrendingVideos();
-        setRelatedVideos(trending.filter(v => v.id !== videoId));
+        setRelatedVideos(trending.filter(v => v.id !== id));
       } catch (error) {
         console.error("Failed to fetch video data:", error);
       } finally {
@@ -51,10 +51,10 @@ export default function WatchPage() {
       }
     }
 
-    if (params.id) {
-       fetchData(params.id as string);
+    if (videoId) {
+       fetchData(videoId);
     }
-  }, [params.id]);
+  }, [videoId]);
 
   const handlePlayFullscreen = async () => {
     setIsPlaying(true);
