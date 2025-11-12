@@ -85,43 +85,43 @@ export default function SearchPage({
           <TabsContent value="indonesia" className="mt-6">
             <Suspense fallback={<div>Memuat film Indonesia...</div>}>
               {/* @ts-expect-error Server Component */}
-              <SearchResults query="film indonesia" />
+              <SearchResults query="film indonesia" duration="long"/>
             </Suspense>
           </TabsContent>
           <TabsContent value="malaysia" className="mt-6">
             <Suspense fallback={<div>Memuat film Malaysia...</div>}>
               {/* @ts-expect-error Server Component */}
-              <SearchResults query="film malaysia" />
+              <SearchResults query="film malaysia" duration="long"/>
             </Suspense>
           </TabsContent>
           <TabsContent value="thailand" className="mt-6">
             <Suspense fallback={<div>Memuat film Thailand...</div>}>
               {/* @ts-expect-error Server Component */}
-              <SearchResults query="film thailand" />
+              <SearchResults query="film thailand" duration="long"/>
             </Suspense>
           </TabsContent>
           <TabsContent value="vietnam" className="mt-6">
             <Suspense fallback={<div>Memuat film Vietnam...</div>}>
               {/* @ts-expect-error Server Component */}
-              <SearchResults query="film vietnam" />
+              <SearchResults query="film vietnam" duration="long"/>
             </Suspense>
           </TabsContent>
           <TabsContent value="barat" className="mt-6">
             <Suspense fallback={<div>Memuat film Barat...</div>}>
               {/* @ts-expect-error Server Component */}
-              <SearchResults query="film barat" />
+              <SearchResults query="film barat" duration="long"/>
             </Suspense>
           </TabsContent>
           <TabsContent value="india" className="mt-6">
             <Suspense fallback={<div>Memuat film India...</div>}>
               {/* @ts-expect-error Server Component */}
-              <SearchResults query="film india" />
+              <SearchResults query="film india" duration="long"/>
             </Suspense>
           </TabsContent>
           <TabsContent value="kartun" className="mt-6">
             <Suspense fallback={<div>Memuat film Kartun...</div>}>
               {/* @ts-expect-error Server Component */}
-              <SearchResults query="film kartun" />
+              <SearchResults query="film kartun" duration="long" />
             </Suspense>
           </TabsContent>
         </Tabs>
@@ -142,13 +142,13 @@ export default function SearchPage({
           <TabsContent value="indonesia" className="mt-6">
             <Suspense fallback={<div>Memuat film horor Indonesia...</div>}>
               {/* @ts-expect-error Server Component */}
-              <SearchResults query="film horor indonesia" />
+              <SearchResults query="film horor indonesia" duration="long"/>
             </Suspense>
           </TabsContent>
           <TabsContent value="internasional" className="mt-6">
             <Suspense fallback={<div>Memuat film horor internasional...</div>}>
               {/* @ts-expect-error Server Component */}
-              <SearchResults query="film horor internasional" />
+              <SearchResults query="film horor internasional" duration="long"/>
             </Suspense>
           </TabsContent>
         </Tabs>
@@ -183,8 +183,8 @@ export default function SearchPage({
     );
   }
   
-  // Penanganan khusus untuk HOBBY dan KOMEDI (video panjang)
-  if (upperCaseQuery === 'HOBBY' || upperCaseQuery === 'KOMEDI') {
+  // Penanganan khusus untuk HOBBY, KOMEDI, KARTUN (video panjang)
+  if (upperCaseQuery === 'HOBBY' || upperCaseQuery === 'KOMEDI' || upperCaseQuery === 'KARTUN') {
      return (
       <div>
         <h1 className="font-headline text-3xl font-bold mb-6">

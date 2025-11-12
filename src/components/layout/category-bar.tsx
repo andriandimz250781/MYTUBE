@@ -10,6 +10,7 @@ const categories = [
   'KARAOKE',
   'BERITA',
   'FILM',
+  'KARTUN',
   'HOROR',
   'LIVE',
   'KULINER',
