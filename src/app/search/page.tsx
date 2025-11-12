@@ -123,10 +123,35 @@ export default function SearchPage({
       </div>
     );
   }
+  
+  // Tampilan khusus untuk kategori HOROR
+  if (upperCaseQuery === 'HOROR') {
+    return (
+      <div>
+        <h1 className="font-headline text-3xl font-bold mb-6">Koleksi Horor</h1>
+        <Tabs defaultValue="indonesia" className="w-full">
+          <TabsList>
+            <TabsTrigger value="indonesia">INDONESIA</TabsTrigger>
+            <TabsTrigger value="internasional">INTERNASIONAL</TabsTrigger>
+          </TabsList>
+          <TabsContent value="indonesia" className="mt-6">
+            <Suspense fallback={<div>Memuat film horor Indonesia...</div>}>
+              <SearchResults query="film horor indonesia" />
+            </Suspense>
+          </TabsContent>
+          <TabsContent value="internasional" className="mt-6">
+            <Suspense fallback={<div>Memuat film horor internasional...</div>}>
+              <SearchResults query="film horor internasional" />
+            </Suspense>
+          </TabsContent>
+        </Tabs>
+      </div>
+    );
+  }
 
-  // Untuk kategori lain seperti HOROR, MUSIK, KARAOKE, dll.
+  // Untuk kategori lain seperti MUSIK, KARAOKE, dll.
   // Kata kunci pencarian diambil langsung dari nama kategori.
-  const searchQuery = query;
+  const searchQuery = query.toUpperCase() === 'KARAOKE' ? `${query} karaoke` : query;
 
   return (
     <div>
