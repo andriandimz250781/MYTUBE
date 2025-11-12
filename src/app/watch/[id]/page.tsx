@@ -24,6 +24,11 @@ export default function WatchPage() {
   const playerRef = useRef<ReactPlayer>(null);
   const videoId = params.id as string;
 
+  // Cek apakah video termasuk kategori musik/karaoke
+  const isMusicOrKaraoke = video?.tags.some(tag =>
+    ['music', 'karaoke', 'musik'].includes(tag.toLowerCase())
+  );
+
   useEffect(() => {
     if (typeof window !== 'undefined') {
       setHasWindow(true);
@@ -33,6 +38,7 @@ export default function WatchPage() {
       if (!id) return;
 
       setLoading(true);
+      setIsPlaying(false); // Reset isPlaying state
       try {
         const videoData = await getVideo(id);
         if (!videoData) {
@@ -42,6 +48,7 @@ export default function WatchPage() {
         }
         setVideo(videoData);
 
+        // Ambil video terkait (misalnya, dari trending, kecuali video yang sedang diputar)
         const { videos: trending } = await getTrendingVideos();
         setRelatedVideos(trending.filter(v => v.id !== id));
       } catch (error) {
@@ -52,9 +59,10 @@ export default function WatchPage() {
     }
 
     if (videoId) {
-       fetchData(videoId);
+      fetchData(videoId);
     }
   }, [videoId]);
+
 
   const handlePlayFullscreen = async () => {
     setIsPlaying(true);
@@ -63,17 +71,14 @@ export default function WatchPage() {
       try {
         await wrapper.requestFullscreen();
         if (screen.orientation && typeof screen.orientation.lock === 'function') {
-          // This might fail in sandboxed environments, so we catch the error.
           await screen.orientation.lock('landscape').catch(err => {
-            // Ignore orientation lock errors, as they are expected in some environments.
             if (err.name !== 'SecurityError' && err.name !== 'NotSupportedError') {
-               console.error("Gagal mengunci orientasi:", err);
+              console.error("Gagal mengunci orientasi:", err);
             }
           });
         }
       } catch (err) {
-        // This can fail if the user denies permission, so we just log it.
-        // It's not a critical error that should stop playback.
+        // Biarkan saja jika gagal, kemungkinan karena batasan browser/lingkungan
       }
     }
   };
@@ -84,27 +89,44 @@ export default function WatchPage() {
       router.push(`/watch/${nextVideo.id}?autoplay=true`);
     }
   };
+  
+  // Efek untuk memutar otomatis jika ada parameter `autoplay=true`
+  useEffect(() => {
+    if (searchParams.get('autoplay') === 'true' && !loading && video) {
+      handlePlayFullscreen();
+    }
+  }, [searchParams, loading, video]);
 
+
+  // Efek untuk menangani perubahan visibilitas halaman (untuk background play)
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      // Coba untuk melanjutkan pemutaran jika video adalah musik/karaoke dan halaman disembunyikan
+      if (document.hidden && isMusicOrKaraoke && isPlaying) {
+        // Memicu 'play' lagi mungkin bisa 'membangunkan' audio di beberapa browser
+        playerRef.current?.getInternalPlayer()?.playVideo?.();
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
+  }, [isPlaying, isMusicOrKaraoke]);
 
   useEffect(() => {
     const onFullscreenChange = () => {
       if (!document.fullscreenElement) {
         setIsPlaying(false);
         if (screen.orientation && typeof screen.orientation.unlock === 'function') {
-            screen.orientation.unlock();
+          screen.orientation.unlock();
         }
       }
     };
 
     document.addEventListener('fullscreenchange', onFullscreenChange);
-
-    // If autoplay=true is in the URL, try to play fullscreen automatically.
-    if (searchParams.get('autoplay') === 'true' && !loading && video) {
-      handlePlayFullscreen();
-    }
-    
     return () => document.removeEventListener('fullscreenchange', onFullscreenChange);
-  }, [searchParams, loading, video]);
+  }, []);
 
 
   if (loading || !video) {
