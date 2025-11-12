@@ -35,6 +35,7 @@ export default function SearchPage({
             <TabsTrigger value="nasional">Nasional</TabsTrigger>
             <TabsTrigger value="internasional">Internasional</TabsTrigger>
             <TabsTrigger value="kriminal">Kriminal</TabsTrigger>
+            <TabsTrigger value="olahraga">Olahraga</TabsTrigger>
             <TabsTrigger value="live">Live TV</TabsTrigger>
           </TabsList>
           <TabsContent value="nasional" className="mt-6">
@@ -50,6 +51,11 @@ export default function SearchPage({
           <TabsContent value="kriminal" className="mt-6">
             <Suspense fallback={<div>Memuat berita kriminal...</div>}>
               <SearchResults query="berita kriminal terkini" />
+            </Suspense>
+          </TabsContent>
+          <TabsContent value="olahraga" className="mt-6">
+            <Suspense fallback={<div>Memuat berita olahraga...</div>}>
+              <SearchResults query="berita olahraga terkini" />
             </Suspense>
           </TabsContent>
           <TabsContent value="live" className="mt-6">
