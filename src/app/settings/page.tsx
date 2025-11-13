@@ -165,7 +165,7 @@ function AdminSettingsContent() {
             </Button>
             <TooltipProvider>
               <Tooltip>
-                <TooltipTrigger>
+                <TooltipTrigger asChild>
                   <Button disabled>
                     <RefreshCw className="mr-2" />
                     Reset Kuota
