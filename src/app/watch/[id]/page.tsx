@@ -64,7 +64,7 @@ export default function WatchPage() {
       fetchData(videoId);
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [videoId]);
+  }, [videoId, shouldAutoplay]);
 
 
   const handlePlayFullscreen = async () => {
@@ -80,6 +80,9 @@ export default function WatchPage() {
           (wrapper as any).msRequestFullscreen();
         }
         
+        // Force play after entering fullscreen
+        playerRef.current?.getInternalPlayer()?.playVideo?.();
+
         if (screen.orientation && typeof screen.orientation.lock === 'function') {
           await screen.orientation.lock('landscape').catch(err => {
             if (err.name !== 'SecurityError' && err.name !== 'NotSupportedError') {
@@ -147,7 +150,7 @@ export default function WatchPage() {
 
 
   if (loading || !video) {
-    return <div>Memuat video...</div>;
+    return <div className="flex h-full w-full items-center justify-center"><p>Memuat video...</p></div>;
   }
 
   const channel = getChannel(video.channelId);
@@ -252,3 +255,5 @@ export default function WatchPage() {
     </div>
   );
 }
+
+    
