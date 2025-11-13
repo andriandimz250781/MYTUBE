@@ -50,15 +50,17 @@ export default function WatchPage() {
 
         // Save watch history
         try {
-          let history: { channelName: string; tags: string[] }[] = JSON.parse(
-            localStorage.getItem('watchHistory') || '[]'
-          );
-          const newHistoryItem = { channelName: videoData.channelName, tags: videoData.tags.slice(0, 5) };
-          // Prevent duplicate consecutive history entries
-          if (JSON.stringify(history[0]) !== JSON.stringify(newHistoryItem)) {
-            history.unshift(newHistoryItem);
-            if (history.length > 20) history = history.slice(0, 20);
-            localStorage.setItem('watchHistory', JSON.stringify(history));
+          if (videoData.tags && videoData.tags.length > 0) {
+            let history: { channelName: string; tags: string[] }[] = JSON.parse(
+              localStorage.getItem('watchHistory') || '[]'
+            );
+            const newHistoryItem = { channelName: videoData.channelName, tags: videoData.tags.slice(0, 5) };
+            // Prevent duplicate consecutive history entries
+            if (JSON.stringify(history[0]) !== JSON.stringify(newHistoryItem)) {
+              history.unshift(newHistoryItem);
+              if (history.length > 20) history = history.slice(0, 20);
+              localStorage.setItem('watchHistory', JSON.stringify(history));
+            }
           }
         } catch (e) {
           console.error('Failed to save watch history:', e);

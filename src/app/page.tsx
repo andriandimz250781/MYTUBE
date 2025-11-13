@@ -19,8 +19,9 @@ function Recommendations() {
         if (history.length > 0) {
           // Cari genre/tag yang paling sering ditonton
           const tagFrequency: { [key: string]: number } = history
-            .flatMap(item => item.tags) // Ambil semua tag dari history
+            .flatMap(item => item.tags || []) // Safely handle items without tags
             .reduce((acc, tag) => {
+              if (!tag) return acc; // Skip if tag is null or undefined
               // Abaikan tag umum atau tidak relevan
               const lowerTag = tag.toLowerCase();
               if (lowerTag.includes('official') || lowerTag.includes('video') || lowerTag.length < 3) {
