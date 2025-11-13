@@ -67,13 +67,20 @@ export default function WatchPage() {
         }
         
         // --- LOGIKA REKOMENDASI BARU ---
-        const { videos: smartRelated } = await searchVideosByQuery(videoData.channelName);
-        let related = smartRelated.filter(v => v.id !== id);
+        let smartRelatedResponse = await searchVideosByQuery(videoData.channelName);
+        let related = smartRelatedResponse.videos.filter(v => v.id !== id);
 
-        // Jika hasil pencarian kurang dari 5, tambahkan dari video trending
+        // Jika hasil pencarian cerdas kurang dari 5, coba cari berdasarkan judul
         if (related.length < 5) {
-          const { videos: trending } = await getTrendingVideos();
-          const trendingFiller = trending.filter(
+            const titleSearchResponse = await searchVideosByQuery(videoData.title.substring(0, 50));
+            const titleRelated = titleSearchResponse.videos.filter(v => v.id !== id && !related.some(r => r.id === v.id));
+            related = [...related, ...titleRelated];
+        }
+
+        // Jika masih kurang, baru tambahkan dari video trending
+        if (related.length < 5) {
+          const trendingResponse = await getTrendingVideos();
+          const trendingFiller = trendingResponse.videos.filter(
             v => v.id !== id && !related.some(r => r.id === v.id)
           );
           related = [...related, ...trendingFiller];
@@ -95,7 +102,7 @@ export default function WatchPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [videoId]);
 
- const handlePlayFullscreen = async () => {
+  const handlePlayFullscreen = async () => {
     const wrapper = playerWrapperRef.current;
     if (!wrapper || !playerRef.current) return;
 
@@ -103,9 +110,8 @@ export default function WatchPage() {
     setShowPlayButton(false);
 
     try {
-      // Cek apakah sudah fullscreen
       if (!document.fullscreenElement) {
-         if (wrapper.requestFullscreen) {
+        if (wrapper.requestFullscreen) {
           await wrapper.requestFullscreen();
         } else if ((wrapper as any).webkitRequestFullscreen) {
           await (wrapper as any).webkitRequestFullscreen();
@@ -113,7 +119,6 @@ export default function WatchPage() {
           await (wrapper as any).msRequestFullscreen();
         }
       }
-      // Langsung putar setelah memastikan fullscreen (atau jika sudah fullscreen)
       playerRef.current.getInternalPlayer()?.playVideo?.();
     } catch (err) {
       console.warn("Fullscreen request failed, playing inline:", err);
@@ -121,25 +126,22 @@ export default function WatchPage() {
     }
   };
 
-
   const handleAutoplayNext = () => {
     if (relatedVideos.length > 0) {
       const nextVideo = relatedVideos[0];
       router.push(`/watch/${nextVideo.id}?autoplay=true`);
     }
   };
-  
+
   useEffect(() => {
-    // Autoplay untuk video selanjutnya
     if (shouldAutoplay && !loading && videoId) {
       const timer = setTimeout(() => {
         handlePlayFullscreen();
-      }, 500); 
+      }, 500);
       return () => clearTimeout(timer);
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [shouldAutoplay, loading, videoId]);
-
 
   useEffect(() => {
     const handleVisibilityChange = () => {
@@ -156,45 +158,39 @@ export default function WatchPage() {
 
   useEffect(() => {
     const lockOrientation = async () => {
-       if (screen.orientation && typeof screen.orientation.lock === 'function') {
+      if (screen.orientation && typeof screen.orientation.lock === 'function') {
         try {
-            await screen.orientation.lock('landscape');
+          await screen.orientation.lock('landscape');
         } catch (err) {
-            // Abaikan error jika browser tidak mendukung atau menolak
+          // Abaikan error
         }
       }
-    }
+    };
 
     const unlockOrientation = () => {
-        if (screen.orientation && typeof screen.orientation.unlock === 'function') {
-            screen.orientation.unlock();
-        }
-    }
+      if (screen.orientation && typeof screen.orientation.unlock === 'function') {
+        screen.orientation.unlock();
+      }
+    };
 
     const onFullscreenChange = () => {
       if (document.fullscreenElement) {
         lockOrientation();
       } else {
-        // Saat keluar dari fullscreen
-        setIsPlaying(false); // Jeda video
-        setShowPlayButton(true); // Tampilkan tombol play besar lagi
+        setIsPlaying(false);
+        setShowPlayButton(true);
         unlockOrientation();
       }
     };
 
     document.addEventListener('fullscreenchange', onFullscreenChange);
     document.addEventListener('webkitfullscreenchange', onFullscreenChange);
-    document.addEventListener('mozfullscreenchange', onFullscreenChange);
-    document.addEventListener('MSFullscreenChange', onFullscreenChange);
     
     return () => {
-        document.removeEventListener('fullscreenchange', onFullscreenChange);
-        document.removeEventListener('webkitfullscreenchange', onFullscreenChange);
-        document.removeEventListener('mozfullscreenchange', onFullscreenChange);
-        document.removeEventListener('MSFullscreenChange', onFullscreenChange);
-    }
+      document.removeEventListener('fullscreenchange', onFullscreenChange);
+      document.removeEventListener('webkitfullscreenchange', onFullscreenChange);
+    };
   }, []);
-
 
   if (loading || !video) {
     return <div className="flex h-full w-full items-center justify-center"><p>Memuat video...</p></div>;
@@ -206,7 +202,7 @@ export default function WatchPage() {
   return (
     <div className="flex flex-col gap-4 lg:flex-row lg:gap-8">
       <div className="flex-grow lg:w-2/3">
-         <div ref={playerWrapperRef} className="aspect-video w-full overflow-hidden rounded-xl bg-black shadow-lg relative">
+        <div ref={playerWrapperRef} className="aspect-video w-full overflow-hidden rounded-xl bg-black shadow-lg relative">
           {hasWindow && (
             <ReactPlayer
               ref={playerRef}
@@ -221,23 +217,23 @@ export default function WatchPage() {
               }}
               onPause={() => setIsPlaying(false)}
               onEnded={handleAutoplayNext}
-              muted={true} // Muted untuk meningkatkan kemungkinan autoplay
+              muted={true}
               className="bg-black"
             />
           )}
           {showPlayButton && (
-             <div
+            <div
               className="absolute inset-0 flex cursor-pointer items-center justify-center bg-black/50"
               onClick={handlePlayFullscreen}
               style={{
                 backgroundImage: `url(${video.thumbnailUrl})`,
                 backgroundSize: 'cover',
-                backgroundPosition: 'center'
+                backgroundPosition: 'center',
               }}
-             >
-                <div className="absolute inset-0 bg-black/30 backdrop-blur-sm"></div>
-                <PlayCircle className="relative z-10 h-20 w-20 text-white/80 drop-shadow-lg transition-transform hover:scale-110" />
-             </div>
+            >
+              <div className="absolute inset-0 bg-black/30 backdrop-blur-sm"></div>
+              <PlayCircle className="relative z-10 h-20 w-20 text-white/80 drop-shadow-lg transition-transform hover:scale-110" />
+            </div>
           )}
         </div>
         <div className="py-4">
