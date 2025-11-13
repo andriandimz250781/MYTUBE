@@ -6,12 +6,15 @@ import {
   Card,
   CardContent,
   CardDescription,
+  CardFooter,
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import { YOUTUBE_API_KEYS } from '@/config/apiKeys';
-import { KeyRound, Info, RefreshCw, ShieldAlert } from 'lucide-react';
+import { KeyRound, Info, RefreshCw, ShieldAlert, UserCog } from 'lucide-react';
 import {
   Tooltip,
   TooltipContent,
@@ -19,48 +22,117 @@ import {
   TooltipTrigger,
 } from '@/components/ui/tooltip';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { Suspense } from 'react';
+import { Suspense, useState, useEffect } from 'react';
 
-// Fungsi untuk menyamarkan sebagian kunci API demi keamanan
 const maskApiKey = (key: string) => {
-  if (key.length <= 8) {
-    return '****';
-  }
+  if (key.length <= 8) return '****';
   return `${key.substring(0, 4)}...${key.substring(key.length - 4)}`;
 };
 
-function SettingsContent() {
-  const searchParams = useSearchParams();
-  // Simulasi cek admin. Di aplikasi nyata, ini harus menggunakan sesi login.
-  const isAdmin = searchParams.get('admin') === 'true';
+function AdminRegistration({ onRegister }: { onRegister: () => void }) {
+  const [phoneNumber, setPhoneNumber] = useState('');
 
-  if (!isAdmin) {
-    return (
-       <div className="mx-auto max-w-2xl space-y-8">
-        <h1 className="font-headline text-3xl font-bold">Settings</h1>
-         <Alert variant="destructive">
-            <ShieldAlert className="h-4 w-4" />
-            <AlertTitle>Akses Ditolak</AlertTitle>
-            <AlertDescription>
-                Anda harus menjadi admin untuk melihat halaman ini. Fitur ini memerlukan sistem otentikasi pengguna yang sesungguhnya.
-            </AlertDescription>
-        </Alert>
-         <Button asChild variant="outline">
-            <Link href="/">Kembali ke Beranda</Link>
-        </Button>
-       </div>
-    );
-  }
+  const handleRegister = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (phoneNumber.trim()) {
+      localStorage.setItem('adminPhoneNumber', phoneNumber.trim());
+      alert('Nomor HP admin berhasil didaftarkan!');
+      onRegister();
+    }
+  };
 
   return (
-    <div className="mx-auto max-w-2xl space-y-8">
-      <h1 className="font-headline text-3xl font-bold">Admin Settings</h1>
-      
+    <Card>
+      <CardHeader>
+        <CardTitle>Daftar sebagai Admin</CardTitle>
+        <CardDescription>
+          Masukkan nomor HP Anda untuk menjadi admin. Fitur ini hanya dapat
+          digunakan satu kali.
+        </CardDescription>
+      </CardHeader>
+      <form onSubmit={handleRegister}>
+        <CardContent className="space-y-4">
+          <div className="space-y-2">
+            <Label htmlFor="phone">Nomor HP</Label>
+            <Input
+              id="phone"
+              type="tel"
+              placeholder="081234567890"
+              value={phoneNumber}
+              onChange={e => setPhoneNumber(e.target.value)}
+              required
+            />
+          </div>
+        </CardContent>
+        <CardFooter>
+          <Button type="submit" className="w-full">
+            <UserCog className="mr-2" />
+            Daftar Admin
+          </Button>
+        </CardFooter>
+      </form>
+    </Card>
+  );
+}
+
+function AdminLogin({ onLogin }: { onLogin: (success: boolean) => void }) {
+  const [phoneNumber, setPhoneNumber] = useState('');
+
+  const handleLogin = (e: React.FormEvent) => {
+    e.preventDefault();
+    const storedPhone = localStorage.getItem('adminPhoneNumber');
+    if (phoneNumber.trim() === storedPhone) {
+      sessionStorage.setItem('isAdminAuthenticated', 'true');
+      onLogin(true);
+    } else {
+      alert('Nomor HP salah!');
+      onLogin(false);
+    }
+  };
+
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle>Login Admin</CardTitle>
+        <CardDescription>
+          Masukkan nomor HP admin untuk mengakses halaman pengaturan.
+        </CardDescription>
+      </CardHeader>
+      <form onSubmit={handleLogin}>
+        <CardContent className="space-y-4">
+          <div className="space-y-2">
+            <Label htmlFor="phone">Nomor HP</Label>
+            <Input
+              id="phone"
+              type="tel"
+              placeholder="Masukkan nomor HP terdaftar"
+              value={phoneNumber}
+              onChange={e => setPhoneNumber(e.target.value)}
+              required
+            />
+          </div>
+        </CardContent>
+        <CardFooter>
+          <Button type="submit" className="w-full">
+            Login
+          </Button>
+        </CardFooter>
+      </form>
+    </Card>
+  );
+}
+
+function AdminSettingsContent() {
+  return (
+    <>
       <Alert>
         <Info className="h-4 w-4" />
         <AlertTitle>Informasi Kuota</AlertTitle>
         <AlertDescription>
-          Halaman ini hanya menampilkan kunci API yang terkonfigurasi. API YouTube tidak menyediakan cara untuk memantau sisa kuota secara real-time dari aplikasi. Pemantauan hanya dapat dilakukan melalui Google Cloud Console.
+          Halaman ini hanya menampilkan kunci API yang terkonfigurasi. API
+          YouTube tidak menyediakan cara untuk memantau sisa kuota secara
+          real-time dari aplikasi. Pemantauan hanya dapat dilakukan melalui
+          Google Cloud Console.
         </AlertDescription>
       </Alert>
 
@@ -68,7 +140,9 @@ function SettingsContent() {
         <CardHeader>
           <CardTitle>Konfigurasi Kunci API YouTube</CardTitle>
           <CardDescription>
-            Berikut adalah daftar kunci API yang digunakan aplikasi untuk mengambil data dari YouTube. Aplikasi akan secara otomatis beralih ke kunci berikutnya jika kuota harian habis.
+            Berikut adalah daftar kunci API yang digunakan aplikasi untuk
+            mengambil data dari YouTube. Aplikasi akan secara otomatis beralih
+            ke kunci berikutnya jika kuota harian habis.
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
@@ -86,13 +160,12 @@ function SettingsContent() {
             ))}
           </div>
           <div className="flex items-center justify-between">
-             <Button asChild variant="outline">
-               <Link href="/">Kembali</Link>
+            <Button asChild variant="outline">
+              <Link href="/">Kembali</Link>
             </Button>
             <TooltipProvider>
               <Tooltip>
                 <TooltipTrigger>
-                  {/* Tombol sengaja dinonaktifkan */}
                   <Button disabled>
                     <RefreshCw className="mr-2" />
                     Reset Kuota
@@ -106,15 +179,82 @@ function SettingsContent() {
           </div>
         </CardContent>
       </Card>
+    </>
+  );
+}
+
+function SettingsContent() {
+  const searchParams = useSearchParams();
+  const isAdminRoute = searchParams.get('admin') === 'true';
+
+  const [hasCheckedStorage, setHasCheckedStorage] = useState(false);
+  const [isRegistered, setIsRegistered] = useState(false);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+
+  useEffect(() => {
+    const adminPhone = localStorage.getItem('adminPhoneNumber');
+    setIsRegistered(!!adminPhone);
+    
+    const sessionAuth = sessionStorage.getItem('isAdminAuthenticated');
+    setIsAuthenticated(sessionAuth === 'true');
+
+    setHasCheckedStorage(true);
+  }, []);
+
+  if (!hasCheckedStorage) {
+    return <div>Memeriksa status admin...</div>;
+  }
+  
+  if (!isAdminRoute) {
+    return (
+       <div className="mx-auto max-w-2xl space-y-8">
+        <h1 className="font-headline text-3xl font-bold">Settings</h1>
+         <Alert variant="destructive">
+            <ShieldAlert className="h-4 w-4" />
+            <AlertTitle>Halaman Tidak Ditemukan</AlertTitle>
+            <AlertDescription>
+                Halaman pengaturan umum tidak tersedia.
+            </AlertDescription>
+        </Alert>
+         <Button asChild variant="outline">
+            <Link href="/">Kembali ke Beranda</Link>
+        </Button>
+       </div>
+    );
+  }
+
+  // Admin route logic
+  if (isAuthenticated) {
+    return (
+      <div className="mx-auto max-w-2xl space-y-8">
+        <h1 className="font-headline text-3xl font-bold">Admin Settings</h1>
+        <AdminSettingsContent />
+      </div>
+    );
+  }
+
+  if (isRegistered) {
+    return (
+      <div className="mx-auto max-w-2xl space-y-8">
+        <AdminLogin onLogin={setIsAuthenticated} />
+      </div>
+    );
+  }
+
+  return (
+    <div className="mx-auto max-w-2xl space-y-8">
+      <AdminRegistration onRegister={() => {
+        setIsRegistered(true);
+        setIsAuthenticated(true); // Auto-login after registration
+      }} />
     </div>
   );
 }
 
-
 export default function SettingsPage() {
-    return (
-        <Suspense fallback={<div>Memuat pengaturan...</div>}>
-            <SettingsContent />
-        </Suspense>
-    )
+  return (
+    <Suspense fallback={<div>Memuat pengaturan...</div>}>
+      <SettingsContent />
+    </Suspense>
+  );
 }

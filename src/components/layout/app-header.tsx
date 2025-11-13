@@ -98,6 +98,9 @@ export function AppHeader() {
               <DropdownMenuItem asChild>
                 <Link href="/settings">Settings</Link>
               </DropdownMenuItem>
+              <DropdownMenuItem asChild>
+                <Link href="/settings?admin=true">Admin</Link>
+              </DropdownMenuItem>
               <DropdownMenuSeparator />
               <DropdownMenuItem>Logout</DropdownMenuItem>
             </DropdownMenuContent>
