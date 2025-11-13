@@ -52,7 +52,6 @@ export default function WatchPage() {
         }
         setVideo(videoData);
 
-        // Simpan ke riwayat tontonan
         try {
           let history: string[] = JSON.parse(localStorage.getItem('watchHistory') || '[]');
           history.unshift(videoData.channelName);
@@ -64,7 +63,6 @@ export default function WatchPage() {
           console.error('Failed to save watch history:', e);
         }
         
-        // --- LOGIKA REKOMENDASI BARU ---
         let related: Video[] = [];
         const existingIds = new Set<string>([id]);
 
@@ -78,13 +76,20 @@ export default function WatchPage() {
         const channelSearchResponse = await searchVideosByQuery(videoData.channelName);
         addVideos(channelSearchResponse.videos);
         
-        // 2. Pilihan terakhir: Tambahkan dari video trending jika pencarian channel kosong
-        if (related.length === 0) {
+        // 2. Jika kurang, cari berdasarkan genre/tag utama video
+        if (related.length < 10 && videoData.tags && videoData.tags.length > 0) {
+            const primaryTag = videoData.tags[0]; // Ambil tag pertama sebagai genre utama
+            const genreSearchResponse = await searchVideosByQuery(primaryTag);
+            addVideos(genreSearchResponse.videos);
+        }
+
+        // 3. Pilihan terakhir: Tambahkan dari video trending jika masih kurang
+        if (related.length < 10) {
           const trendingResponse = await getTrendingVideos();
           addVideos(trendingResponse.videos);
         }
 
-        setRelatedVideos(related.slice(0, 10)); // Batasi rekomendasi
+        setRelatedVideos(related.slice(0, 10));
 
       } catch (error) {
         console.error("Failed to fetch video data:", error);
