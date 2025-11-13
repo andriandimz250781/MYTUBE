@@ -1,4 +1,7 @@
+'use client';
+
 import Link from 'next/link';
+import { useSearchParams } from 'next/navigation';
 import {
   Card,
   CardContent,
@@ -8,7 +11,7 @@ import {
 } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { YOUTUBE_API_KEYS } from '@/config/apiKeys';
-import { KeyRound, Info, RefreshCw } from 'lucide-react';
+import { KeyRound, Info, RefreshCw, ShieldAlert } from 'lucide-react';
 import {
   Tooltip,
   TooltipContent,
@@ -16,6 +19,7 @@ import {
   TooltipTrigger,
 } from '@/components/ui/tooltip';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { Suspense } from 'react';
 
 // Fungsi untuk menyamarkan sebagian kunci API demi keamanan
 const maskApiKey = (key: string) => {
@@ -25,10 +29,32 @@ const maskApiKey = (key: string) => {
   return `${key.substring(0, 4)}...${key.substring(key.length - 4)}`;
 };
 
-export default function SettingsPage() {
+function SettingsContent() {
+  const searchParams = useSearchParams();
+  // Simulasi cek admin. Di aplikasi nyata, ini harus menggunakan sesi login.
+  const isAdmin = searchParams.get('admin') === 'true';
+
+  if (!isAdmin) {
+    return (
+       <div className="mx-auto max-w-2xl space-y-8">
+        <h1 className="font-headline text-3xl font-bold">Settings</h1>
+         <Alert variant="destructive">
+            <ShieldAlert className="h-4 w-4" />
+            <AlertTitle>Akses Ditolak</AlertTitle>
+            <AlertDescription>
+                Anda harus menjadi admin untuk melihat halaman ini. Fitur ini memerlukan sistem otentikasi pengguna yang sesungguhnya.
+            </AlertDescription>
+        </Alert>
+         <Button asChild variant="outline">
+            <Link href="/">Kembali ke Beranda</Link>
+        </Button>
+       </div>
+    );
+  }
+
   return (
     <div className="mx-auto max-w-2xl space-y-8">
-      <h1 className="font-headline text-3xl font-bold">Settings</h1>
+      <h1 className="font-headline text-3xl font-bold">Admin Settings</h1>
       
       <Alert>
         <Info className="h-4 w-4" />
@@ -82,4 +108,13 @@ export default function SettingsPage() {
       </Card>
     </div>
   );
+}
+
+
+export default function SettingsPage() {
+    return (
+        <Suspense fallback={<div>Memuat pengaturan...</div>}>
+            <SettingsContent />
+        </Suspense>
+    )
 }
