@@ -10,6 +10,7 @@ import { Button } from '@/components/ui/button';
 import { CompactVideoCard } from '@/components/video/compact-video-card';
 import ReactPlayer from 'react-player/youtube';
 import { useEffect, useState, useRef } from 'react';
+import { ArrowLeft } from 'lucide-react';
 
 export default function WatchPage() {
   const params = useParams();
@@ -40,7 +41,7 @@ export default function WatchPage() {
 
       setLoading(true);
       // Set isPlaying based on autoplay param
-      setIsPlaying(shouldAutoplay); 
+      setIsPlaying(shouldAutoplay);
       try {
         const videoData = await getVideo(id);
         if (!videoData) {
@@ -162,9 +163,16 @@ export default function WatchPage() {
           )}
         </div>
         <div className="py-4">
-          <h1 className="font-headline text-2xl font-bold mb-2">
-            {video.title}
-          </h1>
+          <div className="mb-2 flex items-center gap-3">
+             <Button variant="ghost" size="icon" asChild>
+                <Link href="/">
+                    <ArrowLeft className="h-5 w-5" />
+                </Link>
+             </Button>
+             <h1 className="font-headline text-2xl font-bold">
+                {video.title}
+             </h1>
+          </div>
           <div className="flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-center">
             <div className="flex items-center gap-3">
               <Link href={`/channel/${video.channelId}`}>
