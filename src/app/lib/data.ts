@@ -159,7 +159,9 @@ export async function searchVideosByQuery(query: string, duration?: 'long' | 'an
         part: 'snippet',
         q: query,
         type: 'video',
-        maxResults: '20',
+        maxResults: '20', // Tingkatkan hasil agar lebih banyak pilihan untuk rekomendasi
+        relevanceLanguage: 'id',
+        regionCode: 'ID'
     };
 
     if (duration && duration !== 'any') {
@@ -241,10 +243,11 @@ async function fetchVideoDetails(videoId: string | undefined): Promise<Video | n
   }
 
   const item = data.items[0];
+  const highResThumbnail = item.snippet.thumbnails.high?.url || item.snippet.thumbnails.medium.url;
   return {
     id: item.id,
     title: item.snippet.title,
-    thumbnailUrl: item.snippet.thumbnails.high.url,
+    thumbnailUrl: highResThumbnail,
     duration: formatDuration(item.contentDetails.duration),
     channelName: item.snippet.channelTitle,
     channelId: item.snippet.channelId,

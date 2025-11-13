@@ -1,7 +1,7 @@
 'use client';
 
 import { useParams, useRouter, useSearchParams } from 'next/navigation';
-import { getTrendingVideos, getVideo, getChannel, getImage } from '@/app/lib/data';
+import { getTrendingVideos, getVideo, getChannel, getImage, searchVideosByQuery } from '@/app/lib/data';
 import type { Video } from '@/app/lib/data';
 import Link from 'next/link';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -42,7 +42,7 @@ export default function WatchPage() {
 
       setLoading(true);
       setShowPlayButton(true);
-      setIsPlaying(false); // Reset playing state on new video
+      setIsPlaying(false);
       try {
         const videoData = await getVideo(id);
         if (!videoData) {
@@ -51,9 +51,24 @@ export default function WatchPage() {
           return;
         }
         setVideo(videoData);
+        
+        // --- LOGIKA REKOMENDASI BARU ---
+        // Cari video berdasarkan nama channel dari video saat ini untuk rekomendasi yang lebih baik
+        const { videos: smartRelated } = await searchVideosByQuery(videoData.channelName);
+        let related = smartRelated.filter(v => v.id !== id);
 
-        const { videos: trending } = await getTrendingVideos();
-        setRelatedVideos(trending.filter(v => v.id !== id));
+        // Jika hasil pencarian kurang dari 5, tambahkan dari video trending
+        if (related.length < 5) {
+          const { videos: trending } = await getTrendingVideos();
+          const trendingFiller = trending.filter(
+            v => v.id !== id && !related.some(r => r.id === v.id)
+          );
+          related = [...related, ...trendingFiller];
+        }
+
+        setRelatedVideos(related);
+        // --- AKHIR LOGIKA REKOMENDASI BARU ---
+
       } catch (error) {
         console.error("Failed to fetch video data:", error);
       } finally {
@@ -85,10 +100,12 @@ export default function WatchPage() {
         } else if ((wrapper as any).msRequestFullscreen) {
           await (wrapper as any).msRequestFullscreen();
         }
+        // Paksa putar setelah berhasil fullscreen
+        playerRef.current.getInternalPlayer()?.playVideo?.();
       }
     } catch (err) {
       console.warn("Fullscreen request failed:", err);
-       // If fullscreen fails, just try to play.
+      // Jika fullscreen gagal, coba putar saja.
       playerRef.current.getInternalPlayer()?.playVideo?.();
     }
   };
@@ -101,6 +118,7 @@ export default function WatchPage() {
   };
   
   useEffect(() => {
+    // Autoplay untuk video selanjutnya, namun tidak akan memaksa fullscreen lagi.
     if (shouldAutoplay && !loading && videoId) {
       const timer = setTimeout(() => {
         setIsPlaying(true);
@@ -152,7 +170,9 @@ export default function WatchPage() {
         lockOrientation();
       } else {
         setIsPlaying(false);
-        setShowPlayButton(true);
+        // Jangan tampilkan tombol play lagi setelah keluar fullscreen
+        // agar pengguna tidak perlu klik dua kali untuk play lagi
+        // setShowPlayButton(true); 
         unlockOrientation();
       }
     };
