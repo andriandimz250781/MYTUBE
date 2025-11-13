@@ -84,19 +84,20 @@ export const getChannel = (id: string | undefined) =>
  * Mengambil data dari YouTube API dengan rotasi kunci otomatis.
  */
 async function fetchFromYouTubeAPI(endpoint: string, params: Record<string, string>) {
-  if (YOUTUBE_API_KEYS.length === 0) {
+  const availableApiKeys = (process.env.NEXT_PUBLIC_YOUTUBE_API_KEYS || '').split(',').filter(Boolean);
+  if (availableApiKeys.length === 0) {
     console.error("Tidak ada kunci API YouTube yang dikonfigurasi di .env (NEXT_PUBLIC_YOUTUBE_API_KEYS).");
     return null;
   }
   
-  const maxRetries = YOUTUBE_API_KEYS.length;
+  const maxRetries = availableApiKeys.length;
   for (let i = 0; i < maxRetries; i++) {
-    const apiKey = YOUTUBE_API_KEYS[currentApiKeyIndex];
+    const apiKey = availableApiKeys[currentApiKeyIndex];
     
     // Pengecekan awal untuk kunci placeholder
     if (!apiKey || apiKey.startsWith('GANTI_DENGAN_KUNCI_API')) {
       console.error(`Kunci API #${currentApiKeyIndex + 1} tidak valid (placeholder). Mencoba kunci berikutnya.`);
-      currentApiKeyIndex = (currentApiKeyIndex + 1) % YOUTUBE_API_KEYS.length;
+      currentApiKeyIndex = (currentApiKeyIndex + 1) % availableApiKeys.length;
       continue;
     }
     
@@ -108,13 +109,13 @@ async function fetchFromYouTubeAPI(endpoint: string, params: Record<string, stri
       if (response.status === 400) {
          console.error(`YouTube API Error: Kunci API #${currentApiKeyIndex + 1} tidak valid. Pastikan kunci sudah benar.`);
          // Langsung coba kunci berikutnya karena kunci ini pasti salah
-         currentApiKeyIndex = (currentApiKeyIndex + 1) % YOUTUBE_API_KEYS.length;
+         currentApiKeyIndex = (currentApiKeyIndex + 1) % availableApiKeys.length;
          continue;
       }
       
       if (response.status === 403) {
         console.warn(`Kunci API #${currentApiKeyIndex + 1} telah mencapai batas kuota. Mencoba kunci berikutnya.`);
-        currentApiKeyIndex = (currentApiKeyIndex + 1) % YOUTUBE_API_KEYS.length;
+        currentApiKeyIndex = (currentApiKeyIndex + 1) % availableApiKeys.length;
         continue;
       }
 
