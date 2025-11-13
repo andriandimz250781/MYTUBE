@@ -68,16 +68,22 @@ export default function WatchPage() {
         
         // --- LOGIKA REKOMENDASI BARU ---
         let related: Video[] = [];
-        
+        const existingIds = new Set<string>([id]);
+
+        const addVideos = (videos: Video[]) => {
+          const newVideos = videos.filter(v => !existingIds.has(v.id));
+          newVideos.forEach(v => existingIds.add(v.id));
+          related = [...related, ...newVideos];
+        };
+
         // 1. Prioritas utama: Cari berdasarkan nama channel
         const channelSearchResponse = await searchVideosByQuery(videoData.channelName);
-        related = channelSearchResponse.videos.filter(v => v.id !== id);
-
+        addVideos(channelSearchResponse.videos);
+        
         // 2. Jika kurang, cari berdasarkan judul video
         if (related.length < 5) {
             const titleSearchResponse = await searchVideosByQuery(videoData.title.substring(0, 50));
-            const titleRelated = titleSearchResponse.videos.filter(v => v.id !== id && !related.some(r => r.id === v.id));
-            related = [...related, ...titleRelated];
+            addVideos(titleSearchResponse.videos);
         }
 
         // 3. Jika masih kurang, cari berdasarkan riwayat tontonan (Rekomendasi)
@@ -96,8 +102,7 @@ export default function WatchPage() {
                 frequency[a] > frequency[b] ? a : b
               );
               const historyResponse = await searchVideosByQuery(mostFrequentChannel);
-              const historyRelated = historyResponse.videos.filter(v => v.id !== id && !related.some(r => r.id === v.id));
-              related = [...related, ...historyRelated];
+              addVideos(historyResponse.videos);
             }
           } catch (e) {
              // Abaikan jika ada error localStorage, lanjut ke fallback
@@ -108,10 +113,7 @@ export default function WatchPage() {
         // 4. Pilihan terakhir: Tambahkan dari video trending
         if (related.length < 5) {
           const trendingResponse = await getTrendingVideos();
-          const trendingFiller = trendingResponse.videos.filter(
-            v => v.id !== id && !related.some(r => r.id === v.id)
-          );
-          related = [...related, ...trendingFiller];
+          addVideos(trendingResponse.videos);
         }
 
         setRelatedVideos(related.slice(0, 10)); // Batasi rekomendasi
@@ -148,12 +150,15 @@ export default function WatchPage() {
           await (wrapper as any).msRequestFullscreen();
         }
       }
+      // Perintah play eksplisit setelah masuk fullscreen
       playerRef.current.getInternalPlayer()?.playVideo?.();
     } catch (err) {
       console.warn("Fullscreen request failed, playing inline:", err);
+      // Fallback jika fullscreen gagal
       playerRef.current.getInternalPlayer()?.playVideo?.();
     }
   };
+
 
   const handleAutoplayNext = () => {
     if (relatedVideos.length > 0) {
@@ -163,6 +168,7 @@ export default function WatchPage() {
   };
 
   useEffect(() => {
+    // Hanya jalankan autoplay jika video baru sudah selesai loading
     if (shouldAutoplay && !loading && videoId) {
       const timer = setTimeout(() => {
         handlePlayFullscreen();
@@ -191,14 +197,18 @@ export default function WatchPage() {
         try {
           await screen.orientation.lock('landscape');
         } catch (err) {
-          // Abaikan error, terutama di perangkat yang tidak mendukung
+          console.warn("Could not lock orientation:", err);
         }
       }
     };
 
     const unlockOrientation = () => {
       if (screen.orientation && typeof screen.orientation.unlock === 'function') {
-        screen.orientation.unlock();
+        try {
+         screen.orientation.unlock();
+        } catch(err) {
+          console.warn("Could not unlock orientation:", err);
+        }
       }
     };
 
@@ -210,6 +220,8 @@ export default function WatchPage() {
         setIsPlaying(false);
         setShowPlayButton(true);
         unlockOrientation();
+        // Berhenti memutar video jika keluar dari fullscreen
+        playerRef.current?.getInternalPlayer()?.pauseVideo?.();
       }
     };
 
@@ -219,7 +231,7 @@ export default function WatchPage() {
     return () => {
       document.removeEventListener('fullscreenchange', onFullscreenChange);
       document.removeEventListener('webkitfullscreenchange', onFullscreenChange);
-      unlockOrientation(); // Pastikan orientasi kembali normal saat komponen di-unmount
+      unlockOrientation();
     };
   }, []);
 
