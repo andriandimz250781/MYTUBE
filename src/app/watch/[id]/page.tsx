@@ -55,9 +55,7 @@ export default function WatchPage() {
         // Simpan ke riwayat tontonan
         try {
           let history: string[] = JSON.parse(localStorage.getItem('watchHistory') || '[]');
-          // Tambahkan nama channel baru ke depan
           history.unshift(videoData.channelName);
-          // Batasi riwayat hingga 20 video terakhir
           if (history.length > 20) {
             history = history.slice(0, 20);
           }
@@ -80,39 +78,13 @@ export default function WatchPage() {
         const channelSearchResponse = await searchVideosByQuery(videoData.channelName);
         addVideos(channelSearchResponse.videos);
         
-        // 2. Jika masih kurang, cari berdasarkan riwayat tontonan (Rekomendasi)
-        if (related.length < 10) {
-          try {
-            const history: string[] = JSON.parse(localStorage.getItem('watchHistory') || '[]');
-            if (history.length > 0) {
-              const frequency: { [key: string]: number } = history.reduce(
-                (acc, channel) => {
-                  acc[channel] = (acc[channel] || 0) + 1;
-                  return acc;
-                },
-                {} as { [key: string]: number }
-              );
-              const mostFrequentChannel = Object.keys(frequency).reduce((a, b) =>
-                frequency[a] > frequency[b] ? a : b
-              );
-              const historyResponse = await searchVideosByQuery(mostFrequentChannel);
-              addVideos(historyResponse.videos);
-            }
-          } catch (e) {
-             // Abaikan jika ada error localStorage, lanjut ke fallback
-             console.error("Failed to get recommendations from history:", e);
-          }
-        }
-
-        // 3. Pilihan terakhir: Tambahkan dari video trending
-        if (related.length < 10) {
+        // 2. Pilihan terakhir: Tambahkan dari video trending jika pencarian channel kosong
+        if (related.length === 0) {
           const trendingResponse = await getTrendingVideos();
           addVideos(trendingResponse.videos);
         }
 
         setRelatedVideos(related.slice(0, 10)); // Batasi rekomendasi
-        // --- AKHIR LOGIKA REKOMENDASI BARU ---
-
 
       } catch (error) {
         console.error("Failed to fetch video data:", error);
@@ -144,11 +116,9 @@ export default function WatchPage() {
           await (wrapper as any).msRequestFullscreen();
         }
       }
-      // Perintah play eksplisit setelah masuk fullscreen
       playerRef.current.getInternalPlayer()?.playVideo?.();
     } catch (err) {
       console.warn("Fullscreen request failed, playing inline:", err);
-      // Fallback jika fullscreen gagal
       playerRef.current.getInternalPlayer()?.playVideo?.();
     }
   };
@@ -162,11 +132,10 @@ export default function WatchPage() {
   };
 
   useEffect(() => {
-    // Hanya jalankan autoplay jika video baru sudah selesai loading
     if (shouldAutoplay && !loading && videoId) {
       const timer = setTimeout(() => {
         handlePlayFullscreen();
-      }, 500); // Small delay to ensure player is ready
+      }, 500); 
       return () => clearTimeout(timer);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -214,7 +183,6 @@ export default function WatchPage() {
         setIsPlaying(false);
         setShowPlayButton(true);
         unlockOrientation();
-        // Berhenti memutar video jika keluar dari fullscreen
         playerRef.current?.getInternalPlayer()?.pauseVideo?.();
       }
     };
