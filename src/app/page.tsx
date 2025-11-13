@@ -1,6 +1,6 @@
 'use client';
 
-import { getTrendingVideos, type Video } from '@/app/lib/data';
+import { getTrendingVideos, searchVideosByQuery, type Video } from '@/app/lib/data';
 import { Suspense, useEffect, useState } from 'react';
 import { VideoRow } from '@/components/video/video-row';
 
@@ -9,15 +9,49 @@ function Recommendations() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    async function load() {
+    async function loadRecommendations() {
       setLoading(true);
-      const { videos: newVideos } = await getTrendingVideos();
-      // Mock recommendations, take first 4
-      setVideos(newVideos.slice(0, 4));
-      setLoading(false);
+      try {
+        const history: string[] = JSON.parse(
+          localStorage.getItem('watchHistory') || '[]'
+        );
+
+        if (history.length > 0) {
+          // Cari channel yang paling sering ditonton
+          const frequency: { [key: string]: number } = history.reduce(
+            (acc, channel) => {
+              acc[channel] = (acc[channel] || 0) + 1;
+              return acc;
+            },
+            {} as { [key: string]: number }
+          );
+
+          const mostFrequentChannel = Object.keys(frequency).reduce((a, b) =>
+            frequency[a] > frequency[b] ? a : b
+          );
+
+          // Ambil rekomendasi berdasarkan channel yang paling sering ditonton
+          const { videos: recommendedVideos } = await searchVideosByQuery(
+            mostFrequentChannel
+          );
+          setVideos(recommendedVideos.slice(0, 4));
+        } else {
+          // Fallback ke video trending jika history kosong
+          const { videos: newVideos } = await getTrendingVideos();
+          setVideos(newVideos.slice(0, 4));
+        }
+      } catch (error) {
+        console.error('Failed to load recommendations:', error);
+        // Fallback jika terjadi error
+        const { videos: newVideos } = await getTrendingVideos();
+        setVideos(newVideos.slice(0, 4));
+      } finally {
+        setLoading(false);
+      }
     }
-    load();
+    loadRecommendations();
   }, []);
+
 
   if (loading) {
     return <p>Memuat rekomendasi...</p>;
@@ -25,6 +59,7 @@ function Recommendations() {
 
   return <VideoRow videos={videos} />;
 }
+
 
 function ForYou() {
   const [videos, setVideos] = useState<Video[]>([]);

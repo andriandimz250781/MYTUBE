@@ -51,9 +51,22 @@ export default function WatchPage() {
           return;
         }
         setVideo(videoData);
+
+        // Simpan ke riwayat tontonan
+        try {
+          let history: string[] = JSON.parse(localStorage.getItem('watchHistory') || '[]');
+          // Tambahkan nama channel baru ke depan
+          history.unshift(videoData.channelName);
+          // Batasi riwayat hingga 20 video terakhir
+          if (history.length > 20) {
+            history = history.slice(0, 20);
+          }
+          localStorage.setItem('watchHistory', JSON.stringify(history));
+        } catch (e) {
+          console.error('Failed to save watch history:', e);
+        }
         
         // --- LOGIKA REKOMENDASI BARU ---
-        // Cari video berdasarkan nama channel dari video saat ini untuk rekomendasi yang lebih baik
         const { videos: smartRelated } = await searchVideosByQuery(videoData.channelName);
         let related = smartRelated.filter(v => v.id !== id);
 
@@ -66,7 +79,7 @@ export default function WatchPage() {
           related = [...related, ...trendingFiller];
         }
 
-        setRelatedVideos(related);
+        setRelatedVideos(related.slice(0, 10)); // Batasi rekomendasi
         // --- AKHIR LOGIKA REKOMENDASI BARU ---
 
       } catch (error) {
@@ -82,7 +95,7 @@ export default function WatchPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [videoId]);
 
-  const handlePlayFullscreen = async () => {
+ const handlePlayFullscreen = async () => {
     const wrapper = playerWrapperRef.current;
     if (!wrapper || !playerRef.current) return;
 
@@ -90,25 +103,24 @@ export default function WatchPage() {
     setShowPlayButton(false);
 
     try {
-      if (document.fullscreenElement) {
-        playerRef.current.getInternalPlayer()?.playVideo?.();
-      } else {
-        if (wrapper.requestFullscreen) {
+      // Cek apakah sudah fullscreen
+      if (!document.fullscreenElement) {
+         if (wrapper.requestFullscreen) {
           await wrapper.requestFullscreen();
         } else if ((wrapper as any).webkitRequestFullscreen) {
           await (wrapper as any).webkitRequestFullscreen();
         } else if ((wrapper as any).msRequestFullscreen) {
           await (wrapper as any).msRequestFullscreen();
         }
-        // Paksa putar setelah berhasil fullscreen
-        playerRef.current.getInternalPlayer()?.playVideo?.();
       }
+      // Langsung putar setelah memastikan fullscreen (atau jika sudah fullscreen)
+      playerRef.current.getInternalPlayer()?.playVideo?.();
     } catch (err) {
-      console.warn("Fullscreen request failed:", err);
-      // Jika fullscreen gagal, coba putar saja.
+      console.warn("Fullscreen request failed, playing inline:", err);
       playerRef.current.getInternalPlayer()?.playVideo?.();
     }
   };
+
 
   const handleAutoplayNext = () => {
     if (relatedVideos.length > 0) {
@@ -118,11 +130,10 @@ export default function WatchPage() {
   };
   
   useEffect(() => {
-    // Autoplay untuk video selanjutnya, namun tidak akan memaksa fullscreen lagi.
+    // Autoplay untuk video selanjutnya
     if (shouldAutoplay && !loading && videoId) {
       const timer = setTimeout(() => {
-        setIsPlaying(true);
-        setShowPlayButton(false);
+        handlePlayFullscreen();
       }, 500); 
       return () => clearTimeout(timer);
     }
@@ -149,9 +160,7 @@ export default function WatchPage() {
         try {
             await screen.orientation.lock('landscape');
         } catch (err) {
-            if (err.name !== 'SecurityError' && err.name !== 'NotSupportedError') {
-                console.error("Gagal mengunci orientasi:", err);
-            }
+            // Abaikan error jika browser tidak mendukung atau menolak
         }
       }
     }
@@ -164,15 +173,11 @@ export default function WatchPage() {
 
     const onFullscreenChange = () => {
       if (document.fullscreenElement) {
-        setIsPlaying(true);
-        setShowPlayButton(false);
-        playerRef.current?.getInternalPlayer()?.playVideo?.();
         lockOrientation();
       } else {
-        setIsPlaying(false);
-        // Jangan tampilkan tombol play lagi setelah keluar fullscreen
-        // agar pengguna tidak perlu klik dua kali untuk play lagi
-        // setShowPlayButton(true); 
+        // Saat keluar dari fullscreen
+        setIsPlaying(false); // Jeda video
+        setShowPlayButton(true); // Tampilkan tombol play besar lagi
         unlockOrientation();
       }
     };
@@ -216,7 +221,7 @@ export default function WatchPage() {
               }}
               onPause={() => setIsPlaying(false)}
               onEnded={handleAutoplayNext}
-              muted={true}
+              muted={true} // Muted untuk meningkatkan kemungkinan autoplay
               className="bg-black"
             />
           )}
@@ -230,7 +235,8 @@ export default function WatchPage() {
                 backgroundPosition: 'center'
               }}
              >
-                <PlayCircle className="h-20 w-20 text-white/80 drop-shadow-lg" />
+                <div className="absolute inset-0 bg-black/30 backdrop-blur-sm"></div>
+                <PlayCircle className="relative z-10 h-20 w-20 text-white/80 drop-shadow-lg transition-transform hover:scale-110" />
              </div>
           )}
         </div>
@@ -239,6 +245,7 @@ export default function WatchPage() {
              <Button variant="ghost" size="icon" className="shrink-0" asChild>
                 <Link href="/">
                     <ArrowLeft className="h-5 w-5" />
+                    <span className="sr-only">Kembali ke Beranda</span>
                 </Link>
              </Button>
              <h1 className="font-headline text-xl md:text-2xl font-bold">
