@@ -42,6 +42,7 @@ export default function WatchPage() {
 
       setLoading(true);
       setShowPlayButton(true);
+      setIsPlaying(false); // Reset playing state on new video
       try {
         const videoData = await getVideo(id);
         if (!videoData) {
@@ -50,7 +51,6 @@ export default function WatchPage() {
           return;
         }
         setVideo(videoData);
-        setIsPlaying(shouldAutoplay); // Directly set playing state
 
         const { videos: trending } = await getTrendingVideos();
         setRelatedVideos(trending.filter(v => v.id !== id));
@@ -76,20 +76,20 @@ export default function WatchPage() {
 
     try {
       if (document.fullscreenElement) {
-        // If already fullscreen, just play
         playerRef.current.getInternalPlayer()?.playVideo?.();
       } else {
-         // Request fullscreen first
         if (wrapper.requestFullscreen) {
           await wrapper.requestFullscreen();
-        } else if ((wrapper as any).webkitRequestFullscreen) { /* Safari */
+        } else if ((wrapper as any).webkitRequestFullscreen) {
           await (wrapper as any).webkitRequestFullscreen();
-        } else if ((wrapper as any).msRequestFullscreen) { /* IE11 */
+        } else if ((wrapper as any).msRequestFullscreen) {
           await (wrapper as any).msRequestFullscreen();
         }
       }
+      
+      // Explicitly play after attempting fullscreen
+      playerRef.current.getInternalPlayer()?.playVideo?.();
 
-      // Lock orientation on mobile devices
       if (screen.orientation && typeof screen.orientation.lock === 'function') {
         await screen.orientation.lock('landscape').catch(err => {
           if (err.name !== 'SecurityError' && err.name !== 'NotSupportedError') {
@@ -105,14 +105,14 @@ export default function WatchPage() {
   const handleAutoplayNext = () => {
     if (relatedVideos.length > 0) {
       const nextVideo = relatedVideos[0];
-      // Navigate with autoplay=true to trigger the effect
       router.push(`/watch/${nextVideo.id}?autoplay=true`);
     }
   };
   
   useEffect(() => {
     if (shouldAutoplay && !loading && video) {
-      handlePlayFullscreen();
+        // Trigger fullscreen play for the new video
+        handlePlayFullscreen();
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [shouldAutoplay, loading, video]);
@@ -134,12 +134,10 @@ export default function WatchPage() {
   useEffect(() => {
     const onFullscreenChange = () => {
       if (document.fullscreenElement) {
-        // Force play when entering fullscreen
-        playerRef.current?.getInternalPlayer()?.playVideo?.();
         setIsPlaying(true);
         setShowPlayButton(false);
+        playerRef.current?.getInternalPlayer()?.playVideo?.();
       } else {
-        // Exit fullscreen
         setIsPlaying(false);
         setShowPlayButton(true);
         if (screen.orientation && typeof screen.orientation.unlock === 'function') {
@@ -187,7 +185,7 @@ export default function WatchPage() {
               }}
               onPause={() => setIsPlaying(false)}
               onEnded={handleAutoplayNext}
-              muted={true} // Mute to increase autoplay success chance
+              muted={true}
               className="bg-black"
             />
           )}
