@@ -14,11 +14,17 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { getImage } from '@/app/lib/data';
 import { useRouter } from 'next/navigation';
+import { useEffect, useState } from 'react';
 
 export function AppHeader() {
   const router = useRouter();
   const userAvatar = getImage('user-avatar-1');
   const userName = 'ANDTUBE User';
+  const [isClient, setIsClient] = useState(false);
+
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
 
   const handleSearch = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -84,7 +90,7 @@ export function AppHeader() {
                       <User className="h-5 w-5" />
                       </AvatarFallback>
                   </Avatar>
-                  <span className="hidden text-sm font-medium md:block">{userName}</span>
+                  {isClient && <span className="hidden text-sm font-medium md:block">{userName}</span>}
                   <span className="sr-only">Toggle user menu</span>
                 </Button>
             </DropdownMenuTrigger>
