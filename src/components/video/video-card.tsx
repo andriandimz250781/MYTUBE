@@ -22,7 +22,7 @@ export function VideoCard({ video }: VideoCardProps) {
   const channelAvatar = getImage(video.channelAvatarId);
 
   return (
-    <Card className="w-full max-w-sm transform-gpu overflow-hidden rounded-lg border-none shadow-none transition-transform duration-300 ease-in-out hover:-translate-y-1">
+    <Card className="w-full transform-gpu overflow-hidden rounded-lg border-none shadow-none transition-transform duration-300 ease-in-out hover:-translate-y-1">
       <Link href={`/watch/${video.id}`} className="block">
         <CardContent className="p-0">
           <div className="relative aspect-video">
@@ -71,7 +71,7 @@ export function VideoCard({ video }: VideoCardProps) {
           </div>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <button>
+              <button className="-mr-2 p-2">
                 <MoreVertical className="h-4 w-4 text-muted-foreground" />
                 <span className="sr-only">Opsi lainnya</span>
               </button>

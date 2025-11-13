@@ -72,7 +72,14 @@ export default function WatchPage() {
     const wrapper = playerWrapperRef.current;
     if (wrapper) {
       try {
-        await wrapper.requestFullscreen();
+        if (wrapper.requestFullscreen) {
+          await wrapper.requestFullscreen();
+        } else if ((wrapper as any).webkitRequestFullscreen) { /* Safari */
+          (wrapper as any).webkitRequestFullscreen();
+        } else if ((wrapper as any).msRequestFullscreen) { /* IE11 */
+          (wrapper as any).msRequestFullscreen();
+        }
+        
         if (screen.orientation && typeof screen.orientation.lock === 'function') {
           await screen.orientation.lock('landscape').catch(err => {
             if (err.name !== 'SecurityError' && err.name !== 'NotSupportedError') {
@@ -126,7 +133,16 @@ export default function WatchPage() {
     };
 
     document.addEventListener('fullscreenchange', onFullscreenChange);
-    return () => document.removeEventListener('fullscreenchange', onFullscreenChange);
+    document.addEventListener('webkitfullscreenchange', onFullscreenChange);
+    document.addEventListener('mozfullscreenchange', onFullscreenChange);
+    document.addEventListener('MSFullscreenChange', onFullscreenChange);
+    
+    return () => {
+        document.removeEventListener('fullscreenchange', onFullscreenChange);
+        document.removeEventListener('webkitfullscreenchange', onFullscreenChange);
+        document.removeEventListener('mozfullscreenchange', onFullscreenChange);
+        document.removeEventListener('MSFullscreenChange', onFullscreenChange);
+    }
   }, []);
 
 
@@ -138,9 +154,9 @@ export default function WatchPage() {
   const channelAvatar = getImage(video.channelAvatarId);
 
   return (
-    <div className="flex flex-col gap-8 lg:flex-row">
+    <div className="flex flex-col gap-4 lg:flex-row lg:gap-8">
       <div className="flex-grow lg:w-2/3">
-        <div ref={playerWrapperRef} className="aspect-video w-full overflow-hidden rounded-xl bg-muted shadow-lg relative">
+        <div ref={playerWrapperRef} className="aspect-video w-full overflow-hidden rounded-xl bg-black shadow-lg relative">
           {hasWindow && (
             <ReactPlayer
               ref={playerRef}
@@ -163,17 +179,17 @@ export default function WatchPage() {
           )}
         </div>
         <div className="py-4">
-          <div className="mb-2 flex items-center gap-3">
-             <Button variant="ghost" size="icon" asChild>
+          <div className="mb-2 flex items-center gap-2">
+             <Button variant="ghost" size="icon" className="shrink-0" asChild>
                 <Link href="/">
                     <ArrowLeft className="h-5 w-5" />
                 </Link>
              </Button>
-             <h1 className="font-headline text-2xl font-bold">
+             <h1 className="font-headline text-xl md:text-2xl font-bold">
                 {video.title}
              </h1>
           </div>
-          <div className="flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-center">
+          <div className="flex flex-col items-start gap-4 sm:flex-row sm:items-center sm:justify-between">
             <div className="flex items-center gap-3">
               <Link href={`/channel/${video.channelId}`}>
                 <Avatar>
@@ -200,7 +216,7 @@ export default function WatchPage() {
             </div>
             <Button
               variant="default"
-              className="rounded-full bg-primary px-5 text-primary-foreground hover:bg-primary/90"
+              className="w-full rounded-full bg-primary px-5 text-primary-foreground hover:bg-primary/90 sm:w-auto"
             >
               Berlangganan
             </Button>

@@ -21,7 +21,7 @@ export default function ProfilePage() {
 
   return (
     <div className="mx-auto max-w-2xl space-y-8">
-      <h1 className="font-headline text-3xl font-bold">Edit Profile</h1>
+      <h1 className="font-headline text-2xl font-bold md:text-3xl">Edit Profile</h1>
       <form>
         <Card>
           <CardHeader>
@@ -33,11 +33,6 @@ export default function ProfilePage() {
           <CardContent className="space-y-6">
             <div className="flex flex-col items-center gap-4 text-center">
               <EditableAvatar initialImageId={user.avatarId} />
-              <div>
-                <Label htmlFor="displayName" className="text-lg font-semibold">
-                  {user.name}
-                </Label>
-              </div>
             </div>
             <div className="space-y-2">
               <Label htmlFor="displayName">Display Name</Label>
@@ -48,11 +43,11 @@ export default function ProfilePage() {
               />
             </div>
           </CardContent>
-          <CardFooter className="flex justify-between border-t px-6 py-4">
-            <Button asChild variant="outline">
+          <CardFooter className="flex flex-col-reverse gap-2 border-t px-6 py-4 sm:flex-row sm:justify-between">
+            <Button asChild variant="outline" className="w-full sm:w-auto">
               <Link href="/">Kembali</Link>
             </Button>
-            <Button>Save Changes</Button>
+            <Button className="w-full sm:w-auto">Save Changes</Button>
           </CardFooter>
         </Card>
       </form>

@@ -8,6 +8,7 @@ import {
   Card,
   CardContent,
   CardDescription,
+  CardFooter,
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
@@ -72,8 +73,8 @@ export function UploadForm() {
   };
 
   return (
-    <form action={dispatch} className="grid gap-8 md:grid-cols-3">
-      <div className="space-y-6 md:col-span-2">
+    <form action={dispatch} className="grid gap-8 lg:grid-cols-3">
+      <div className="space-y-6 lg:col-span-2">
         <Card>
           <CardHeader>
             <CardTitle>Video Details</CardTitle>
@@ -114,10 +115,10 @@ export function UploadForm() {
           <CardContent className="space-y-4">
             <input type="hidden" name="videoDataUri" value={frameDataUri || ''} />
             <TagInput tags={tags} setTags={setTags} />
-            <div className="flex items-center gap-4">
-              <GenerateButton />
-            </div>
           </CardContent>
+          <CardFooter>
+             <GenerateButton />
+          </CardFooter>
         </Card>
       </div>
 
@@ -151,7 +152,7 @@ export function UploadForm() {
               ) : (
                 <div className="text-center text-muted-foreground">
                   <ImageUp className="mx-auto h-12 w-12" />
-                  <p>Video preview</p>
+                  <p className="mt-2 text-sm">Video preview</p>
                 </div>
               )}
               <canvas ref={canvasRef} className="hidden" />
