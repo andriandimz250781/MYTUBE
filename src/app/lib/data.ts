@@ -87,48 +87,54 @@ async function fetchFromYouTubeAPI(endpoint: string, params: Record<string, stri
   const maxRetries = YOUTUBE_API_KEYS.length;
   for (let i = 0; i < maxRetries; i++) {
     const apiKey = YOUTUBE_API_KEYS[currentApiKeyIndex];
+    
+    // Pengecekan awal untuk kunci placeholder
+    if (!apiKey || apiKey.startsWith('GANTI_DENGAN_KUNCI_API')) {
+      console.error(`Kunci API #${currentApiKeyIndex + 1} tidak valid (placeholder). Mencoba kunci berikutnya.`);
+      currentApiKeyIndex = (currentApiKeyIndex + 1) % YOUTUBE_API_KEYS.length;
+      continue;
+    }
+    
     const url = `${YOUTUBE_API_URL}/${endpoint}?${new URLSearchParams({ ...params, key: apiKey }).toString()}`;
 
     try {
       const response = await fetch(url, { next: { revalidate: 3600 } }); // Cache selama 1 jam
 
+      if (response.status === 400) {
+         console.error(`YouTube API Error: Kunci API #${currentApiKeyIndex + 1} tidak valid. Pastikan kunci sudah benar.`);
+         // Langsung coba kunci berikutnya karena kunci ini pasti salah
+         currentApiKeyIndex = (currentApiKeyIndex + 1) % YOUTUBE_API_KEYS.length;
+         continue;
+      }
+      
       if (response.status === 403) {
-        console.warn(`API key ${currentApiKeyIndex + 1} limit reached. Trying next key.`);
+        console.warn(`Kunci API #${currentApiKeyIndex + 1} telah mencapai batas kuota. Mencoba kunci berikutnya.`);
         currentApiKeyIndex = (currentApiKeyIndex + 1) % YOUTUBE_API_KEYS.length;
-        // Lanjutkan ke iterasi berikutnya untuk mencoba kunci baru
         continue;
       }
 
       if (!response.ok) {
-        let errorData = `Status: ${response.status} ${response.statusText}`;
+        let errorData;
         try {
-            const errorJson = await response.json();
-            errorData = JSON.stringify(errorJson);
+            errorData = await response.json();
         } catch (e) {
             errorData = await response.text();
         }
-        console.error('YouTube API Error:', errorData);
-        // Jika bukan error 403, lempar error untuk menghentikan loop
-        throw new Error(`YouTube API request failed with details: ${errorData}`);
+        // Lempar error untuk di-catch oleh blok catch di bawah
+        throw new Error(`YouTube API request failed with details: ${JSON.stringify(errorData)}`);
       }
 
-      // Jika berhasil, kembalikan data dan keluar dari loop
       return await response.json();
 
     } catch (error) {
-      if ((error as Error).message.includes('quotaExceeded')) {
-         console.warn(`API key ${currentApiKeyIndex + 1} seems to have quota issues. Trying next key.`);
-         currentApiKeyIndex = (currentApiKeyIndex + 1) % YOUTUBE_API_KEYS.length;
-         continue; // Coba kunci berikutnya
-      }
-      console.error("Failed to fetch from YouTube API:", error);
-       // Jika error lain, hentikan proses
+      console.error("Gagal mengambil data dari YouTube API:", error);
+      // Jika terjadi error (selain rotasi kunci), kita hentikan percobaan untuk request ini
       return null;
     }
   }
 
-  // Jika semua kunci gagal
-  console.error("All API keys have failed. Please check their status and quota.");
+  // Jika semua kunci gagal (baik karena kuota, tidak valid, atau error lainnya)
+  console.error("Semua kunci API YouTube telah gagal. Periksa status, kuota, dan validitas kunci di Google Cloud Console.");
   return null;
 }
 
@@ -165,7 +171,7 @@ export async function searchVideosByQuery(query: string, duration?: 'long' | 'an
         part: 'snippet',
         q: query,
         type: 'video',
-        maxResults: '20', // Tingkatkan hasil agar lebih banyak pilihan untuk rekomendasi
+        maxResults: '20',
         relevanceLanguage: 'id',
         regionCode: 'ID'
     };
@@ -270,7 +276,7 @@ async function fetchVideoDetails(videoId: string | undefined): Promise<Video | n
 // --- Fungsi Utilitas Tambahan ---
 
 function formatDuration(isoDuration: string): string {
-    // Format "PT12M34S"
+    if (!isoDuration) return "0:00";
     const match = isoDuration.match(/PT(?:(\d+)H)?(?:(\d+)M)?(?:(\d+)S)?/);
     if (!match) return "0:00";
 
@@ -285,6 +291,7 @@ function formatDuration(isoDuration: string): string {
 }
 
 function formatViews(viewCount: string): string {
+    if (!viewCount) return "0";
     const num = parseInt(viewCount);
     if (isNaN(num)) return "0";
     if (num >= 1000000) return `${(num / 1000000).toFixed(1)}Jt`;
