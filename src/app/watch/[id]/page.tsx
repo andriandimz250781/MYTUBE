@@ -110,12 +110,16 @@ export default function WatchPage() {
   };
   
   useEffect(() => {
-    if (shouldAutoplay && !loading && video) {
-        // Trigger fullscreen play for the new video
+    // This effect is dedicated to handling autoplay for subsequent videos.
+    if (shouldAutoplay && !loading) {
+      // Small delay to ensure the new video is ready before requesting fullscreen.
+      const timer = setTimeout(() => {
         handlePlayFullscreen();
+      }, 100); // 100ms delay
+      return () => clearTimeout(timer);
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [shouldAutoplay, loading, video]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [shouldAutoplay, loading, videoId]);
 
 
   useEffect(() => {
@@ -277,3 +281,5 @@ export default function WatchPage() {
     </div>
   );
 }
+
+    
