@@ -1,3 +1,4 @@
+
 import { PlaceHolderImages } from '@/lib/placeholder-images';
 import { YOUTUBE_API_KEYS } from '@/config/apiKeys';
 
@@ -83,47 +84,52 @@ export const getChannel = (id: string | undefined) =>
  * Mengambil data dari YouTube API dengan rotasi kunci otomatis.
  */
 async function fetchFromYouTubeAPI(endpoint: string, params: Record<string, string>) {
-  let apiKey = YOUTUBE_API_KEYS[currentApiKeyIndex];
-  let url = `${YOUTUBE_API_URL}/${endpoint}?${new URLSearchParams({ ...params, key: apiKey }).toString()}`;
+  const maxRetries = YOUTUBE_API_KEYS.length;
+  for (let i = 0; i < maxRetries; i++) {
+    const apiKey = YOUTUBE_API_KEYS[currentApiKeyIndex];
+    const url = `${YOUTUBE_API_URL}/${endpoint}?${new URLSearchParams({ ...params, key: apiKey }).toString()}`;
 
-  try {
-    let response = await fetch(url, { next: { revalidate: 3600 } }); // Cache selama 1 jam
+    try {
+      const response = await fetch(url, { next: { revalidate: 3600 } }); // Cache selama 1 jam
 
-    // Jika kuota habis (403), coba kunci berikutnya
-    if (response.status === 403) {
-      console.warn(`API key ${currentApiKeyIndex + 1} limit reached. Trying next key.`);
-      currentApiKeyIndex++;
-
-      // Jika sudah mencoba semua kunci, reset ke kunci pertama
-      if (currentApiKeyIndex >= YOUTUBE_API_KEYS.length) {
-        console.warn("All API keys exhausted. Resetting to the first key.");
-        currentApiKeyIndex = 0;
+      if (response.status === 403) {
+        console.warn(`API key ${currentApiKeyIndex + 1} limit reached. Trying next key.`);
+        currentApiKeyIndex = (currentApiKeyIndex + 1) % YOUTUBE_API_KEYS.length;
+        // Lanjutkan ke iterasi berikutnya untuk mencoba kunci baru
+        continue;
       }
-      
-      apiKey = YOUTUBE_API_KEYS[currentApiKeyIndex];
-      url = `${YOUTUBE_API_URL}/${endpoint}?${new URLSearchParams({ ...params, key: apiKey }).toString()}`;
-      response = await fetch(url, { next: { revalidate: 3600 } });
-    }
 
-    if (!response.ok) {
-      let errorData = `Status: ${response.status} ${response.statusText}`;
-      try {
-        const errorJson = await response.json();
-        errorData = JSON.stringify(errorJson);
-      } catch (e) {
-        // Abaikan jika body bukan JSON, gunakan statusText saja.
-        errorData = await response.text();
+      if (!response.ok) {
+        let errorData = `Status: ${response.status} ${response.statusText}`;
+        try {
+            const errorJson = await response.json();
+            errorData = JSON.stringify(errorJson);
+        } catch (e) {
+            errorData = await response.text();
+        }
+        console.error('YouTube API Error:', errorData);
+        // Jika bukan error 403, lempar error untuk menghentikan loop
+        throw new Error(`YouTube API request failed with details: ${errorData}`);
       }
-      console.error('YouTube API Error:', errorData);
-      throw new Error(`YouTube API request failed with details: ${errorData}`);
+
+      // Jika berhasil, kembalikan data dan keluar dari loop
+      return await response.json();
+
+    } catch (error) {
+      if ((error as Error).message.includes('quotaExceeded')) {
+         console.warn(`API key ${currentApiKeyIndex + 1} seems to have quota issues. Trying next key.`);
+         currentApiKeyIndex = (currentApiKeyIndex + 1) % YOUTUBE_API_KEYS.length;
+         continue; // Coba kunci berikutnya
+      }
+      console.error("Failed to fetch from YouTube API:", error);
+       // Jika error lain, hentikan proses
+      return null;
     }
-
-    return await response.json();
-
-  } catch (error) {
-    console.error("Failed to fetch from YouTube API:", error);
-    return null; // Mengembalikan null jika ada error
   }
+
+  // Jika semua kunci gagal
+  console.error("All API keys have failed. Please check their status and quota.");
+  return null;
 }
 
 async function fetchVideoDetailsByIds(videoIds: string[]): Promise<Video[]> {
@@ -285,3 +291,5 @@ function formatViews(viewCount: string): string {
     if (num >= 1000) return `${(num / 1000).toFixed(0)}Rb`;
     return String(num);
 }
+
+    
