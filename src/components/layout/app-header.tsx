@@ -14,17 +14,10 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { getImage } from '@/app/lib/data';
 import { useRouter } from 'next/navigation';
-import { useEffect, useState } from 'react';
 
 export function AppHeader() {
   const router = useRouter();
   const userAvatar = getImage('user-avatar-1');
-  const userName = 'ANDTUBE User';
-  const [isClient, setIsClient] = useState(false);
-
-  useEffect(() => {
-    setIsClient(true);
-  }, []);
 
   const handleSearch = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -32,7 +25,6 @@ export function AppHeader() {
     const query = formData.get('search') as string;
     router.push(`/search?query=${encodeURIComponent(query)}`);
   };
-
 
   return (
     <header className="sticky top-0 z-10 flex h-16 items-center gap-4 border-b bg-background/80 px-4 backdrop-blur-sm md:px-6">
@@ -58,10 +50,7 @@ export function AppHeader() {
         </span>
       </Link>
       <div className="flex w-full items-center gap-4 md:gap-2 lg:gap-4">
-        <form
-          className="flex-1 sm:flex-initial"
-          onSubmit={handleSearch}
-        >
+        <form className="flex-1 sm:flex-initial" onSubmit={handleSearch}>
           <div className="relative">
             <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
             <Input
@@ -73,38 +62,44 @@ export function AppHeader() {
           </div>
         </form>
         <div className="ml-auto flex items-center gap-2">
-            <Button asChild variant="ghost" size="icon" className="hidden sm:flex">
+          <Button asChild variant="ghost" size="icon" className="hidden sm:flex">
             <Link href="/upload">
-                <Upload className="h-5 w-5" />
-                <span className="sr-only">Upload Video</span>
+              <Upload className="h-5 w-5" />
+              <span className="sr-only">Upload Video</span>
             </Link>
-            </Button>
-            <DropdownMenu>
+          </Button>
+          <DropdownMenu>
             <DropdownMenuTrigger asChild>
-                <Button variant="ghost" className="flex items-center gap-2 rounded-full p-1 pr-3">
-                  <Avatar className="h-8 w-8">
-                      {userAvatar && (
-                      <AvatarImage src={userAvatar.imageUrl} alt="User Avatar" />
-                      )}
-                      <AvatarFallback>
-                      <User className="h-5 w-5" />
-                      </AvatarFallback>
-                  </Avatar>
-                  {isClient && <span className="hidden text-sm font-medium md:block">{userName}</span>}
-                  <span className="sr-only">Toggle user menu</span>
-                </Button>
+              <Button
+                variant="secondary"
+                size="icon"
+                className="rounded-full"
+              >
+                <Avatar className="h-8 w-8">
+                  {userAvatar && (
+                    <AvatarImage
+                      src={userAvatar.imageUrl}
+                      alt="User Avatar"
+                    />
+                  )}
+                  <AvatarFallback>
+                    <User className="h-5 w-5" />
+                  </AvatarFallback>
+                </Avatar>
+                <span className="sr-only">Toggle user menu</span>
+              </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
-                <DropdownMenuLabel>My Account</DropdownMenuLabel>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem asChild>
-                  <Link href="/profile">Profile</Link>
-                </DropdownMenuItem>
-                <DropdownMenuItem>Settings</DropdownMenuItem>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem>Logout</DropdownMenuItem>
+              <DropdownMenuLabel>My Account</DropdownMenuLabel>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem asChild>
+                <Link href="/profile">Profile</Link>
+              </DropdownMenuItem>
+              <DropdownMenuItem>Settings</DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem>Logout</DropdownMenuItem>
             </DropdownMenuContent>
-            </DropdownMenu>
+          </DropdownMenu>
         </div>
       </div>
     </header>
