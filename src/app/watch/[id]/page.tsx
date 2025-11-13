@@ -71,7 +71,7 @@ export default function WatchPage() {
         const existingIds = new Set<string>([id]);
 
         const addVideos = (videos: Video[]) => {
-          const newVideos = videos.filter(v => !existingIds.has(v.id));
+          const newVideos = videos.filter(v => v && v.id && !existingIds.has(v.id));
           newVideos.forEach(v => existingIds.add(v.id));
           related = [...related, ...newVideos];
         };
@@ -80,14 +80,8 @@ export default function WatchPage() {
         const channelSearchResponse = await searchVideosByQuery(videoData.channelName);
         addVideos(channelSearchResponse.videos);
         
-        // 2. Jika kurang, cari berdasarkan judul video
-        if (related.length < 5) {
-            const titleSearchResponse = await searchVideosByQuery(videoData.title.substring(0, 50));
-            addVideos(titleSearchResponse.videos);
-        }
-
-        // 3. Jika masih kurang, cari berdasarkan riwayat tontonan (Rekomendasi)
-        if (related.length < 5) {
+        // 2. Jika masih kurang, cari berdasarkan riwayat tontonan (Rekomendasi)
+        if (related.length < 10) {
           try {
             const history: string[] = JSON.parse(localStorage.getItem('watchHistory') || '[]');
             if (history.length > 0) {
@@ -110,8 +104,8 @@ export default function WatchPage() {
           }
         }
 
-        // 4. Pilihan terakhir: Tambahkan dari video trending
-        if (related.length < 5) {
+        // 3. Pilihan terakhir: Tambahkan dari video trending
+        if (related.length < 10) {
           const trendingResponse = await getTrendingVideos();
           addVideos(trendingResponse.videos);
         }
