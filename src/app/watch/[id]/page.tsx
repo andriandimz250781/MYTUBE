@@ -43,6 +43,9 @@ export default function WatchPage() {
       setLoading(true);
       setShowPlayButton(true);
       setIsPlaying(false);
+      setVideo(null);
+      setRelatedVideos([]);
+
       try {
         const videoData = await getVideo(id);
         if (!videoData) {
@@ -52,49 +55,51 @@ export default function WatchPage() {
         }
         setVideo(videoData);
 
+        // Save watch history
         try {
-          // Menyimpan riwayat dengan channel dan tags
           let history: { channelName: string; tags: string[] }[] = JSON.parse(
             localStorage.getItem('watchHistory') || '[]'
           );
-          history.unshift({ channelName: videoData.channelName, tags: videoData.tags.slice(0, 5) }); // Ambil 5 tag pertama
-          if (history.length > 20) {
-            history = history.slice(0, 20);
-          }
+          history.unshift({ channelName: videoData.channelName, tags: videoData.tags.slice(0, 5) });
+          if (history.length > 20) history = history.slice(0, 20);
           localStorage.setItem('watchHistory', JSON.stringify(history));
         } catch (e) {
           console.error('Failed to save watch history:', e);
         }
         
-        let related: Video[] = [];
+        // Fetch related videos
+        const related: Video[] = [];
         const existingIds = new Set<string>([id]);
 
-        const addVideos = (videos: Video[]) => {
-          const newVideos = videos.filter(v => v && v.id && !existingIds.has(v.id));
-          newVideos.forEach(v => existingIds.add(v.id));
-          related = [...related, ...newVideos];
+        const addUniqueVideos = (videos: Video[]) => {
+          videos.forEach(v => {
+            if (v && v.id && !existingIds.has(v.id)) {
+              related.push(v);
+              existingIds.add(v.id);
+            }
+          });
         };
 
-        // 1. Prioritas utama: Cari berdasarkan nama channel
+        // 1. Get videos from the same channel
         const channelSearchResponse = await searchVideosByQuery(videoData.channelName);
-        addVideos(channelSearchResponse.videos);
+        addUniqueVideos(channelSearchResponse.videos);
         
-        // 2. Jika kurang, cari berdasarkan genre/tag utama video (untuk pindah channel sejenis)
+        // 2. If not enough, get videos from the same genre/tag
         if (related.length < 10 && videoData.tags && videoData.tags.length > 0) {
-            const primaryTag = videoData.tags.find(tag => !tag.toLowerCase().includes('official') && tag.length > 3) || videoData.tags[0];
-            if (primaryTag) {
-              const genreSearchResponse = await searchVideosByQuery(primaryTag);
-              addVideos(genreSearchResponse.videos);
-            }
+          const primaryTag = videoData.tags.find(tag => !tag.toLowerCase().includes('official') && tag.length > 3) || videoData.tags[0];
+          if (primaryTag) {
+            const genreSearchResponse = await searchVideosByQuery(primaryTag);
+            addUniqueVideos(genreSearchResponse.videos);
+          }
         }
-
-        // 3. Pilihan terakhir: Tambahkan dari video trending jika masih kurang
+        
+        // 3. Fallback to trending videos if still not enough
         if (related.length < 10) {
           const trendingResponse = await getTrendingVideos();
-          addVideos(trendingResponse.videos);
+          addUniqueVideos(trendingResponse.videos);
         }
 
-        setRelatedVideos(related.slice(0, 10));
+        setRelatedVideos(related.slice(0, 20)); // Get more results to prevent immediate loops
 
       } catch (error) {
         console.error("Failed to fetch video data:", error);
@@ -126,9 +131,11 @@ export default function WatchPage() {
           await (wrapper as any).msRequestFullscreen();
         }
       }
+      // Explicitly play video after entering fullscreen
       playerRef.current.getInternalPlayer()?.playVideo?.();
     } catch (err) {
       console.warn("Fullscreen request failed, playing inline:", err);
+      // Fallback to playing inline if fullscreen fails
       playerRef.current.getInternalPlayer()?.playVideo?.();
     }
   };
@@ -142,10 +149,11 @@ export default function WatchPage() {
   };
 
   useEffect(() => {
+    // This effect handles the autoplay for subsequent videos
     if (shouldAutoplay && !loading && videoId) {
       const timer = setTimeout(() => {
         handlePlayFullscreen();
-      }, 500); 
+      }, 500); // Small delay to ensure the player is ready
       return () => clearTimeout(timer);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -154,6 +162,7 @@ export default function WatchPage() {
 
   useEffect(() => {
     const handleVisibilityChange = () => {
+      // For music videos, try to keep playing in the background
       if (document.hidden && isMusicOrKaraoke && isPlaying) {
         playerRef.current?.getInternalPlayer()?.playVideo?.();
       }
@@ -170,6 +179,7 @@ export default function WatchPage() {
         try {
           await screen.orientation.lock('landscape');
         } catch (err) {
+          // This can fail if not in fullscreen or on some browsers, so we just warn
           console.warn("Could not lock orientation:", err);
         }
       }
@@ -190,6 +200,7 @@ export default function WatchPage() {
       if (document.fullscreenElement) {
         lockOrientation();
       } else {
+        // When exiting fullscreen, pause the video and show the play button again
         setIsPlaying(false);
         setShowPlayButton(true);
         unlockOrientation();
@@ -203,6 +214,7 @@ export default function WatchPage() {
     return () => {
       document.removeEventListener('fullscreenchange', onFullscreenChange);
       document.removeEventListener('webkitfullscreenchange', onFullscreenChange);
+      // Ensure orientation is unlocked when the component unmounts
       unlockOrientation();
     };
   }, []);
@@ -232,7 +244,7 @@ export default function WatchPage() {
               }}
               onPause={() => setIsPlaying(false)}
               onEnded={handleAutoplayNext}
-              muted={true}
+              muted={true} // Muting is often necessary for autoplay to work
               className="bg-black"
             />
           )}
