@@ -24,10 +24,11 @@ export default function WatchPage() {
   const playerRef = useRef<ReactPlayer>(null);
   const videoId = params.id as string;
 
-  // Cek apakah video termasuk kategori musik/karaoke
   const isMusicOrKaraoke = video?.tags.some(tag =>
     ['music', 'karaoke', 'musik'].includes(tag.toLowerCase())
   );
+
+  const shouldAutoplay = searchParams.get('autoplay') === 'true';
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
@@ -38,7 +39,8 @@ export default function WatchPage() {
       if (!id) return;
 
       setLoading(true);
-      setIsPlaying(false); // Reset isPlaying state
+      // Set isPlaying based on autoplay param
+      setIsPlaying(shouldAutoplay); 
       try {
         const videoData = await getVideo(id);
         if (!videoData) {
@@ -48,7 +50,6 @@ export default function WatchPage() {
         }
         setVideo(videoData);
 
-        // Ambil video terkait (misalnya, dari trending, kecuali video yang sedang diputar)
         const { videos: trending } = await getTrendingVideos();
         setRelatedVideos(trending.filter(v => v.id !== id));
       } catch (error) {
@@ -61,6 +62,7 @@ export default function WatchPage() {
     if (videoId) {
       fetchData(videoId);
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [videoId]);
 
 
@@ -90,20 +92,18 @@ export default function WatchPage() {
     }
   };
   
-  // Efek untuk memutar otomatis jika ada parameter `autoplay=true`
   useEffect(() => {
-    if (searchParams.get('autoplay') === 'true' && !loading && video) {
+    if (shouldAutoplay && !loading && video) {
+      // Langsung coba play dan masuk fullscreen
       handlePlayFullscreen();
     }
-  }, [searchParams, loading, video]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [shouldAutoplay, loading, video]);
 
 
-  // Efek untuk menangani perubahan visibilitas halaman (untuk background play)
   useEffect(() => {
     const handleVisibilityChange = () => {
-      // Coba untuk melanjutkan pemutaran jika video adalah musik/karaoke dan halaman disembunyikan
       if (document.hidden && isMusicOrKaraoke && isPlaying) {
-        // Memicu 'play' lagi mungkin bisa 'membangunkan' audio di beberapa browser
         playerRef.current?.getInternalPlayer()?.playVideo?.();
       }
     };
@@ -152,7 +152,7 @@ export default function WatchPage() {
               onPause={() => setIsPlaying(false)}
               onEnded={handleAutoplayNext}
               className="bg-black"
-              light={!isPlaying ? video.thumbnailUrl : false}
+              light={!isPlaying && !shouldAutoplay ? video.thumbnailUrl : false}
               playIcon={<button onClick={handlePlayFullscreen} className="absolute inset-0 flex items-center justify-center w-full h-full bg-black/30"><svg height="100%" version="1.1" viewBox="0 0 68 48" width="100%" className="w-16 h-16"><path className="fill-black/80" d="M66.52,7.74c-0.78-2.93-2.49-5.41-5.42-6.19C55.79,.13,34,0,34,0S12.21,.13,6.9,1.55 C3.97,2.33,2.27,4.81,1.48,7.74C0.06,13.05,0,24,0,24s0.06,10.95,1.48,16.26c0.78,2.93,2.49,5.41,5.42,6.19 C12.21,47.87,34,48,34,48s21.79-0.13,27.1-1.55c2.93-0.78,4.64-3.26,5.42-6.19C67.94,34.95,68,24,68,24S67.94,13.05,66.52,7.74z"></path><path className="fill-white" d="M 45,24 27,14 27,34"></path></svg></button>}
               onClickPreview={(e) => {
                 e.preventDefault();
