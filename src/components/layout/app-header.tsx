@@ -18,6 +18,7 @@ import { useRouter } from 'next/navigation';
 export function AppHeader() {
   const router = useRouter();
   const userAvatar = getImage('user-avatar-1');
+  const userName = 'ANDTUBE User';
 
   const handleSearch = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -74,16 +75,17 @@ export function AppHeader() {
             </Button>
             <DropdownMenu>
             <DropdownMenuTrigger asChild>
-                <Button variant="secondary" size="icon" className="rounded-full">
-                <Avatar className="h-8 w-8">
-                    {userAvatar && (
-                    <AvatarImage src={userAvatar.imageUrl} alt="User Avatar" />
-                    )}
-                    <AvatarFallback>
-                    <User className="h-5 w-5" />
-                    </AvatarFallback>
-                </Avatar>
-                <span className="sr-only">Toggle user menu</span>
+                <Button variant="ghost" className="flex items-center gap-2 rounded-full p-1 pr-3">
+                  <Avatar className="h-8 w-8">
+                      {userAvatar && (
+                      <AvatarImage src={userAvatar.imageUrl} alt="User Avatar" />
+                      )}
+                      <AvatarFallback>
+                      <User className="h-5 w-5" />
+                      </AvatarFallback>
+                  </Avatar>
+                  <span className="hidden text-sm font-medium md:block">{userName}</span>
+                  <span className="sr-only">Toggle user menu</span>
                 </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
