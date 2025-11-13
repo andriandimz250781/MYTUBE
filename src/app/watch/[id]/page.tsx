@@ -10,7 +10,7 @@ import { Button } from '@/components/ui/button';
 import { CompactVideoCard } from '@/components/video/compact-video-card';
 import ReactPlayer from 'react-player/youtube';
 import { useEffect, useState, useRef } from 'react';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, PlayCircle } from 'lucide-react';
 
 export default function WatchPage() {
   const params = useParams();
@@ -21,6 +21,7 @@ export default function WatchPage() {
   const [relatedVideos, setRelatedVideos] = useState<Video[]>([]);
   const [loading, setLoading] = useState(true);
   const [isPlaying, setIsPlaying] = useState(false);
+  const [showPlayButton, setShowPlayButton] = useState(true);
   const playerWrapperRef = useRef<HTMLDivElement>(null);
   const playerRef = useRef<ReactPlayer>(null);
   const videoId = params.id as string;
@@ -40,8 +41,7 @@ export default function WatchPage() {
       if (!id) return;
 
       setLoading(true);
-      // Set isPlaying based on autoplay param
-      setIsPlaying(shouldAutoplay);
+      setShowPlayButton(true);
       try {
         const videoData = await getVideo(id);
         if (!videoData) {
@@ -50,6 +50,7 @@ export default function WatchPage() {
           return;
         }
         setVideo(videoData);
+        setIsPlaying(shouldAutoplay); // Directly set playing state
 
         const { videos: trending } = await getTrendingVideos();
         setRelatedVideos(trending.filter(v => v.id !== id));
@@ -63,49 +64,54 @@ export default function WatchPage() {
     if (videoId) {
       fetchData(videoId);
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [videoId, shouldAutoplay]);
-
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [videoId]);
 
   const handlePlayFullscreen = async () => {
-    setIsPlaying(true);
     const wrapper = playerWrapperRef.current;
-    if (wrapper) {
-      try {
+    if (!wrapper || !playerRef.current) return;
+
+    setIsPlaying(true);
+    setShowPlayButton(false);
+
+    try {
+      if (document.fullscreenElement) {
+        // If already fullscreen, just play
+        playerRef.current.getInternalPlayer()?.playVideo?.();
+      } else {
+         // Request fullscreen first
         if (wrapper.requestFullscreen) {
           await wrapper.requestFullscreen();
         } else if ((wrapper as any).webkitRequestFullscreen) { /* Safari */
-          (wrapper as any).webkitRequestFullscreen();
+          await (wrapper as any).webkitRequestFullscreen();
         } else if ((wrapper as any).msRequestFullscreen) { /* IE11 */
-          (wrapper as any).msRequestFullscreen();
+          await (wrapper as any).msRequestFullscreen();
         }
-        
-        // Force play after entering fullscreen
-        playerRef.current?.getInternalPlayer()?.playVideo?.();
-
-        if (screen.orientation && typeof screen.orientation.lock === 'function') {
-          await screen.orientation.lock('landscape').catch(err => {
-            if (err.name !== 'SecurityError' && err.name !== 'NotSupportedError') {
-              console.error("Gagal mengunci orientasi:", err);
-            }
-          });
-        }
-      } catch (err) {
-        // Biarkan saja jika gagal, kemungkinan karena batasan browser/lingkungan
       }
+
+      // Lock orientation on mobile devices
+      if (screen.orientation && typeof screen.orientation.lock === 'function') {
+        await screen.orientation.lock('landscape').catch(err => {
+          if (err.name !== 'SecurityError' && err.name !== 'NotSupportedError') {
+            console.error("Gagal mengunci orientasi:", err);
+          }
+        });
+      }
+    } catch (err) {
+      console.warn("Fullscreen/orientation lock failed:", err);
     }
   };
 
   const handleAutoplayNext = () => {
     if (relatedVideos.length > 0) {
       const nextVideo = relatedVideos[0];
+      // Navigate with autoplay=true to trigger the effect
       router.push(`/watch/${nextVideo.id}?autoplay=true`);
     }
   };
   
   useEffect(() => {
     if (shouldAutoplay && !loading && video) {
-      // Langsung coba play dan masuk fullscreen
       handlePlayFullscreen();
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -127,8 +133,15 @@ export default function WatchPage() {
 
   useEffect(() => {
     const onFullscreenChange = () => {
-      if (!document.fullscreenElement) {
+      if (document.fullscreenElement) {
+        // Force play when entering fullscreen
+        playerRef.current?.getInternalPlayer()?.playVideo?.();
+        setIsPlaying(true);
+        setShowPlayButton(false);
+      } else {
+        // Exit fullscreen
         setIsPlaying(false);
+        setShowPlayButton(true);
         if (screen.orientation && typeof screen.orientation.unlock === 'function') {
           screen.orientation.unlock();
         }
@@ -159,7 +172,7 @@ export default function WatchPage() {
   return (
     <div className="flex flex-col gap-4 lg:flex-row lg:gap-8">
       <div className="flex-grow lg:w-2/3">
-        <div ref={playerWrapperRef} className="aspect-video w-full overflow-hidden rounded-xl bg-black shadow-lg relative">
+         <div ref={playerWrapperRef} className="aspect-video w-full overflow-hidden rounded-xl bg-black shadow-lg relative">
           {hasWindow && (
             <ReactPlayer
               ref={playerRef}
@@ -168,17 +181,28 @@ export default function WatchPage() {
               height="100%"
               controls
               playing={isPlaying}
-              onPlay={() => setIsPlaying(true)}
+              onPlay={() => {
+                setIsPlaying(true);
+                setShowPlayButton(false);
+              }}
               onPause={() => setIsPlaying(false)}
               onEnded={handleAutoplayNext}
+              muted={true} // Mute to increase autoplay success chance
               className="bg-black"
-              light={!isPlaying && !shouldAutoplay ? video.thumbnailUrl : false}
-              playIcon={<button onClick={handlePlayFullscreen} className="absolute inset-0 flex items-center justify-center w-full h-full bg-black/30"><svg height="100%" version="1.1" viewBox="0 0 68 48" width="100%" className="w-16 h-16"><path className="fill-black/80" d="M66.52,7.74c-0.78-2.93-2.49-5.41-5.42-6.19C55.79,.13,34,0,34,0S12.21,.13,6.9,1.55 C3.97,2.33,2.27,4.81,1.48,7.74C0.06,13.05,0,24,0,24s0.06,10.95,1.48,16.26c0.78,2.93,2.49,5.41,5.42,6.19 C12.21,47.87,34,48,34,48s21.79-0.13,27.1-1.55c2.93-0.78,4.64-3.26,5.42-6.19C67.94,34.95,68,24,68,24S67.94,13.05,66.52,7.74z"></path><path className="fill-white" d="M 45,24 27,14 27,34"></path></svg></button>}
-              onClickPreview={(e) => {
-                e.preventDefault();
-                handlePlayFullscreen();
-              }}
             />
+          )}
+          {showPlayButton && (
+             <div
+              className="absolute inset-0 flex cursor-pointer items-center justify-center bg-black/50"
+              onClick={handlePlayFullscreen}
+              style={{
+                backgroundImage: `url(${video.thumbnailUrl})`,
+                backgroundSize: 'cover',
+                backgroundPosition: 'center'
+              }}
+             >
+                <PlayCircle className="h-20 w-20 text-white/80 drop-shadow-lg" />
+             </div>
           )}
         </div>
         <div className="py-4">
@@ -255,5 +279,3 @@ export default function WatchPage() {
     </div>
   );
 }
-
-    
