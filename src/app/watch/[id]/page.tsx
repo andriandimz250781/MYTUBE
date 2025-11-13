@@ -67,17 +67,45 @@ export default function WatchPage() {
         }
         
         // --- LOGIKA REKOMENDASI BARU ---
-        let smartRelatedResponse = await searchVideosByQuery(videoData.channelName);
-        let related = smartRelatedResponse.videos.filter(v => v.id !== id);
+        let related: Video[] = [];
+        
+        // 1. Prioritas utama: Cari berdasarkan nama channel
+        const channelSearchResponse = await searchVideosByQuery(videoData.channelName);
+        related = channelSearchResponse.videos.filter(v => v.id !== id);
 
-        // Jika hasil pencarian cerdas kurang dari 5, coba cari berdasarkan judul
+        // 2. Jika kurang, cari berdasarkan judul video
         if (related.length < 5) {
             const titleSearchResponse = await searchVideosByQuery(videoData.title.substring(0, 50));
             const titleRelated = titleSearchResponse.videos.filter(v => v.id !== id && !related.some(r => r.id === v.id));
             related = [...related, ...titleRelated];
         }
 
-        // Jika masih kurang, baru tambahkan dari video trending
+        // 3. Jika masih kurang, cari berdasarkan riwayat tontonan (Rekomendasi)
+        if (related.length < 5) {
+          try {
+            const history: string[] = JSON.parse(localStorage.getItem('watchHistory') || '[]');
+            if (history.length > 0) {
+              const frequency: { [key: string]: number } = history.reduce(
+                (acc, channel) => {
+                  acc[channel] = (acc[channel] || 0) + 1;
+                  return acc;
+                },
+                {} as { [key: string]: number }
+              );
+              const mostFrequentChannel = Object.keys(frequency).reduce((a, b) =>
+                frequency[a] > frequency[b] ? a : b
+              );
+              const historyResponse = await searchVideosByQuery(mostFrequentChannel);
+              const historyRelated = historyResponse.videos.filter(v => v.id !== id && !related.some(r => r.id === v.id));
+              related = [...related, ...historyRelated];
+            }
+          } catch (e) {
+             // Abaikan jika ada error localStorage, lanjut ke fallback
+             console.error("Failed to get recommendations from history:", e);
+          }
+        }
+
+        // 4. Pilihan terakhir: Tambahkan dari video trending
         if (related.length < 5) {
           const trendingResponse = await getTrendingVideos();
           const trendingFiller = trendingResponse.videos.filter(
@@ -88,6 +116,7 @@ export default function WatchPage() {
 
         setRelatedVideos(related.slice(0, 10)); // Batasi rekomendasi
         // --- AKHIR LOGIKA REKOMENDASI BARU ---
+
 
       } catch (error) {
         console.error("Failed to fetch video data:", error);
@@ -137,11 +166,12 @@ export default function WatchPage() {
     if (shouldAutoplay && !loading && videoId) {
       const timer = setTimeout(() => {
         handlePlayFullscreen();
-      }, 500);
+      }, 500); // Small delay to ensure player is ready
       return () => clearTimeout(timer);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [shouldAutoplay, loading, videoId]);
+
 
   useEffect(() => {
     const handleVisibilityChange = () => {
@@ -156,13 +186,12 @@ export default function WatchPage() {
     };
   }, [isPlaying, isMusicOrKaraoke]);
 
-  useEffect(() => {
-    const lockOrientation = async () => {
+  const lockOrientation = async () => {
       if (screen.orientation && typeof screen.orientation.lock === 'function') {
         try {
           await screen.orientation.lock('landscape');
         } catch (err) {
-          // Abaikan error
+          // Abaikan error, terutama di perangkat yang tidak mendukung
         }
       }
     };
@@ -173,6 +202,7 @@ export default function WatchPage() {
       }
     };
 
+  useEffect(() => {
     const onFullscreenChange = () => {
       if (document.fullscreenElement) {
         lockOrientation();
@@ -189,6 +219,7 @@ export default function WatchPage() {
     return () => {
       document.removeEventListener('fullscreenchange', onFullscreenChange);
       document.removeEventListener('webkitfullscreenchange', onFullscreenChange);
+      unlockOrientation(); // Pastikan orientasi kembali normal saat komponen di-unmount
     };
   }, []);
 
