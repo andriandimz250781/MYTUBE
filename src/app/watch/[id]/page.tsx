@@ -86,19 +86,10 @@ export default function WatchPage() {
           await (wrapper as any).msRequestFullscreen();
         }
       }
-      
-      // Explicitly play after attempting fullscreen
-      playerRef.current.getInternalPlayer()?.playVideo?.();
-
-      if (screen.orientation && typeof screen.orientation.lock === 'function') {
-        await screen.orientation.lock('landscape').catch(err => {
-          if (err.name !== 'SecurityError' && err.name !== 'NotSupportedError') {
-            console.error("Gagal mengunci orientasi:", err);
-          }
-        });
-      }
     } catch (err) {
-      console.warn("Fullscreen/orientation lock failed:", err);
+      console.warn("Fullscreen request failed:", err);
+       // If fullscreen fails, just try to play.
+      playerRef.current.getInternalPlayer()?.playVideo?.();
     }
   };
 
@@ -110,15 +101,14 @@ export default function WatchPage() {
   };
   
   useEffect(() => {
-    // This effect is dedicated to handling autoplay for subsequent videos.
-    if (shouldAutoplay && !loading) {
-      // Small delay to ensure the new video is ready before requesting fullscreen.
+    if (shouldAutoplay && !loading && videoId) {
       const timer = setTimeout(() => {
-        handlePlayFullscreen();
-      }, 100); // 100ms delay
+        setIsPlaying(true);
+        setShowPlayButton(false);
+      }, 500); 
       return () => clearTimeout(timer);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [shouldAutoplay, loading, videoId]);
 
 
@@ -136,17 +126,34 @@ export default function WatchPage() {
   }, [isPlaying, isMusicOrKaraoke]);
 
   useEffect(() => {
+    const lockOrientation = async () => {
+       if (screen.orientation && typeof screen.orientation.lock === 'function') {
+        try {
+            await screen.orientation.lock('landscape');
+        } catch (err) {
+            if (err.name !== 'SecurityError' && err.name !== 'NotSupportedError') {
+                console.error("Gagal mengunci orientasi:", err);
+            }
+        }
+      }
+    }
+
+    const unlockOrientation = () => {
+        if (screen.orientation && typeof screen.orientation.unlock === 'function') {
+            screen.orientation.unlock();
+        }
+    }
+
     const onFullscreenChange = () => {
       if (document.fullscreenElement) {
         setIsPlaying(true);
         setShowPlayButton(false);
         playerRef.current?.getInternalPlayer()?.playVideo?.();
+        lockOrientation();
       } else {
         setIsPlaying(false);
         setShowPlayButton(true);
-        if (screen.orientation && typeof screen.orientation.unlock === 'function') {
-          screen.orientation.unlock();
-        }
+        unlockOrientation();
       }
     };
 
@@ -281,5 +288,3 @@ export default function WatchPage() {
     </div>
   );
 }
-
-    
