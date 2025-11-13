@@ -12,29 +12,41 @@ function Recommendations() {
     async function loadRecommendations() {
       setLoading(true);
       try {
-        const history: string[] = JSON.parse(
+        const history: { channelName: string; tags: string[] }[] = JSON.parse(
           localStorage.getItem('watchHistory') || '[]'
         );
 
         if (history.length > 0) {
-          // Cari channel yang paling sering ditonton
-          const frequency: { [key: string]: number } = history.reduce(
-            (acc, channel) => {
-              acc[channel] = (acc[channel] || 0) + 1;
+          // Cari genre/tag yang paling sering ditonton
+          const tagFrequency: { [key: string]: number } = history
+            .flatMap(item => item.tags) // Ambil semua tag dari history
+            .reduce((acc, tag) => {
+              // Abaikan tag umum atau tidak relevan
+              const lowerTag = tag.toLowerCase();
+              if (lowerTag.includes('official') || lowerTag.includes('video') || lowerTag.length < 3) {
+                return acc;
+              }
+              acc[tag] = (acc[tag] || 0) + 1;
               return acc;
-            },
-            {} as { [key: string]: number }
+            }, {} as { [key: string]: number });
+
+          const mostFrequentTag = Object.keys(tagFrequency).reduce(
+            (a, b) => (tagFrequency[a] > tagFrequency[b] ? a : b),
+            null as string | null
           );
 
-          const mostFrequentChannel = Object.keys(frequency).reduce((a, b) =>
-            frequency[a] > frequency[b] ? a : b
-          );
+          if (mostFrequentTag) {
+             // Ambil rekomendasi berdasarkan genre/tag yang paling sering ditonton
+            const { videos: recommendedVideos } = await searchVideosByQuery(
+              mostFrequentTag
+            );
+            setVideos(recommendedVideos.slice(0, 8)); // Tampilkan lebih banyak
+          } else {
+             // Fallback jika tidak ada tag yang relevan
+            const { videos: newVideos } = await getTrendingVideos();
+            setVideos(newVideos.slice(0, 4));
+          }
 
-          // Ambil rekomendasi berdasarkan channel yang paling sering ditonton
-          const { videos: recommendedVideos } = await searchVideosByQuery(
-            mostFrequentChannel
-          );
-          setVideos(recommendedVideos.slice(0, 4));
         } else {
           // Fallback ke video trending jika history kosong
           const { videos: newVideos } = await getTrendingVideos();

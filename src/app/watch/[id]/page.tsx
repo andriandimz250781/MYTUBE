@@ -53,8 +53,11 @@ export default function WatchPage() {
         setVideo(videoData);
 
         try {
-          let history: string[] = JSON.parse(localStorage.getItem('watchHistory') || '[]');
-          history.unshift(videoData.channelName);
+          // Menyimpan riwayat dengan channel dan tags
+          let history: { channelName: string; tags: string[] }[] = JSON.parse(
+            localStorage.getItem('watchHistory') || '[]'
+          );
+          history.unshift({ channelName: videoData.channelName, tags: videoData.tags.slice(0, 5) }); // Ambil 5 tag pertama
           if (history.length > 20) {
             history = history.slice(0, 20);
           }
@@ -76,11 +79,13 @@ export default function WatchPage() {
         const channelSearchResponse = await searchVideosByQuery(videoData.channelName);
         addVideos(channelSearchResponse.videos);
         
-        // 2. Jika kurang, cari berdasarkan genre/tag utama video
+        // 2. Jika kurang, cari berdasarkan genre/tag utama video (untuk pindah channel sejenis)
         if (related.length < 10 && videoData.tags && videoData.tags.length > 0) {
-            const primaryTag = videoData.tags[0]; // Ambil tag pertama sebagai genre utama
-            const genreSearchResponse = await searchVideosByQuery(primaryTag);
-            addVideos(genreSearchResponse.videos);
+            const primaryTag = videoData.tags.find(tag => !tag.toLowerCase().includes('official') && tag.length > 3) || videoData.tags[0];
+            if (primaryTag) {
+              const genreSearchResponse = await searchVideosByQuery(primaryTag);
+              addVideos(genreSearchResponse.videos);
+            }
         }
 
         // 3. Pilihan terakhir: Tambahkan dari video trending jika masih kurang
