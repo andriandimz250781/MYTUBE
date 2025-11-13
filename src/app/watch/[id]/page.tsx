@@ -1,8 +1,7 @@
 'use client';
 
 import { useParams, useRouter, useSearchParams } from 'next/navigation';
-import { getTrendingVideos, getVideo, getChannel, getImage, searchVideosByQuery } from '@/app/lib/data';
-import type { Video } from '@/app/lib/data';
+import { getTrendingVideos, getVideo, getChannel, getImage, searchVideosByQuery, type Video } from '@/app/lib/data';
 import Link from 'next/link';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
@@ -26,10 +25,6 @@ export default function WatchPage() {
   const playerRef = useRef<ReactPlayer>(null);
   const videoId = params.id as string;
 
-  const isMusicOrKaraoke = video?.tags.some(tag =>
-    ['music', 'karaoke', 'musik'].includes(tag.toLowerCase())
-  );
-
   const shouldAutoplay = searchParams.get('autoplay') === 'true';
 
   useEffect(() => {
@@ -43,8 +38,6 @@ export default function WatchPage() {
       setLoading(true);
       setShowPlayButton(true);
       setIsPlaying(false);
-      setVideo(null);
-      setRelatedVideos([]);
 
       try {
         const videoData = await getVideo(id);
@@ -60,9 +53,13 @@ export default function WatchPage() {
           let history: { channelName: string; tags: string[] }[] = JSON.parse(
             localStorage.getItem('watchHistory') || '[]'
           );
-          history.unshift({ channelName: videoData.channelName, tags: videoData.tags.slice(0, 5) });
-          if (history.length > 20) history = history.slice(0, 20);
-          localStorage.setItem('watchHistory', JSON.stringify(history));
+          const newHistoryItem = { channelName: videoData.channelName, tags: videoData.tags.slice(0, 5) };
+          // Prevent duplicate consecutive history entries
+          if (JSON.stringify(history[0]) !== JSON.stringify(newHistoryItem)) {
+            history.unshift(newHistoryItem);
+            if (history.length > 20) history = history.slice(0, 20);
+            localStorage.setItem('watchHistory', JSON.stringify(history));
+          }
         } catch (e) {
           console.error('Failed to save watch history:', e);
         }
@@ -81,25 +78,26 @@ export default function WatchPage() {
         };
 
         // 1. Get videos from the same channel
-        const channelSearchResponse = await searchVideosByQuery(videoData.channelName);
-        addUniqueVideos(channelSearchResponse.videos);
+        const { videos: channelVideos } = await searchVideosByQuery(videoData.channelName);
+        addUniqueVideos(channelVideos);
         
         // 2. If not enough, get videos from the same genre/tag
-        if (related.length < 10 && videoData.tags && videoData.tags.length > 0) {
-          const primaryTag = videoData.tags.find(tag => !tag.toLowerCase().includes('official') && tag.length > 3) || videoData.tags[0];
-          if (primaryTag) {
-            const genreSearchResponse = await searchVideosByQuery(primaryTag);
-            addUniqueVideos(genreSearchResponse.videos);
-          }
+        if (related.length < 20) {
+            // Find a relevant, specific tag to use as a genre keyword
+            const primaryTag = videoData.tags.find(tag => !tag.toLowerCase().includes('official') && tag.length > 3) || videoData.tags[0];
+            if (primaryTag) {
+              const { videos: genreVideos } = await searchVideosByQuery(primaryTag);
+              addUniqueVideos(genreVideos);
+            }
         }
         
         // 3. Fallback to trending videos if still not enough
-        if (related.length < 10) {
-          const trendingResponse = await getTrendingVideos();
-          addUniqueVideos(trendingResponse.videos);
+        if (related.length < 20) {
+          const { videos: trendingVideos } = await getTrendingVideos();
+          addUniqueVideos(trendingVideos);
         }
 
-        setRelatedVideos(related.slice(0, 20)); // Get more results to prevent immediate loops
+        setRelatedVideos(related.slice(0, 20));
 
       } catch (error) {
         console.error("Failed to fetch video data:", error);
@@ -131,11 +129,9 @@ export default function WatchPage() {
           await (wrapper as any).msRequestFullscreen();
         }
       }
-      // Explicitly play video after entering fullscreen
       playerRef.current.getInternalPlayer()?.playVideo?.();
     } catch (err) {
       console.warn("Fullscreen request failed, playing inline:", err);
-      // Fallback to playing inline if fullscreen fails
       playerRef.current.getInternalPlayer()?.playVideo?.();
     }
   };
@@ -149,37 +145,21 @@ export default function WatchPage() {
   };
 
   useEffect(() => {
-    // This effect handles the autoplay for subsequent videos
     if (shouldAutoplay && !loading && videoId) {
       const timer = setTimeout(() => {
         handlePlayFullscreen();
-      }, 500); // Small delay to ensure the player is ready
+      }, 500); 
       return () => clearTimeout(timer);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [shouldAutoplay, loading, videoId]);
 
-
-  useEffect(() => {
-    const handleVisibilityChange = () => {
-      // For music videos, try to keep playing in the background
-      if (document.hidden && isMusicOrKaraoke && isPlaying) {
-        playerRef.current?.getInternalPlayer()?.playVideo?.();
-      }
-    };
-
-    document.addEventListener('visibilitychange', handleVisibilityChange);
-    return () => {
-      document.removeEventListener('visibilitychange', handleVisibilityChange);
-    };
-  }, [isPlaying, isMusicOrKaraoke]);
 
   const lockOrientation = async () => {
       if (screen.orientation && typeof screen.orientation.lock === 'function') {
         try {
           await screen.orientation.lock('landscape');
         } catch (err) {
-          // This can fail if not in fullscreen or on some browsers, so we just warn
           console.warn("Could not lock orientation:", err);
         }
       }
@@ -200,7 +180,6 @@ export default function WatchPage() {
       if (document.fullscreenElement) {
         lockOrientation();
       } else {
-        // When exiting fullscreen, pause the video and show the play button again
         setIsPlaying(false);
         setShowPlayButton(true);
         unlockOrientation();
@@ -214,7 +193,6 @@ export default function WatchPage() {
     return () => {
       document.removeEventListener('fullscreenchange', onFullscreenChange);
       document.removeEventListener('webkitfullscreenchange', onFullscreenChange);
-      // Ensure orientation is unlocked when the component unmounts
       unlockOrientation();
     };
   }, []);
@@ -244,7 +222,7 @@ export default function WatchPage() {
               }}
               onPause={() => setIsPlaying(false)}
               onEnded={handleAutoplayNext}
-              muted={true} // Muting is often necessary for autoplay to work
+              muted={true}
               className="bg-black"
             />
           )}
