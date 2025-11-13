@@ -269,13 +269,13 @@ export default function WatchPage() {
         </div>
         <div className="py-4">
           <div className="mb-2 flex items-center gap-2">
-             <Button variant="ghost" size="icon" className="shrink-0" asChild>
+             <Button variant="ghost" size="icon" className="shrink-0 lg:hidden" asChild>
                 <Link href="/">
                     <ArrowLeft className="h-5 w-5" />
                     <span className="sr-only">Kembali ke Beranda</span>
                 </Link>
              </Button>
-             <h1 className="font-headline text-xl md:text-2xl font-bold">
+             <h1 className="font-headline text-xl md:text-2xl font-bold line-clamp-2">
                 {video.title}
              </h1>
           </div>
