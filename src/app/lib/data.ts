@@ -84,19 +84,24 @@ export const getChannel = (id: string | undefined) =>
  */
 async function fetchFromYouTubeAPI(endpoint: string, params: Record<string, string>) {
   let apiKey = YOUTUBE_API_KEYS[currentApiKeyIndex];
-  const query = new URLSearchParams({ ...params, key: apiKey }).toString();
-  let url = `${YOUTUBE_API_URL}/${endpoint}?${query}`;
+  let url = `${YOUTUBE_API_URL}/${endpoint}?${new URLSearchParams({ ...params, key: apiKey }).toString()}`;
 
   try {
     let response = await fetch(url, { next: { revalidate: 3600 } }); // Cache selama 1 jam
 
     // Jika kuota habis (403), coba kunci berikutnya
-    if (response.status === 403 && currentApiKeyIndex < YOUTUBE_API_KEYS.length - 1) {
+    if (response.status === 403) {
       console.warn(`API key ${currentApiKeyIndex + 1} limit reached. Trying next key.`);
       currentApiKeyIndex++;
+
+      // Jika sudah mencoba semua kunci, reset ke kunci pertama
+      if (currentApiKeyIndex >= YOUTUBE_API_KEYS.length) {
+        console.warn("All API keys exhausted. Resetting to the first key.");
+        currentApiKeyIndex = 0;
+      }
+      
       apiKey = YOUTUBE_API_KEYS[currentApiKeyIndex];
-      const newQuery = new URLSearchParams({ ...params, key: apiKey }).toString();
-      url = `${YOUTUBE_API_URL}/${endpoint}?${newQuery}`;
+      url = `${YOUTUBE_API_URL}/${endpoint}?${new URLSearchParams({ ...params, key: apiKey }).toString()}`;
       response = await fetch(url, { next: { revalidate: 3600 } });
     }
 
