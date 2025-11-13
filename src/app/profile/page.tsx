@@ -1,3 +1,4 @@
+import Link from 'next/link';
 import {
   Card,
   CardContent,
@@ -47,7 +48,10 @@ export default function ProfilePage() {
               />
             </div>
           </CardContent>
-          <CardFooter className="border-t px-6 py-4">
+          <CardFooter className="flex justify-between border-t px-6 py-4">
+            <Button asChild variant="outline">
+              <Link href="/">Kembali</Link>
+            </Button>
             <Button>Save Changes</Button>
           </CardFooter>
         </Card>
