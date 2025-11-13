@@ -1,6 +1,5 @@
 
 import { PlaceHolderImages } from '@/lib/placeholder-images';
-import { YOUTUBE_API_KEYS } from '@/config/apiKeys';
 
 // --- Tipe Data ---
 export type Video = {
@@ -33,6 +32,7 @@ export type VideoResponse = {
 }
 
 // --- Variabel & Konfigurasi API ---
+const YOUTUBE_API_KEYS = (process.env.NEXT_PUBLIC_YOUTUBE_API_KEYS || '').split(',').filter(Boolean);
 let currentApiKeyIndex = 0;
 const YOUTUBE_API_URL = 'https://www.googleapis.com/youtube/v3';
 
@@ -84,6 +84,11 @@ export const getChannel = (id: string | undefined) =>
  * Mengambil data dari YouTube API dengan rotasi kunci otomatis.
  */
 async function fetchFromYouTubeAPI(endpoint: string, params: Record<string, string>) {
+  if (YOUTUBE_API_KEYS.length === 0) {
+    console.error("Tidak ada kunci API YouTube yang dikonfigurasi di .env (NEXT_PUBLIC_YOUTUBE_API_KEYS).");
+    return null;
+  }
+  
   const maxRetries = YOUTUBE_API_KEYS.length;
   for (let i = 0; i < maxRetries; i++) {
     const apiKey = YOUTUBE_API_KEYS[currentApiKeyIndex];
@@ -298,5 +303,3 @@ function formatViews(viewCount: string): string {
     if (num >= 1000) return `${(num / 1000).toFixed(0)}Rb`;
     return String(num);
 }
-
-    

@@ -36,6 +36,9 @@ const nextConfig: NextConfig = {
       },
     ],
   },
+  env: {
+    NEXT_PUBLIC_YOUTUBE_API_KEYS: process.env.NEXT_PUBLIC_YOUTUBE_API_KEYS,
+  },
 };
 
 export default nextConfig;
