@@ -83,10 +83,17 @@ export const getChannel = (id: string | undefined) =>
  * Mengambil data dari YouTube API dengan rotasi kunci otomatis.
  */
 async function fetchFromYouTubeAPI(endpoint: string, params: Record<string, string>) {
-  const availableApiKeys = (process.env.NEXT_PUBLIC_YOUTUBE_API_KEYS || '').split(',').filter(Boolean);
-  
-  if (availableApiKeys.length === 0 || (availableApiKeys.length === 1 && availableApiKeys[0].startsWith('GANTI_DENGAN'))) {
-    console.warn("Tidak ada kunci API YouTube yang valid dikonfigurasi di .env.local (NEXT_PUBLIC_YOUTUBE_API_KEYS). Video tidak akan bisa dimuat.");
+  // Mengumpulkan semua kunci API dari environment variables
+  const availableApiKeys = [
+    process.env.NEXT_PUBLIC_YOUTUBE_API_KEYS_1,
+    process.env.NEXT_PUBLIC_YOUTUBE_API_KEYS_2,
+    process.env.NEXT_PUBLIC_YOUTUBE_API_KEYS_3,
+    process.env.NEXT_PUBLIC_YOUTUBE_API_KEYS_4,
+    process.env.NEXT_PUBLIC_YOUTUBE_API_KEYS_5,
+  ].filter(Boolean) as string[]; // Filter untuk membuang kunci yang tidak terdefinisi
+
+  if (availableApiKeys.length === 0) {
+    console.warn("Tidak ada kunci API YouTube yang valid dikonfigurasi di .env atau .env.local (NEXT_PUBLIC_YOUTUBE_API_KEYS_*). Video tidak akan bisa dimuat.");
     return null;
   }
   
