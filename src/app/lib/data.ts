@@ -84,8 +84,9 @@ export const getChannel = (id: string | undefined) =>
  */
 async function fetchFromYouTubeAPI(endpoint: string, params: Record<string, string>) {
   const availableApiKeys = (process.env.NEXT_PUBLIC_YOUTUBE_API_KEYS || '').split(',').filter(Boolean);
-  if (availableApiKeys.length === 0) {
-    console.error("Tidak ada kunci API YouTube yang dikonfigurasi di .env (NEXT_PUBLIC_YOUTUBE_API_KEYS).");
+  
+  if (availableApiKeys.length === 0 || (availableApiKeys.length === 1 && availableApiKeys[0].startsWith('GANTI_DENGAN'))) {
+    console.warn("Tidak ada kunci API YouTube yang valid dikonfigurasi di .env atau .env.local (NEXT_PUBLIC_YOUTUBE_API_KEYS).");
     return null;
   }
   
@@ -93,8 +94,8 @@ async function fetchFromYouTubeAPI(endpoint: string, params: Record<string, stri
   for (let i = 0; i < maxRetries; i++) {
     const apiKey = availableApiKeys[currentApiKeyIndex];
     
-    // Pengecekan awal untuk kunci placeholder
-    if (!apiKey || apiKey.startsWith('GANTI_DENGAN_KUNCI_API')) {
+    // Pengecekan awal untuk kunci placeholder atau tidak valid
+    if (!apiKey || apiKey.startsWith('GANTI_DENGAN')) {
       console.error(`Kunci API #${currentApiKeyIndex + 1} tidak valid (placeholder). Mencoba kunci berikutnya.`);
       currentApiKeyIndex = (currentApiKeyIndex + 1) % availableApiKeys.length;
       continue;
@@ -106,7 +107,7 @@ async function fetchFromYouTubeAPI(endpoint: string, params: Record<string, stri
       const response = await fetch(url, { next: { revalidate: 3600 } }); // Cache selama 1 jam
 
       if (response.status === 400) {
-         console.error(`YouTube API Error: Kunci API #${currentApiKeyIndex + 1} tidak valid. Pastikan kunci sudah benar.`);
+         console.warn(`YouTube API Error: Kunci API #${currentApiKeyIndex + 1} tidak valid. Pastikan kunci sudah benar.`);
          // Langsung coba kunci berikutnya karena kunci ini pasti salah
          currentApiKeyIndex = (currentApiKeyIndex + 1) % availableApiKeys.length;
          continue;
@@ -129,11 +130,14 @@ async function fetchFromYouTubeAPI(endpoint: string, params: Record<string, stri
         throw new Error(`YouTube API request failed with details: ${JSON.stringify(errorData)}`);
       }
 
+      // Jika sukses, kembalikan data
       return await response.json();
 
     } catch (error) {
       console.error("Gagal mengambil data dari YouTube API:", error);
       // Jika terjadi error (selain rotasi kunci), kita hentikan percobaan untuk request ini
+      // Namun, tetap rotasi kunci untuk permintaan berikutnya
+      currentApiKeyIndex = (currentApiKeyIndex + 1) % availableApiKeys.length;
       return null;
     }
   }
