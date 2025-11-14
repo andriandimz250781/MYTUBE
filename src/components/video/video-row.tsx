@@ -1,5 +1,5 @@
 import { VideoCard } from '@/components/video/video-card';
-import type { Video } from '@/app/lib/data';
+import type { Video } from '@/lib/data';
 
 type VideoRowProps = {
     videos: Video[];

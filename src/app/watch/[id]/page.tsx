@@ -82,7 +82,9 @@ export default function WatchPage() {
             getTrendingVideos() // Simple "up next" for now
           ]);
           setChannel(channelData);
-          setRelatedVideos(relatedVideosData.filter(v => v.id !== videoId));
+          if (relatedVideosData) {
+            setRelatedVideos(relatedVideosData.filter(v => v.id !== videoId));
+          }
         } else {
           setError('Video not found or could not be loaded.');
         }
@@ -193,5 +195,3 @@ export default function WatchPage() {
     </div>
   );
 }
-
-    

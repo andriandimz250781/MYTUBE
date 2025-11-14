@@ -13,17 +13,22 @@ function SearchResults({ query }: { query: string }) {
     async function load() {
       setLoading(true);
       const newVideos = await searchVideos(query);
-      setVideos(newVideos);
+      setVideos(newVideos || []);
       setLoading(false);
     }
-    load();
+    if (query) {
+      load();
+    } else {
+      setVideos([]);
+      setLoading(false);
+    }
   }, [query]);
 
   if (loading) {
     return <div>Searching...</div>;
   }
 
-  if (videos.length === 0) {
+  if (videos.length === 0 && query) {
     return <p>No videos found for &quot;{query}&quot;.</p>;
   }
 

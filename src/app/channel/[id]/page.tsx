@@ -15,7 +15,7 @@ export default async function ChannelPage({ params }: { params: { id: string } }
 
   // For now, we'll just get some trending videos as the channel's videos.
   // A real implementation would fetch videos specifically for this channel.
-  const channelVideos: Video[] = await getTrendingVideos();
+  const channelVideos: Video[] = await getTrendingVideos() || [];
 
   return (
     <div className="space-y-8">

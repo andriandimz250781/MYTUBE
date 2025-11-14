@@ -2,7 +2,8 @@ import { VideoCard } from '@/components/video/video-card';
 import { getTrendingVideos } from '@/lib/data';
 
 export default async function HistoryPage() {
-  const watchedVideos = (await getTrendingVideos()).slice(4, 9); // Mock data
+  const allVideos = await getTrendingVideos();
+  const watchedVideos = allVideos ? allVideos.slice(4, 9) : []; // Mock data
 
   return (
     <div>

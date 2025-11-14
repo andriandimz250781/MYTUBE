@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import Image from 'next/image';
-import type { Video } from '@/app/lib/data';
+import type { Video } from '@/lib/data';
 
 type CompactVideoCardProps = {
   video: Video;
