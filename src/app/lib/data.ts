@@ -32,7 +32,6 @@ export type VideoResponse = {
 }
 
 // --- Variabel & Konfigurasi API ---
-const YOUTUBE_API_KEYS = (process.env.NEXT_PUBLIC_YOUTUBE_API_KEYS || '').split(',').filter(Boolean);
 let currentApiKeyIndex = 0;
 const YOUTUBE_API_URL = 'https://www.googleapis.com/youtube/v3';
 
@@ -140,7 +139,7 @@ async function fetchFromYouTubeAPI(endpoint: string, params: Record<string, stri
   }
 
   // Jika semua kunci gagal (baik karena kuota, tidak valid, atau error lainnya)
-  console.error("Semua kunci API YouTube telah gagal. Periksa status, kuota, dan validitas kunci di Google Cloud Console.");
+  console.warn("Semua kunci API YouTube telah gagal. Periksa status, kuota, dan validitas kunci di Google Cloud Console.");
   return null;
 }
 
