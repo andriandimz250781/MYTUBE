@@ -1,7 +1,6 @@
 import Link from 'next/link';
 import Image from 'next/image';
 import type { Video } from '@/app/lib/data';
-import { getImage } from '@/app/lib/data';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Card, CardContent } from '@/components/ui/card';
 import { MoreVertical } from 'lucide-react';
@@ -17,26 +16,20 @@ type VideoCardProps = {
 };
 
 export function VideoCard({ video }: VideoCardProps) {
-  const thumbnail = getImage(video.thumbnailId);
-  const channelAvatar = getImage(video.channelAvatarId);
-
+  // We no longer need getImage or getChannel, as info comes with the video object
+  
   return (
     <Card className="w-full transform-gpu overflow-hidden rounded-lg border-none shadow-none transition-transform duration-300 ease-in-out hover:-translate-y-1">
       <Link href={`/watch/${video.id}`} className="block">
         <CardContent className="p-0">
           <div className="relative aspect-video">
-            {thumbnail ? (
-              <Image
-                src={thumbnail.imageUrl}
-                alt={video.title}
-                fill
-                className="rounded-t-lg object-cover"
-                data-ai-hint={thumbnail.imageHint}
-                sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
-              />
-            ) : (
-              <div className="h-full w-full rounded-t-lg bg-muted"></div>
-            )}
+            <Image
+              src={video.thumbnailUrl}
+              alt={video.title}
+              fill
+              className="rounded-t-lg object-cover"
+              sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+            />
             <div className="absolute bottom-1 right-1 rounded bg-black/75 px-1.5 py-0.5 text-xs text-white">
               {video.duration}
             </div>
@@ -47,8 +40,8 @@ export function VideoCard({ video }: VideoCardProps) {
         <div className="flex items-start gap-3">
           <Link href={`/channel/${video.channelId}`}>
             <Avatar className="h-9 w-9">
-              {channelAvatar && (
-                <AvatarImage src={channelAvatar.imageUrl} alt={video.channelName} />
+              {video.channelAvatarUrl && (
+                <AvatarImage src={video.channelAvatarUrl} alt={video.channelName} />
               )}
               <AvatarFallback>{video.channelName.charAt(0)}</AvatarFallback>
             </Avatar>

@@ -1,7 +1,7 @@
 'use client';
 
 import { useParams } from 'next/navigation';
-import { getTrendingVideos, getVideo, getChannel, getImage } from '@/app/lib/data';
+import { getTrendingVideos, getVideo, getChannel, type Video, type Channel } from '@/app/lib/data';
 import Link from 'next/link';
 import Image from 'next/image';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -10,60 +10,102 @@ import { Button } from '@/components/ui/button';
 import { CompactVideoCard } from '@/components/video/compact-video-card';
 import { useEffect, useState } from 'react';
 import { ArrowLeft, PlayCircle } from 'lucide-react';
+import ReactPlayer from 'react-player/youtube';
+import { Skeleton } from '@/components/ui/skeleton';
+
+function WatchPageLoadingSkeleton() {
+  return (
+    <div className="flex flex-col gap-4 lg:flex-row lg:gap-8">
+      <div className="flex-grow lg:w-2/3">
+        <Skeleton className="aspect-video w-full rounded-xl" />
+        <div className="py-4">
+          <Skeleton className="h-8 w-3/4" />
+          <div className="mt-4 flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <Skeleton className="h-12 w-12 rounded-full" />
+              <div className="space-y-2">
+                <Skeleton className="h-4 w-32" />
+                <Skeleton className="h-3 w-24" />
+              </div>
+            </div>
+            <Skeleton className="h-10 w-28 rounded-full" />
+          </div>
+          <div className="mt-4 space-y-2">
+            <Skeleton className="h-4 w-full" />
+            <Skeleton className="h-4 w-full" />
+            <Skeleton className="h-4 w-3/4" />
+          </div>
+        </div>
+      </div>
+      <div className="lg:w-1/3 lg:max-w-md">
+        <Skeleton className="mb-4 h-6 w-32" />
+        <div className="flex flex-col gap-4">
+          {[...Array(5)].map((_, i) => (
+            <div key={i} className="flex gap-3">
+              <Skeleton className="h-[90px] w-[160px] shrink-0 rounded-lg" />
+              <div className="flex-1 space-y-2">
+                <Skeleton className="h-4 w-full" />
+                <Skeleton className="h-4 w-2/3" />
+                <Skeleton className="h-3 w-1/2" />
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
 
 export default function WatchPage() {
   const params = useParams();
   const videoId = params.id as string;
-  const [showPlayer, setShowPlayer] = useState(false);
-  const [relatedVideos, setRelatedVideos] = useState<Awaited<ReturnType<typeof getTrendingVideos>>>([]);
+  
+  const [video, setVideo] = useState<Video | null>(null);
+  const [channel, setChannel] = useState<Channel | null>(null);
+  const [relatedVideos, setRelatedVideos] = useState<Video[]>([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    getTrendingVideos().then(v => setRelatedVideos(v));
-  }, []);
+    if (!videoId) return;
 
-  const video = getVideo(videoId);
+    async function fetchData() {
+      setLoading(true);
+      const videoData = await getVideo(videoId);
+      setVideo(videoData);
 
+      if (videoData) {
+        const [channelData, relatedVideosData] = await Promise.all([
+          getChannel(videoData.channelId),
+          getTrendingVideos() // Simple "up next" for now
+        ]);
+        setChannel(channelData);
+        setRelatedVideos(relatedVideosData);
+      }
+      setLoading(false);
+    }
+
+    fetchData();
+  }, [videoId]);
+
+  if (loading) {
+    return <WatchPageLoadingSkeleton />;
+  }
+  
   if (!video) {
     return <div>Video not found</div>;
   }
-
-  const channel = getChannel(video.channelId);
-  const channelAvatar = getImage(video.channelAvatarId);
-  const thumbnail = getImage(video.thumbnailId);
 
   return (
     <div className="flex flex-col gap-4 lg:flex-row lg:gap-8">
       <div className="flex-grow lg:w-2/3">
         <div className="aspect-video w-full overflow-hidden rounded-xl bg-muted shadow-lg">
-          {showPlayer && thumbnail ? (
-            <div className="h-full w-full bg-black">
-              {/* A real video player would go here */}
-              <Image
-                src={thumbnail.imageUrl}
-                alt={video.title}
-                fill
-                className="object-contain"
-                data-ai-hint={thumbnail.imageHint}
-              />
-            </div>
-          ) : (
-            <div
-              className="relative flex h-full w-full cursor-pointer items-center justify-center"
-              onClick={() => setShowPlayer(true)}
-            >
-              {thumbnail && (
-                <Image
-                  src={thumbnail.imageUrl}
-                  alt={video.title}
-                  fill
-                  className="object-cover"
-                  data-ai-hint={thumbnail.imageHint}
-                />
-              )}
-              <div className="absolute inset-0 bg-black/30 backdrop-blur-sm"></div>
-              <PlayCircle className="relative z-10 h-20 w-20 text-white/80 drop-shadow-lg transition-transform hover:scale-110" />
-            </div>
-          )}
+           <ReactPlayer
+              url={`https://www.youtube.com/watch?v=${video.id}`}
+              width="100%"
+              height="100%"
+              controls
+              playing
+            />
         </div>
         <div className="py-4">
           <div className="mb-2 flex items-center gap-2">
@@ -81,9 +123,9 @@ export default function WatchPage() {
             <div className="flex items-center gap-3">
               <Link href={`/channel/${video.channelId}`}>
                 <Avatar>
-                  {channelAvatar && (
+                  {channel?.avatarUrl && (
                     <AvatarImage
-                      src={channelAvatar.imageUrl}
+                      src={channel.avatarUrl}
                       alt={video.channelName}
                     />
                   )}
@@ -114,17 +156,6 @@ export default function WatchPage() {
               {video.views} views &bull; {video.uploadedAt}
             </p>
             <p className="mt-2 whitespace-pre-wrap">{video.description}</p>
-          </div>
-          <div className="mt-4 flex flex-wrap gap-2">
-            {['AI', 'Tech', 'Documentary', 'Future'].map(tag => (
-              <Badge
-                key={tag}
-                variant="secondary"
-                className="cursor-pointer hover:bg-accent hover:text-accent-foreground"
-              >
-                #{tag}
-              </Badge>
-            ))}
           </div>
         </div>
       </div>

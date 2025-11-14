@@ -1,52 +1,49 @@
 import { notFound } from 'next/navigation';
 import Image from 'next/image';
-import { getChannel, getImage, getTrendingVideos } from '@/app/lib/data';
+import { getChannel, getTrendingVideos, type Channel, type Video } from '@/app/lib/data';
 import { VideoCard } from '@/components/video/video-card';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 export default async function ChannelPage({ params }: { params: { id: string } }) {
-  // Hard-coding to 'my-channel' as we don't have real dynamic channels
-  const channel = getChannel('techflow');
-  if (!channel) {
+  
+  const channelData = await getChannel(params.id);
+  if (!channelData) {
     notFound();
   }
+  const channel: Channel = channelData;
 
-  const channelBanner = getImage(channel.bannerId);
-  const channelAvatar = getImage(channel.avatarId);
-  const channelVideos = (await getTrendingVideos()).filter(v => v.channelId === channel.id || v.channelId !== 'wanderlust');
+  // For now, we'll just get some trending videos as the channel's videos.
+  // A real implementation would fetch videos specifically for this channel.
+  const channelVideos: Video[] = await getTrendingVideos();
 
   return (
     <div className="space-y-8">
       <div>
         <div className="relative h-48 w-full overflow-hidden rounded-lg bg-muted">
-          {channelBanner && (
+          {channel.bannerUrl && (
             <Image
-              src={channelBanner.imageUrl}
+              src={channel.bannerUrl}
               alt={`${channel.name} banner`}
               fill
               className="object-cover"
-              data-ai-hint={channelBanner.imageHint}
             />
           )}
         </div>
         <div className="relative z-10 -mt-12 flex flex-col items-center gap-4 px-4 sm:-mt-16 sm:flex-row sm:items-end">
           <div className="h-24 w-24 overflow-hidden rounded-full border-4 border-background bg-background sm:h-32 sm:w-32">
-            {channelAvatar && (
-              <Image
-                src={channelAvatar.imageUrl}
-                alt={`${channel.name} avatar`}
-                width={128}
-                height={128}
-                className="object-cover"
-                data-ai-hint={channelAvatar.imageHint}
-              />
-            )}
+            <Image
+              src={channel.avatarUrl}
+              alt={`${channel.name} avatar`}
+              width={128}
+              height={128}
+              className="object-cover"
+            />
           </div>
           <div className="flex-1 py-2 text-center sm:text-left">
             <h1 className="font-headline text-3xl font-bold">{channel.name}</h1>
             <p className="text-sm text-muted-foreground">
-              @{channel.id} &bull; {channel.subscribers} subscribers
+              @{channel.name.replace(/\s/g, '')} &bull; {channel.subscribers} subscribers
             </p>
           </div>
           <Button

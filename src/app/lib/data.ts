@@ -1,16 +1,14 @@
-
-
 import { PlaceHolderImages } from '@/lib/placeholder-images';
 
-// --- Tipe Data ---
+// --- Tipe Data Baru (sesuai dengan YouTube API) ---
 export type Video = {
   id: string;
   title: string;
-  thumbnailId: string;
-  duration: string;
+  thumbnailUrl: string;
+  duration: string; // Akan kita coba dapatkan nanti jika memungkinkan
   channelName: string;
   channelId: string;
-  channelAvatarId: string;
+  channelAvatarUrl?: string; // Tidak selalu tersedia di semua panggilan API
   views: string;
   uploadedAt: string;
   description: string;
@@ -19,187 +17,189 @@ export type Video = {
 export type Channel = {
   id: string;
   name: string;
-  avatarId: string;
-  bannerId?: string;
+  avatarUrl: string;
+  bannerUrl?: string;
   subscribers: string;
   description: string;
 };
 
-// --- Data Statis ---
-const LOREM_IPSUM =
-  'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed non risus. Suspendisse lectus tortor, dignissim sit amet, adipiscing nec, ultricies sed, dolor. Cras elementum ultrices diam. Maecenas ligula massa, varius a, semper congue, euismod non, mi.';
+// --- Konstanta API ---
+const YOUTUBE_API_URL = 'https://www.googleapis.com/youtube/v3';
+const API_KEY = process.env.NEXT_PUBLIC_YOUTUBE_API_KEY;
 
-export const videos: Video[] = [
-  {
-    id: '1',
-    title: 'The Future of AI: A TechFlow Documentary',
-    thumbnailId: 'video-thumb-1',
-    duration: '12:34',
-    channelName: 'TechFlow',
-    channelId: 'techflow',
-    channelAvatarId: 'channel-avatar-1',
-    views: '1.2M',
-    uploadedAt: '2 days ago',
-    description: LOREM_IPSUM,
-  },
-  {
-    id: '2',
-    title: 'Alpine Adventures: Hiking the Swiss Alps',
-    thumbnailId: 'video-thumb-2',
-    duration: '24:15',
-    channelName: 'Wanderlust',
-    channelId: 'wanderlust',
-    channelAvatarId: 'channel-avatar-2',
-    views: '876K',
-    uploadedAt: '1 week ago',
-    description: LOREM_IPSUM,
-  },
-  {
-    id: '3',
-    title: 'Ultimate 30-Minute Pasta Recipe',
-    thumbnailId: 'video-thumb-3',
-    duration: '8:45',
-    channelName: 'KitchenCraft',
-    channelId: 'kitchencraft',
-    channelAvatarId: 'channel-avatar-3',
-    views: '3.1M',
-    uploadedAt: '3 days ago',
-    description: LOREM_IPSUM,
-  },
-  {
-    id: '4',
-    title: 'CyberNeon: Epic Gameplay Montage',
-    thumbnailId: 'video-thumb-4',
-    duration: '15:00',
-    channelName: 'GamerX',
-    channelId: 'techflow', // Temp
-    channelAvatarId: 'channel-avatar-1',
-    views: '5.6M',
-    uploadedAt: '1 day ago',
-    description: LOREM_IPSUM,
-  },
-  {
-    id: '5',
-    title: 'Building a Bookshelf From Scratch',
-    thumbnailId: 'video-thumb-5',
-    duration: '18:21',
-    channelName: 'DIYMasters',
-    channelId: 'techflow', // Temp
-    channelAvatarId: 'channel-avatar-1',
-    views: '980K',
-    uploadedAt: '5 days ago',
-    description: LOREM_IPSUM,
-  },
-  {
-    id: '6',
-    title: 'Live Concert: The Soundscapes',
-    thumbnailId: 'video-thumb-6',
-    duration: '1:23:45',
-    channelName: 'MusicVibe',
-    channelId: 'wanderlust', // Temp
-    channelAvatarId: 'channel-avatar-2',
-    views: '2.5M',
-    uploadedAt: '2 weeks ago',
-    description: LOREM_IPSUM,
-  },
-  {
-    id: '7',
-    title: 'Full Body Workout - No Equipment',
-    thumbnailId: 'video-thumb-7',
-    duration: '22:10',
-    channelName: 'FitLife',
-    channelId: 'kitchencraft', // Temp
-    channelAvatarId: 'channel-avatar-3',
-    views: '4.9M',
-    uploadedAt: '1 month ago',
-    description: LOREM_IPSUM,
-  },
-  {
-    id: '8',
-    title: 'The Secrets of Ancient Rome',
-    thumbnailId: 'video-thumb-8',
-    duration: '45:18',
-    channelName: 'HistoryUncovered',
-    channelId: 'techflow', // Temp
-    channelAvatarId: 'channel-avatar-1',
-    views: '3.2M',
-    uploadedAt: '3 weeks ago',
-    description: LOREM_IPSUM,
-  },
-  {
-    id: '9',
-    title: 'Try Not To Laugh Challenge #12',
-    thumbnailId: 'video-thumb-9',
-    duration: '9:59',
-    channelName: 'Comedy Central',
-    channelId: 'wanderlust', // Temp
-    channelAvatarId: 'channel-avatar-2',
-    views: '10M',
-    uploadedAt: '4 days ago',
-    description: LOREM_IPSUM,
-  },
-];
+// --- Fungsi Helper untuk YouTube API ---
 
-export const channels: Channel[] = [
-  {
-    id: 'techflow',
-    name: 'TechFlow',
-    avatarId: 'channel-avatar-1',
-    bannerId: 'channel-banner-1',
-    subscribers: '2.3M',
-    description: 'Your daily dose of tech news, reviews, and tutorials.',
-  },
-  {
-    id: 'wanderlust',
-    name: 'Wanderlust',
-    avatarId: 'channel-avatar-2',
-    subscribers: '1.1M',
-    description: 'Traveling the world and sharing the adventure with you.',
-  },
-  {
-    id: 'kitchencraft',
-    name: 'KitchenCraft',
-    avatarId: 'channel-avatar-3',
-    subscribers: '4.8M',
-    description: 'Simple recipes for delicious home-cooked meals.',
-  },
-];
+async function fetchFromYouTubeAPI(endpoint: string, params: Record<string, string>) {
+  if (!API_KEY || API_KEY === 'GANTI_DENGAN_KUNCI_API_YOUTUBE_ANDA') {
+    console.warn("Kunci API YouTube belum diatur di file .env.local. Menampilkan data kosong.");
+    return null;
+  }
+
+  const urlParams = new URLSearchParams({
+    key: API_KEY,
+    ...params,
+  });
+
+  const url = `${YOUTUBE_API_URL}/${endpoint}?${urlParams}`;
+
+  try {
+    const response = await fetch(url, { cache: 'no-store' }); // Nonaktifkan cache untuk development
+    if (!response.ok) {
+      const errorData = await response.json();
+      console.error('YouTube API Error:', errorData.error.message);
+      throw new Error(`YouTube API request failed: ${errorData.error.message}`);
+    }
+    return await response.json();
+  } catch (error) {
+    console.error('Failed to fetch from YouTube API:', error);
+    return null;
+  }
+}
+
+function formatViews(viewCount: string): string {
+    const num = parseInt(viewCount, 10);
+    if (num >= 1_000_000_000) return `${(num / 1_000_000_000).toFixed(1)}B`;
+    if (num >= 1_000_000) return `${(num / 1_000_000).toFixed(1)}M`;
+    if (num >= 1_000) return `${(num / 1_000).toFixed(1)}K`;
+    return num.toString();
+}
+
+function formatDuration(isoDuration: string): string {
+  const match = isoDuration.match(/PT(?:(\d+)H)?(?:(\d+)M)?(?:(\d+)S)?/);
+  if (!match) return "0:00";
+
+  const hours = parseInt(match[1] || '0', 10);
+  const minutes = parseInt(match[2] || '0', 10);
+  const seconds = parseInt(match[3] || '0', 10);
+
+  if (hours > 0) {
+    return `${hours}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+  }
+  return `${minutes}:${String(seconds).padStart(2, '0')}`;
+}
 
 
-// --- Fungsi Helper ---
-
-export const getImage = (id: string | undefined) =>
-  PlaceHolderImages.find(img => img.id === id);
-
-export const getVideo = (id: string | undefined) =>
-  videos.find(v => v.id === id);
-
-export const getChannel = (id: string | undefined) =>
-  channels.find(ch => ch.id === id);
-
-
-// --- Fungsi Pengambilan Data ---
+// --- Fungsi Pengambilan Data Baru ---
 
 /**
- * Mengambil daftar video trending.
- * NOTE: Ini hanya data tiruan untuk sekarang.
+ * Mengambil video trending dari YouTube.
  */
 export async function getTrendingVideos(): Promise<Video[]> {
-  // Simulasi penundaan jaringan
-  await new Promise(resolve => setTimeout(resolve, 500));
-  return videos;
+  const data = await fetchFromYouTubeAPI('videos', {
+    part: 'snippet,statistics,contentDetails',
+    chart: 'mostPopular',
+    regionCode: 'ID',
+    maxResults: '20',
+  });
+
+  if (!data?.items) return [];
+
+  return data.items.map((item: any): Video => ({
+    id: item.id,
+    title: item.snippet.title,
+    thumbnailUrl: item.snippet.thumbnails.high?.url || item.snippet.thumbnails.default.url,
+    duration: formatDuration(item.contentDetails.duration),
+    channelName: item.snippet.channelTitle,
+    channelId: item.snippet.channelId,
+    views: formatViews(item.statistics.viewCount),
+    uploadedAt: new Date(item.snippet.publishedAt).toLocaleDateString(),
+    description: item.snippet.description,
+  }));
 }
 
 /**
- * Mencari video berdasarkan query.
- * NOTE: Ini hanya data tiruan untuk sekarang.
+ * Mencari video di YouTube berdasarkan query.
  */
 export async function searchVideos(query: string): Promise<Video[]> {
-  await new Promise(resolve => setTimeout(resolve, 500));
-  if (!query) return videos;
-  return videos.filter(
-    video =>
-      video.title.toLowerCase().includes(query.toLowerCase()) ||
-      video.channelName.toLowerCase().includes(query.toLowerCase())
-  );
+  if (!query) return getTrendingVideos();
+
+  const searchData = await fetchFromYouTubeAPI('search', {
+    part: 'snippet',
+    q: query,
+    type: 'video',
+    maxResults: '20',
+  });
+
+  if (!searchData?.items) return [];
+
+  const videoIds = searchData.items.map((item: any) => item.id.videoId).join(',');
+
+  const videoDetailsData = await fetchFromYouTubeAPI('videos', {
+      part: 'snippet,statistics,contentDetails',
+      id: videoIds,
+  });
+
+  if (!videoDetailsData?.items) return [];
+
+  return videoDetailsData.items.map((item: any): Video => ({
+    id: item.id,
+    title: item.snippet.title,
+    thumbnailUrl: item.snippet.thumbnails.high?.url || item.snippet.thumbnails.default.url,
+    duration: formatDuration(item.contentDetails.duration),
+    channelName: item.snippet.channelTitle,
+    channelId: item.snippet.channelId,
+    views: formatViews(item.statistics.viewCount),
+    uploadedAt: new Date(item.snippet.publishedAt).toLocaleDateString(),
+    description: item.snippet.description,
+  }));
 }
+
+/**
+ * Mengambil detail satu video dari YouTube.
+ */
+export async function getVideo(id: string | undefined): Promise<Video | null> {
+    if (!id) return null;
+    
+    const data = await fetchFromYouTubeAPI('videos', {
+        part: 'snippet,statistics,contentDetails',
+        id: id,
+    });
+
+    if (!data?.items || data.items.length === 0) return null;
+
+    const item = data.items[0];
+
+    return {
+        id: item.id,
+        title: item.snippet.title,
+        thumbnailUrl: item.snippet.thumbnails.high?.url || item.snippet.thumbnails.default.url,
+        duration: formatDuration(item.contentDetails.duration),
+        channelName: item.snippet.channelTitle,
+        channelId: item.snippet.channelId,
+        views: formatViews(item.statistics.viewCount),
+        uploadedAt: new Date(item.snippet.publishedAt).toLocaleDateString(),
+        description: item.snippet.description,
+    };
+}
+
+
+/**
+ * Mengambil detail channel dari YouTube.
+ */
+export async function getChannel(id: string | undefined): Promise<Channel | null> {
+    if (!id) return null;
+
+    const data = await fetchFromYouTubeAPI('channels', {
+        part: 'snippet,statistics,brandingSettings',
+        id: id,
+    });
+
+    if (!data?.items || data.items.length === 0) return null;
+    
+    const item = data.items[0];
+
+    return {
+        id: item.id,
+        name: item.snippet.title,
+        avatarUrl: item.snippet.thumbnails.high?.url || item.snippet.thumbnails.default.url,
+        bannerUrl: item.brandingSettings.image?.bannerExternalUrl,
+        subscribers: formatViews(item.statistics.subscriberCount),
+        description: item.snippet.description,
+    };
+}
+
+
+// Fungsi getImage tidak lagi relevan karena URL gambar didapat langsung dari API.
+// Namun, kita akan tetap menyimpannya untuk komponen yang mungkin masih menggunakannya sementara.
+export const getImage = (id: string | undefined) =>
+  PlaceHolderImages.find(img => img.id === id);
