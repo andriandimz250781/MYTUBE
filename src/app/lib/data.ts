@@ -35,9 +35,9 @@ async function fetchFromYouTubeAPI(endpoint: string, params: Record<string, stri
     process.env.NEXT_PUBLIC_YOUTUBE_API_KEYS_3,
     process.env.NEXT_PUBLIC_YOUTUBE_API_KEYS_4,
     process.env.NEXT_PUBLIC_YOUTUBE_API_KEYS_5,
-  ];
+  ].filter(Boolean); // Filter out any undefined/empty keys
 
-  if (API_KEYS.every(key => !key)) {
+  if (API_KEYS.length === 0) {
     console.warn("Tidak ada kunci API YouTube yang ditemukan atau dikonfigurasi di file .env. Menampilkan data kosong.");
     return null;
   }
@@ -48,11 +48,6 @@ async function fetchFromYouTubeAPI(endpoint: string, params: Record<string, stri
     
     // Pindah ke kunci berikutnya untuk percobaan selanjutnya
     currentApiIndex = (currentApiIndex + 1) % API_KEYS.length;
-
-    // Lewati jika kunci API ini kosong atau tidak terdefinisi
-    if (!apiKey) {
-      continue;
-    }
 
     const urlParams = new URLSearchParams({
       ...params,
