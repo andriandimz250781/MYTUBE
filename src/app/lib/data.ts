@@ -35,16 +35,25 @@ async function fetchFromYouTubeAPI(endpoint: string, params: Record<string, stri
     process.env.NEXT_PUBLIC_YOUTUBE_API_KEYS_3,
     process.env.NEXT_PUBLIC_YOUTUBE_API_KEYS_4,
     process.env.NEXT_PUBLIC_YOUTUBE_API_KEYS_5,
-  ].filter(key => key) as string[];
+  ];
 
-  if (API_KEYS.length === 0) {
-    console.warn("Tidak ada kunci API YouTube yang ditemukan atau dikonfigurasi di file .env.local. Menampilkan data kosong.");
+  if (API_KEYS.every(key => !key)) {
+    console.warn("Tidak ada kunci API YouTube yang ditemukan atau dikonfigurasi di file .env. Menampilkan data kosong.");
     return null;
   }
 
   // Coba setiap kunci API secara bergiliran
   for (let i = 0; i < API_KEYS.length; i++) {
     const apiKey = API_KEYS[currentApiIndex];
+    
+    // Pindah ke kunci berikutnya untuk percobaan selanjutnya
+    currentApiIndex = (currentApiIndex + 1) % API_KEYS.length;
+
+    // Lewati jika kunci API ini kosong atau tidak terdefinisi
+    if (!apiKey) {
+      continue;
+    }
+
     const urlParams = new URLSearchParams({
       ...params,
       key: apiKey,
@@ -59,16 +68,12 @@ async function fetchFromYouTubeAPI(endpoint: string, params: Record<string, stri
         return data; // Jika berhasil, kembalikan data
       }
 
-      // Jika error karena kuota atau masalah kunci lainnya
-      console.warn(`Kunci API ke-${currentApiIndex + 1} gagal: ${data.error.message}. Mencoba kunci berikutnya...`);
+      // Jika error karena kuota atau masalah kunci lainnya, loop akan berlanjut ke kunci berikutnya.
+      console.warn(`Kunci API gagal: ${data.error.message}. Mencoba kunci berikutnya...`);
       
-      // Pindah ke kunci berikutnya
-      currentApiIndex = (currentApiIndex + 1) % API_KEYS.length;
-
     } catch (error) {
-      console.error(`Error saat mencoba fetch dengan kunci API ke-${currentApiIndex + 1}:`, error);
-      // Pindah ke kunci berikutnya
-      currentApiIndex = (currentApiIndex + 1) % API_KEYS.length;
+      console.error(`Error saat mencoba fetch dengan kunci API:`, error);
+      // Loop akan berlanjut ke kunci berikutnya
     }
   }
 
@@ -289,5 +294,3 @@ export async function getChannel(id: string | undefined): Promise<Channel | null
 // Namun, kita akan tetap menyimpannya untuk komponen yang mungkin masih menggunakannya sementara.
 export const getImage = (id: string | undefined) =>
   PlaceHolderImages.find(img => img.id === id);
-
-    
