@@ -35,6 +35,16 @@ export type VideoResponse = {
 let currentApiKeyIndex = 0;
 const YOUTUBE_API_URL = 'https://www.googleapis.com/youtube/v3';
 
+// Kumpulkan semua kunci API dari environment variables di level modul
+// agar Next.js dapat menyuntikkannya dengan benar.
+const availableApiKeys = [
+  process.env.NEXT_PUBLIC_YOUTUBE_API_KEYS_1,
+  process.env.NEXT_PUBLIC_YOUTUBE_API_KEYS_2,
+  process.env.NEXT_PUBLIC_YOUTUBE_API_KEYS_3,
+  process.env.NEXT_PUBLIC_YOUTUBE_API_KEYS_4,
+  process.env.NEXT_PUBLIC_YOUTUBE_API_KEYS_5,
+].filter(Boolean) as string[];
+
 // --- Data Statis (untuk fallback & data channel) ---
 const LOREM_IPSUM =
   'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed non risus. Suspendisse lectus tortor, dignissim sit amet, adipiscing nec, ultricies sed, dolor. Cras elementum ultrices diam. Maecenas ligula massa, varius a, semper congue, euismod non, mi.';
@@ -83,15 +93,6 @@ export const getChannel = (id: string | undefined) =>
  * Mengambil data dari YouTube API dengan rotasi kunci otomatis.
  */
 async function fetchFromYouTubeAPI(endpoint: string, params: Record<string, string>) {
-  // Mengumpulkan semua kunci API dari environment variables
-  const availableApiKeys = [
-    process.env.NEXT_PUBLIC_YOUTUBE_API_KEYS_1,
-    process.env.NEXT_PUBLIC_YOUTUBE_API_KEYS_2,
-    process.env.NEXT_PUBLIC_YOUTUBE_API_KEYS_3,
-    process.env.NEXT_PUBLIC_YOUTUBE_API_KEYS_4,
-    process.env.NEXT_PUBLIC_YOUTUBE_API_KEYS_5,
-  ].filter(Boolean) as string[]; // Filter untuk membuang kunci yang tidak terdefinisi
-
   if (availableApiKeys.length === 0) {
     console.warn("Tidak ada kunci API YouTube yang valid dikonfigurasi di .env atau .env.local (NEXT_PUBLIC_YOUTUBE_API_KEYS_*). Video tidak akan bisa dimuat.");
     return null;
@@ -314,3 +315,5 @@ function formatViews(viewCount: string): string {
     if (num >= 1000) return `${(num / 1000).toFixed(0)}Rb`;
     return String(num);
 }
+
+    
