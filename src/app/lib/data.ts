@@ -25,35 +25,58 @@ export type Channel = {
 
 // --- Konstanta API ---
 const YOUTUBE_API_URL = 'https://www.googleapis.com/youtube/v3';
-const API_KEY = process.env.NEXT_PUBLIC_YOUTUBE_API_KEY;
+
+// Mengumpulkan semua kunci API dari environment variables
+const API_KEYS = [
+  process.env.NEXT_PUBLIC_YOUTUBE_API_KEYS_1,
+  process.env.NEXT_PUBLIC_YOUTUBE_API_KEYS_2,
+  process.env.NEXT_PUBLIC_YOUTUBE_API_KEYS_3,
+  process.env.NEXT_PUBLIC_YOUTUBE_API_KEYS_4,
+  process.env.NEXT_PUBLIC_YOUTUBE_API_KEYS_5,
+].filter(key => key) as string[]; // Filter untuk membuang kunci yang tidak ada (undefined)
+
+let currentApiIndex = 0;
 
 // --- Fungsi Helper untuk YouTube API ---
 
 async function fetchFromYouTubeAPI(endpoint: string, params: Record<string, string>) {
-  if (!API_KEY || API_KEY === 'GANTI_DENGAN_KUNCI_API_YOUTUBE_ANDA') {
-    console.warn("Kunci API YouTube belum diatur di file .env.local. Menampilkan data kosong.");
+  if (API_KEYS.length === 0) {
+    console.warn("Tidak ada kunci API YouTube yang ditemukan di file .env.local. Menampilkan data kosong.");
     return null;
   }
 
-  const urlParams = new URLSearchParams({
-    key: API_KEY,
-    ...params,
-  });
+  // Coba setiap kunci API secara bergiliran
+  for (let i = 0; i < API_KEYS.length; i++) {
+    const apiKey = API_KEYS[currentApiIndex];
+    const urlParams = new URLSearchParams({
+      ...params,
+      key: apiKey,
+    });
+    const url = `${YOUTUBE_API_URL}/${endpoint}?${urlParams}`;
 
-  const url = `${YOUTUBE_API_URL}/${endpoint}?${urlParams}`;
+    try {
+      const response = await fetch(url, { cache: 'no-store' });
+      if (response.ok) {
+        return await response.json(); // Jika berhasil, kembalikan data
+      }
 
-  try {
-    const response = await fetch(url, { cache: 'no-store' }); // Nonaktifkan cache untuk development
-    if (!response.ok) {
+      // Jika error karena kuota atau masalah kunci lainnya
       const errorData = await response.json();
-      console.error('YouTube API Error:', errorData.error.message);
-      throw new Error(`YouTube API request failed: ${errorData.error.message}`);
+      console.warn(`Kunci API ke-${currentApiIndex + 1} gagal: ${errorData.error.message}. Mencoba kunci berikutnya...`);
+      
+      // Pindah ke kunci berikutnya
+      currentApiIndex = (currentApiIndex + 1) % API_KEYS.length;
+
+    } catch (error) {
+      console.error(`Error saat mencoba fetch dengan kunci API ke-${currentApiIndex + 1}:`, error);
+      // Pindah ke kunci berikutnya
+      currentApiIndex = (currentApiIndex + 1) % API_KEYS.length;
     }
-    return await response.json();
-  } catch (error) {
-    console.error('Failed to fetch from YouTube API:', error);
-    return null;
   }
+
+  // Jika semua kunci gagal
+  console.error("Semua kunci API YouTube telah gagal. Periksa status, kuota, dan validitas kunci di Google Cloud Console.");
+  return null;
 }
 
 function formatViews(viewCount: string): string {
@@ -94,6 +117,20 @@ export async function getTrendingVideos(): Promise<Video[]> {
 
   if (!data?.items) return [];
 
+  // Ambil detail channel untuk setiap video secara bersamaan
+  const channelIds = data.items.map((item: any) => item.snippet.channelId).join(',');
+  const channelsData = await fetchFromYouTubeAPI('channels', {
+    part: 'snippet',
+    id: channelIds,
+  });
+
+  const channelAvatars = new Map<string, string>();
+  if (channelsData?.items) {
+    channelsData.items.forEach((channel: any) => {
+      channelAvatars.set(channel.id, channel.snippet.thumbnails.default.url);
+    });
+  }
+
   return data.items.map((item: any): Video => ({
     id: item.id,
     title: item.snippet.title,
@@ -101,6 +138,7 @@ export async function getTrendingVideos(): Promise<Video[]> {
     duration: formatDuration(item.contentDetails.duration),
     channelName: item.snippet.channelTitle,
     channelId: item.snippet.channelId,
+    channelAvatarUrl: channelAvatars.get(item.snippet.channelId),
     views: formatViews(item.statistics.viewCount),
     uploadedAt: new Date(item.snippet.publishedAt).toLocaleDateString(),
     description: item.snippet.description,
@@ -130,6 +168,20 @@ export async function searchVideos(query: string): Promise<Video[]> {
   });
 
   if (!videoDetailsData?.items) return [];
+  
+  // Ambil detail channel untuk setiap video secara bersamaan
+  const channelIds = videoDetailsData.items.map((item: any) => item.snippet.channelId).join(',');
+  const channelsData = await fetchFromYouTubeAPI('channels', {
+    part: 'snippet',
+    id: channelIds,
+  });
+
+  const channelAvatars = new Map<string, string>();
+  if (channelsData?.items) {
+    channelsData.items.forEach((channel: any) => {
+      channelAvatars.set(channel.id, channel.snippet.thumbnails.default.url);
+    });
+  }
 
   return videoDetailsData.items.map((item: any): Video => ({
     id: item.id,
@@ -138,6 +190,7 @@ export async function searchVideos(query: string): Promise<Video[]> {
     duration: formatDuration(item.contentDetails.duration),
     channelName: item.snippet.channelTitle,
     channelId: item.snippet.channelId,
+    channelAvatarUrl: channelAvatars.get(item.snippet.channelId),
     views: formatViews(item.statistics.viewCount),
     uploadedAt: new Date(item.snippet.publishedAt).toLocaleDateString(),
     description: item.snippet.description,
