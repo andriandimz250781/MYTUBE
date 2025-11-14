@@ -12,9 +12,9 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { useRouter } from 'next/navigation';
-import { UserAvatar } from './user-avatar';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 
-export function AppHeader() {
+export function AppHeader({ userAvatarUrl }: { userAvatarUrl?: string }) {
   const router = useRouter();
 
   const handleSearch = (e: React.FormEvent<HTMLFormElement>) => {
@@ -73,7 +73,12 @@ export function AppHeader() {
                 size="icon"
                 className="rounded-full"
               >
-                <UserAvatar avatarId="user-avatar-1" />
+                <Avatar className="h-8 w-8">
+                  <AvatarImage src={userAvatarUrl} alt="User Avatar" />
+                  <AvatarFallback>
+                    <User className="h-5 w-5" />
+                  </AvatarFallback>
+                </Avatar>
                 <span className="sr-only">Toggle user menu</span>
               </Button>
             </DropdownMenuTrigger>
