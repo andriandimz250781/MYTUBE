@@ -5,10 +5,10 @@ export type Video = {
   id: string;
   title: string;
   thumbnailUrl: string;
-  duration: string; // Akan kita coba dapatkan nanti jika memungkinkan
+  duration: string;
   channelName: string;
   channelId: string;
-  channelAvatarUrl?: string; // Tidak selalu tersedia di semua panggilan API
+  channelAvatarUrl?: string;
   views: string;
   uploadedAt: string;
   description: string;
@@ -33,12 +33,11 @@ const API_KEYS = [
   process.env.NEXT_PUBLIC_YOUTUBE_API_KEYS_3,
   process.env.NEXT_PUBLIC_YOUTUBE_API_KEYS_4,
   process.env.NEXT_PUBLIC_YOUTUBE_API_KEYS_5,
-].filter(key => key) as string[]; // Filter untuk membuang kunci yang tidak ada (undefined)
+].filter(key => key) as string[];
 
 let currentApiIndex = 0;
 
 // --- Fungsi Helper untuk YouTube API ---
-
 async function fetchFromYouTubeAPI(endpoint: string, params: Record<string, string>) {
   if (API_KEYS.length === 0) {
     console.warn("Tidak ada kunci API YouTube yang ditemukan di file .env.local. Menampilkan data kosong.");
@@ -56,13 +55,14 @@ async function fetchFromYouTubeAPI(endpoint: string, params: Record<string, stri
 
     try {
       const response = await fetch(url, { cache: 'no-store' });
+      const data = await response.json();
+
       if (response.ok) {
-        return await response.json(); // Jika berhasil, kembalikan data
+        return data; // Jika berhasil, kembalikan data
       }
 
       // Jika error karena kuota atau masalah kunci lainnya
-      const errorData = await response.json();
-      console.warn(`Kunci API ke-${currentApiIndex + 1} gagal: ${errorData.error.message}. Mencoba kunci berikutnya...`);
+      console.warn(`Kunci API ke-${currentApiIndex + 1} gagal: ${data.error.message}. Mencoba kunci berikutnya...`);
       
       // Pindah ke kunci berikutnya
       currentApiIndex = (currentApiIndex + 1) % API_KEYS.length;
@@ -88,6 +88,7 @@ function formatViews(viewCount: string): string {
 }
 
 function formatDuration(isoDuration: string): string {
+  if (!isoDuration) return "0:00";
   const match = isoDuration.match(/PT(?:(\d+)H)?(?:(\d+)M)?(?:(\d+)S)?/);
   if (!match) return "0:00";
 
@@ -211,6 +212,9 @@ export async function getVideo(id: string | undefined): Promise<Video | null> {
     if (!data?.items || data.items.length === 0) return null;
 
     const item = data.items[0];
+    
+    // Ambil detail channel untuk mendapatkan avatar
+    const channelData = await getChannel(item.snippet.channelId);
 
     return {
         id: item.id,
@@ -219,6 +223,7 @@ export async function getVideo(id: string | undefined): Promise<Video | null> {
         duration: formatDuration(item.contentDetails.duration),
         channelName: item.snippet.channelTitle,
         channelId: item.snippet.channelId,
+        channelAvatarUrl: channelData?.avatarUrl,
         views: formatViews(item.statistics.viewCount),
         uploadedAt: new Date(item.snippet.publishedAt).toLocaleDateString(),
         description: item.snippet.description,
