@@ -12,6 +12,7 @@ export interface Video {
 
 let currentApiKeyIndex = 0;
 
+// Format ISO duration → 10:32 / 1:02:09
 function formatDuration(isoDuration: string): string {
   const match = isoDuration.match(/PT(\d+H)?(\d+M)?(\d+S)?/);
   if (!match) return '0:00';
@@ -32,6 +33,7 @@ function formatDuration(isoDuration: string): string {
   return formatted;
 }
 
+// Format views → 1.4K / 1.2M / 5.2B
 function formatViews(viewCount: string): string {
   const count = Number(viewCount);
   if (count >= 1_000_000_000) return `${(count / 1_000_000_000).toFixed(1)}B`;
@@ -40,6 +42,7 @@ function formatViews(viewCount: string): string {
   return count.toString();
 }
 
+// Universal YouTube API fetcher (with rotating API keys)
 async function fetchFromYouTubeAPI(
   endpoint: string,
   params: Record<string, string>
@@ -53,9 +56,7 @@ async function fetchFromYouTubeAPI(
   ].filter(Boolean) as string[];
 
   if (API_KEYS.length === 0) {
-    console.error(
-      'No YouTube API keys found. Please check your .env file.'
-    );
+    console.error('No YouTube API keys found in .env');
     return null;
   }
 
@@ -65,12 +66,12 @@ async function fetchFromYouTubeAPI(
     const url = `https://www.googleapis.com/youtube/v3/${endpoint}?${queryString}`;
 
     try {
-      console.log(`Trying YouTube API with key index: ${currentApiKeyIndex}`);
+      console.log(`Trying YouTube API key index: ${currentApiKeyIndex}`);
       const response = await fetch(url, { next: { revalidate: 3600 } });
 
       if (response.status === 403) {
         console.warn(
-          `API key at index ${currentApiKeyIndex} failed (quota likely exceeded). Trying next key.`
+          `Key index ${currentApiKeyIndex} quota exceeded. Switching key...`
         );
         currentApiKeyIndex = (currentApiKeyIndex + 1) % API_KEYS.length;
         continue;
@@ -78,25 +79,30 @@ async function fetchFromYouTubeAPI(
 
       if (!response.ok) {
         const errorData = await response.json();
-        console.error(`YouTube API error with key index ${currentApiKeyIndex}:`, errorData.error.message);
-        throw new Error(`YouTube API error: ${errorData.error.message}`);
+        console.error(
+          `YouTube API error (key ${currentApiKeyIndex}):`,
+          errorData.error?.message
+        );
+        throw new Error(errorData.error?.message || 'YouTube API error');
       }
 
-      console.log(`Successfully fetched data with key index: ${currentApiKeyIndex}`);
+      console.log(`Success using key index: ${currentApiKeyIndex}`);
       return await response.json();
 
     } catch (error) {
-      console.error(`Error fetching from YouTube with key index ${currentApiKeyIndex}:`, error);
+      console.error(
+        `Fetch error using key ${currentApiKeyIndex}:`,
+        error
+      );
       currentApiKeyIndex = (currentApiKeyIndex + 1) % API_KEYS.length;
     }
   }
 
-  console.error(
-    'All YouTube API keys have failed. Please check their status, quota, and validity in the Google Cloud Console.'
-  );
+  console.error('All YouTube API keys failed.');
   return null;
 }
 
+// Get trending videos (ID Region)
 export async function getTrendingVideos(): Promise<Video[] | null> {
   const data = await fetchFromYouTubeAPI('videos', {
     part: 'snippet,contentDetails,statistics',
@@ -108,6 +114,44 @@ export async function getTrendingVideos(): Promise<Video[] | null> {
   if (!data?.items) return [];
 
   return data.items.map(
+    (item: any): Video => ({
+      id: item.id,
+      title: item.snippet.title,
+      thumbnailUrl:
+        item.snippet.thumbnails.maxres?.url ??
+        item.snippet.thumbnails.high?.url ??
+        item.snippet.thumbnails.default.url,
+      duration: formatDuration(item.contentDetails.duration),
+      channelName: item.snippet.channelTitle,
+      views: formatViews(item.statistics.viewCount),
+      uploadedAt: formatDistanceToNow(new Date(item.snippet.publishedAt), {
+        addSuffix: true,
+      }),
+    })
+  );
+}
+
+export async function searchVideos(query: string): Promise<Video[] | null> {
+  const searchData = await fetchFromYouTubeAPI('search', {
+    part: 'snippet',
+    q: query,
+    type: 'video',
+    maxResults: '20',
+    regionCode: 'ID',
+  });
+
+  if (!searchData?.items) return [];
+
+  const videoIds = searchData.items.map((i: any) => i.id.videoId).join(',');
+
+  const details = await fetchFromYouTubeAPI('videos', {
+    part: 'snippet,contentDetails,statistics',
+    id: videoIds,
+  });
+
+  if (!details?.items) return [];
+
+  return details.items.map(
     (item: any): Video => ({
       id: item.id,
       title: item.snippet.title,

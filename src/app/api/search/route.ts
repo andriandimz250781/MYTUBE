@@ -1,16 +1,25 @@
 import { NextResponse } from 'next/server';
+import { searchVideos } from '@/lib/youtube';
 
-export async function GET(request: Request) {
-  const { searchParams } = new URL(request.url);
-  const query = searchParams.get('q');
+export async function GET(req: Request) {
+  try {
+    const { searchParams } = new URL(req.url);
+    const q = searchParams.get('q') || '';
 
-  if (!query) {
-    return NextResponse.json({ error: 'Search query is required' }, { status: 400 });
+    if (!q.trim()) {
+      return NextResponse.json(
+        { error: 'Query cannot be empty.' },
+        { status: 400 }
+      );
+    }
+
+    const videos = await searchVideos(q);
+    return NextResponse.json({ videos });
+  } catch (error) {
+    console.error('[SEARCH_API_ERROR]', error);
+    return NextResponse.json(
+      { error: 'Internal server error' },
+      { status: 500 }
+    );
   }
-
-  // TODO: Implement search logic using the YouTube API
-  console.log(`Searching for: ${query}`);
-
-  // Placeholder response
-  return NextResponse.json({ videos: [] });
 }
