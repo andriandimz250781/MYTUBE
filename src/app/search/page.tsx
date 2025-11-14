@@ -1,7 +1,7 @@
 'use client';
 
 import { VideoCard } from '@/components/video/video-card';
-import { searchVideosByQuery, type Video } from '@/app/lib/data';
+import { getTrendingVideos, searchVideosByQuery, type Video } from '@/app/lib/data';
 import { Suspense, useEffect, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -38,13 +38,16 @@ function SearchResults({ query, duration }: { query: string; duration?: 'long' |
     return <div>Memuat hasil pencarian...</div>;
   }
 
+  if (videos.length === 0) {
+      return <p>Video tidak ditemukan.</p>;
+  }
+
   return (
     <div>
       <div className="grid grid-cols-1 gap-x-4 gap-y-8 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
         {videos.map(video => (
           <VideoCard key={video.id} video={video} />
         ))}
-        {videos.length === 0 && <p>Video tidak ditemukan.</p>}
       </div>
        {nextPageToken && (
         <div className="mt-8 flex justify-center">
@@ -64,11 +67,121 @@ function SearchResults({ query, duration }: { query: string; duration?: 'long' |
   );
 }
 
+function Recommendations() {
+  const [videos, setVideos] = useState<Video[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    async function loadRecommendations() {
+      setLoading(true);
+      try {
+        const history: { channelName: string; tags: string[] }[] = JSON.parse(
+          localStorage.getItem('watchHistory') || '[]'
+        );
+
+        if (history.length > 0) {
+          const tagFrequency: { [key: string]: number } = history
+            .flatMap(item => item.tags)
+            .filter(tag => tag) // Filter out undefined/null tags
+            .reduce((acc, tag) => {
+              const lowerTag = tag.toLowerCase();
+              if (lowerTag.includes('official') || lowerTag.includes('video') || lowerTag.length < 3) {
+                return acc;
+              }
+              acc[tag] = (acc[tag] || 0) + 1;
+              return acc;
+            }, {} as { [key: string]: number });
+
+          const mostFrequentTag = Object.keys(tagFrequency).reduce(
+            (a, b) => (tagFrequency[a] > tagFrequency[b] ? a : b),
+            null as string | null
+          );
+
+          if (mostFrequentTag) {
+            const { videos: recommendedVideos } = await searchVideosByQuery(
+              `${mostFrequentTag} music`
+            );
+            setVideos(recommendedVideos.slice(0, 8));
+          } else {
+            const { videos: newVideos } = await getTrendingVideos();
+            setVideos(newVideos.filter(v => v.tags.some(t => t.toLowerCase().includes('music'))).slice(0, 4));
+          }
+
+        } else {
+          const { videos: newVideos } = await getTrendingVideos();
+          setVideos(newVideos.filter(v => v.tags.some(t => t.toLowerCase().includes('music'))).slice(0, 4));
+        }
+      } catch (error) {
+        console.error('Failed to load recommendations:', error);
+        const { videos: newVideos } = await getTrendingVideos();
+        setVideos(newVideos.filter(v => v.tags.some(t => t.toLowerCase().includes('music'))).slice(0, 4));
+      } finally {
+        setLoading(false);
+      }
+    }
+    loadRecommendations();
+  }, []);
+
+
+  if (loading) {
+    return <p>Memuat rekomendasi musik...</p>;
+  }
+
+  if (videos.length === 0) {
+      return <p>Tidak ada rekomendasi musik untuk ditampilkan.</p>;
+  }
+
+  return (
+      <div className="grid grid-cols-1 gap-x-4 gap-y-8 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+        {videos.map(video => (
+          <VideoCard key={video.id} video={video} />
+        ))}
+      </div>
+  );
+}
+
 
 function SearchPageContent() {
   const searchParams = useSearchParams();
   const query = searchParams.get('query') || '';
   const upperCaseQuery = query.toUpperCase();
+
+  // Tampilan khusus untuk kategori MUSIK
+  if (upperCaseQuery === 'MUSIK') {
+    return (
+      <div>
+        <h1 className="font-headline text-3xl font-bold mb-6">Dunia Musik</h1>
+        <Tabs defaultValue="rekomendasi" className="w-full">
+          <TabsList>
+            <TabsTrigger value="rekomendasi">Rekomendasi</TabsTrigger>
+            <TabsTrigger value="trending">Lagi Tren</TabsTrigger>
+            <TabsTrigger value="indonesia">Indonesia</TabsTrigger>
+            <TabsTrigger value="mancanegara">Mancanegara</TabsTrigger>
+          </TabsList>
+          <TabsContent value="rekomendasi" className="mt-6">
+            <Suspense fallback={<div>Memuat rekomendasi musik...</div>}>
+              <Recommendations />
+            </Suspense>
+          </TabsContent>
+          <TabsContent value="trending" className="mt-6">
+            <Suspense fallback={<div>Memuat musik trending...</div>}>
+              <SearchResults query="trending music" />
+            </Suspense>
+          </TabsContent>
+          <TabsContent value="indonesia" className="mt-6">
+            <Suspense fallback={<div>Memuat musik Indonesia...</div>}>
+              <SearchResults query="musik indonesia terbaru" />
+            </Suspense>
+          </TabsContent>
+          <TabsContent value="mancanegara" className="mt-6">
+            <Suspense fallback={<div>Memuat musik mancanegara...</div>}>
+              <SearchResults query="international music hits" />
+            </Suspense>
+          </TabsContent>
+        </Tabs>
+      </div>
+    );
+  }
 
   // Tampilan khusus untuk kategori BERITA
   if (upperCaseQuery === 'BERITA') {
@@ -226,7 +339,7 @@ function SearchPageContent() {
     );
   }
 
-  // Untuk kategori lain seperti MUSIK, KARAOKE, dll.
+  // Untuk kategori lain seperti KARAOKE, dll.
   // Kata kunci pencarian diambil langsung dari nama kategori.
   const searchQuery = upperCaseQuery === 'KARAOKE' ? `${query} karaoke` : query;
 
