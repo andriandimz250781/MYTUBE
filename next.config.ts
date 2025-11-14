@@ -36,13 +36,6 @@ const nextConfig: NextConfig = {
       },
     ],
   },
-  env: {
-    NEXT_PUBLIC_YOUTUBE_API_KEYS_1: process.env.NEXT_PUBLIC_YOUTUBE_API_KEYS_1,
-    NEXT_PUBLIC_YOUTUBE_API_KEYS_2: process.env.NEXT_PUBLIC_YOUTUBE_API_KEYS_2,
-    NEXT_PUBLIC_YOUTUBE_API_KEYS_3: process.env.NEXT_PUBLIC_YOUTUBE_API_KEYS_3,
-    NEXT_PUBLIC_YOUTUBE_API_KEYS_4: process.env.NEXT_PUBLIC_YOUTUBE_API_KEYS_4,
-    NEXT_PUBLIC_YOUTUBE_API_KEYS_5: process.env.NEXT_PUBLIC_YOUTUBE_API_KEYS_5,
-  },
 };
 
 export default nextConfig;
