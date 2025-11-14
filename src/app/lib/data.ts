@@ -29,16 +29,17 @@ let currentApiIndex = 0;
 
 // --- Fungsi Helper untuk YouTube API ---
 async function fetchFromYouTubeAPI(endpoint: string, params: Record<string, string>) {
+  // definitive way to read env vars inside a server-side function
   const API_KEYS = [
     process.env.NEXT_PUBLIC_YOUTUBE_API_KEYS_1,
     process.env.NEXT_PUBLIC_YOUTUBE_API_KEYS_2,
     process.env.NEXT_PUBLIC_YOUTUBE_API_KEYS_3,
     process.env.NEXT_PUBLIC_YOUTUBE_API_KEYS_4,
     process.env.NEXT_PUBLIC_YOUTUBE_API_KEYS_5,
-  ].filter(Boolean); // Filter out any undefined/empty keys
+  ].filter(Boolean) as string[];
 
   if (API_KEYS.length === 0) {
-    console.warn("Tidak ada kunci API YouTube yang ditemukan atau dikonfigurasi di file .env. Menampilkan data kosong.");
+    console.error("Tidak ada kunci API YouTube yang ditemukan atau dikonfigurasi. Pastikan variabel NEXT_PUBLIC_YOUTUBE_API_KEYS_* ada di file .env.local Anda.");
     return null;
   }
 
@@ -48,6 +49,10 @@ async function fetchFromYouTubeAPI(endpoint: string, params: Record<string, stri
     
     // Pindah ke kunci berikutnya untuk percobaan selanjutnya
     currentApiIndex = (currentApiIndex + 1) % API_KEYS.length;
+
+    if (!apiKey) {
+      continue; // Lewati jika kunci kosong
+    }
 
     const urlParams = new URLSearchParams({
       ...params,
@@ -64,10 +69,10 @@ async function fetchFromYouTubeAPI(endpoint: string, params: Record<string, stri
       }
 
       // Jika error karena kuota atau masalah kunci lainnya, loop akan berlanjut ke kunci berikutnya.
-      console.warn(`Kunci API gagal: ${data.error.message}. Mencoba kunci berikutnya...`);
+      console.warn(`Kunci API ke-${currentApiIndex} gagal: ${data.error.message}. Mencoba kunci berikutnya...`);
       
     } catch (error) {
-      console.error(`Error saat mencoba fetch dengan kunci API:`, error);
+      console.error(`Error saat mencoba fetch dengan kunci API ke-${currentApiIndex}:`, error);
       // Loop akan berlanjut ke kunci berikutnya
     }
   }
