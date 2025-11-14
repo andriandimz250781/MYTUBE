@@ -10,7 +10,6 @@ export interface Video {
   uploadedAt: string;
 }
 
-// This variable will keep track of the current key index.
 let currentApiKeyIndex = 0;
 
 function formatDuration(isoDuration: string): string {
@@ -45,13 +44,12 @@ async function fetchFromYouTubeAPI(
   endpoint: string,
   params: Record<string, string>
 ) {
-  // IMPORTANT: We now read the keys inside the function to ensure they are available.
   const API_KEYS = [
-    process.env.NEXT_PUBLIC_YOUTUBE_API_KEYS_1,
-    process.env.NEXT_PUBLIC_YOUTUBE_API_KEYS_2,
-    process.env.NEXT_PUBLIC_YOUTUBE_API_KEYS_3,
-    process.env.NEXT_PUBLIC_YOUTUBE_API_KEYS_4,
-    process.env.NEXT_PUBLIC_YOUTUBE_API_KEYS_5,
+    process.env.NEXT_PUBLIC_YOUTUBE_API_KEY_1,
+    process.env.NEXT_PUBLIC_YOUTUBE_API_KEY_2,
+    process.env.NEXT_PUBLIC_YOUTUBE_API_KEY_3,
+    process.env.NEXT_PUBLIC_YOUTUBE_API_KEY_4,
+    process.env.NEXT_PUBLIC_YOUTUBE_API_KEY_5,
   ].filter(Boolean) as string[];
 
   if (API_KEYS.length === 0) {
@@ -68,29 +66,27 @@ async function fetchFromYouTubeAPI(
 
     try {
       console.log(`Trying YouTube API with key index: ${currentApiKeyIndex}`);
-      const response = await fetch(url, { next: { revalidate: 3600 } }); // Cache for 1 hour
+      const response = await fetch(url, { next: { revalidate: 3600 } });
 
       if (response.status === 403) {
         console.warn(
           `API key at index ${currentApiKeyIndex} failed (quota likely exceeded). Trying next key.`
         );
         currentApiKeyIndex = (currentApiKeyIndex + 1) % API_KEYS.length;
-        continue; // Try the next key
+        continue;
       }
 
       if (!response.ok) {
         const errorData = await response.json();
         console.error(`YouTube API error with key index ${currentApiKeyIndex}:`, errorData.error.message);
-        // Don't switch key on other errors, might be a different issue
         throw new Error(`YouTube API error: ${errorData.error.message}`);
       }
-      
+
       console.log(`Successfully fetched data with key index: ${currentApiKeyIndex}`);
       return await response.json();
 
     } catch (error) {
       console.error(`Error fetching from YouTube with key index ${currentApiKeyIndex}:`, error);
-      // Move to the next key on any fetch error
       currentApiKeyIndex = (currentApiKeyIndex + 1) % API_KEYS.length;
     }
   }

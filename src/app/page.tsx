@@ -3,17 +3,23 @@ import type { Video } from '@/lib/youtube';
 
 async function getVideos() {
   try {
-    // We fetch from our own API route, not directly from the component.
-    const res = await fetch(`${process.env.NEXT_PUBLIC_APP_URL}/api/youtube`, {
-      cache: 'no-store', // Disable caching for now to see changes
+    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL;
+
+    if (!baseUrl) {
+      console.error("ERROR: NEXT_PUBLIC_BASE_URL is not set in .env.local");
+      return [];
+    }
+
+    const res = await fetch(`${baseUrl}/api/youtube`, {
+      cache: 'no-store',
     });
-    
+
     if (!res.ok) {
       const errorText = await res.text();
       console.error('Error fetching videos from API route:', errorText);
       return [];
     }
-    
+
     const data = await res.json();
     return data.videos as Video[];
   } catch (error) {
@@ -36,7 +42,7 @@ export default async function Home() {
             ))}
           </div>
         ) : (
-          <p>Could not load videos. Please check the server logs and ensure your YouTube API keys are correct in the .env file.</p>
+          <p>Could not load videos. Check API keys in .env.local.</p>
         )}
       </div>
     </div>
