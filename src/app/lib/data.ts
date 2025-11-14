@@ -86,7 +86,7 @@ async function fetchFromYouTubeAPI(endpoint: string, params: Record<string, stri
   const availableApiKeys = (process.env.NEXT_PUBLIC_YOUTUBE_API_KEYS || '').split(',').filter(Boolean);
   
   if (availableApiKeys.length === 0 || (availableApiKeys.length === 1 && availableApiKeys[0].startsWith('GANTI_DENGAN'))) {
-    console.warn("Tidak ada kunci API YouTube yang valid dikonfigurasi di .env atau .env.local (NEXT_PUBLIC_YOUTUBE_API_KEYS). Video tidak akan bisa dimuat.");
+    console.warn("Tidak ada kunci API YouTube yang valid dikonfigurasi di .env.local (NEXT_PUBLIC_YOUTUBE_API_KEYS). Video tidak akan bisa dimuat.");
     return null;
   }
   
