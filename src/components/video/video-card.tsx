@@ -17,8 +17,7 @@ type VideoCardProps = {
 };
 
 export function VideoCard({ video }: VideoCardProps) {
-  // Thumbnail dari data.ts sekarang adalah URL langsung
-  const thumbnailUrl = video.thumbnailUrl;
+  const thumbnail = getImage(video.thumbnailId);
   const channelAvatar = getImage(video.channelAvatarId);
 
   return (
@@ -26,12 +25,13 @@ export function VideoCard({ video }: VideoCardProps) {
       <Link href={`/watch/${video.id}`} className="block">
         <CardContent className="p-0">
           <div className="relative aspect-video">
-            {thumbnailUrl ? (
+            {thumbnail ? (
               <Image
-                src={thumbnailUrl}
+                src={thumbnail.imageUrl}
                 alt={video.title}
                 fill
                 className="rounded-t-lg object-cover"
+                data-ai-hint={thumbnail.imageHint}
                 sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
               />
             ) : (
@@ -66,20 +66,20 @@ export function VideoCard({ video }: VideoCardProps) {
               {video.channelName}
             </Link>
             <p className="text-xs text-muted-foreground">
-              {video.views} kali ditonton &bull; {video.uploadedAt}
+              {video.views} views &bull; {video.uploadedAt}
             </p>
           </div>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <button className="-mr-2 p-2">
                 <MoreVertical className="h-4 w-4 text-muted-foreground" />
-                <span className="sr-only">Opsi lainnya</span>
+                <span className="sr-only">More options</span>
               </button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
-              <DropdownMenuItem>Tambah ke antrean</DropdownMenuItem>
-              <DropdownMenuItem>Simpan ke Tonton Nanti</DropdownMenuItem>
-              <DropdownMenuItem>Laporkan</DropdownMenuItem>
+              <DropdownMenuItem>Add to queue</DropdownMenuItem>
+              <DropdownMenuItem>Save to Watch Later</DropdownMenuItem>
+              <DropdownMenuItem>Report</DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
         </div>

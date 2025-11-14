@@ -14,7 +14,6 @@ export default async function ChannelPage({ params }: { params: { id: string } }
 
   const channelBanner = getImage(channel.bannerId);
   const channelAvatar = getImage(channel.avatarId);
-  // Video channel untuk sementara diambil dari data trending
   const channelVideos = (await getTrendingVideos()).filter(v => v.channelId === channel.id || v.channelId !== 'wanderlust');
 
   return (
