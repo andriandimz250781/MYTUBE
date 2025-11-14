@@ -25,20 +25,19 @@ export type Channel = {
 
 // --- Konstanta API ---
 const YOUTUBE_API_URL = 'https://www.googleapis.com/youtube/v3';
-
-// Mengumpulkan semua kunci API dari environment variables
-const API_KEYS = [
-  process.env.NEXT_PUBLIC_YOUTUBE_API_KEYS_1,
-  process.env.NEXT_PUBLIC_YOUTUBE_API_KEYS_2,
-  process.env.NEXT_PUBLIC_YOUTUBE_API_KEYS_3,
-  process.env.NEXT_PUBLIC_YOUTUBE_API_KEYS_4,
-  process.env.NEXT_PUBLIC_YOUTUBE_API_KEYS_5,
-].filter(key => key) as string[];
-
 let currentApiIndex = 0;
 
 // --- Fungsi Helper untuk YouTube API ---
 async function fetchFromYouTubeAPI(endpoint: string, params: Record<string, string>) {
+  // Pindahkan logika pengambilan kunci ke dalam fungsi
+  const API_KEYS = [
+    process.env.NEXT_PUBLIC_YOUTUBE_API_KEYS_1,
+    process.env.NEXT_PUBLIC_YOUTUBE_API_KEYS_2,
+    process.env.NEXT_PUBLIC_YOUTUBE_API_KEYS_3,
+    process.env.NEXT_PUBLIC_YOUTUBE_API_KEYS_4,
+    process.env.NEXT_PUBLIC_YOUTUBE_API_KEYS_5,
+  ].filter(key => key) as string[];
+
   if (API_KEYS.length === 0) {
     console.warn("Tidak ada kunci API YouTube yang ditemukan di file .env.local. Menampilkan data kosong.");
     return null;
