@@ -1,3 +1,4 @@
+
 import { PlaceHolderImages } from '@/lib/placeholder-images';
 
 // --- Tipe Data Baru (sesuai dengan YouTube API) ---
@@ -294,3 +295,5 @@ export async function getChannel(id: string | undefined): Promise<Channel | null
 // Namun, kita akan tetap menyimpannya untuk komponen yang mungkin masih menggunakannya sementara.
 export const getImage = (id: string | undefined) =>
   PlaceHolderImages.find(img => img.id === id);
+
+    
