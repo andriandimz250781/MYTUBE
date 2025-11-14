@@ -1,6 +1,6 @@
 import { notFound } from 'next/navigation';
 import Image from 'next/image';
-import { getChannel, getTrendingVideos, type Channel, type Video } from '@/app/lib/data';
+import { getChannel, getTrendingVideos, type Channel, type Video } from '@/lib/data';
 import { VideoCard } from '@/components/video/video-card';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';

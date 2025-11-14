@@ -1,7 +1,7 @@
 'use client';
 
 import { useParams } from 'next/navigation';
-import { getTrendingVideos, getVideo, getChannel, type Video, type Channel } from '@/app/lib/data';
+import { getTrendingVideos, getVideo, getChannel, type Video, type Channel } from '@/lib/data';
 import Link from 'next/link';
 import Image from 'next/image';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';

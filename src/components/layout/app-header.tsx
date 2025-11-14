@@ -12,7 +12,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { getImage } from '@/app/lib/data';
+import { getImage } from '@/lib/data';
 import { useRouter } from 'next/navigation';
 
 export function AppHeader() {

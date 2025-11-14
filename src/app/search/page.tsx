@@ -1,7 +1,7 @@
 'use client';
 
 import { VideoCard } from '@/components/video/video-card';
-import { searchVideos, type Video } from '@/app/lib/data';
+import { searchVideos, type Video } from '@/lib/data';
 import { Suspense, useEffect, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 

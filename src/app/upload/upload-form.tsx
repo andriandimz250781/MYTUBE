@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { useFormState } from 'react-dom';
-import { type TagGenerationState, getAiTags } from '@/app/lib/actions';
+import { type TagGenerationState, getAiTags } from '@/lib/actions';
 import { Button } from '@/components/ui/button';
 import {
   Card,

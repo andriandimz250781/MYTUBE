@@ -3,7 +3,7 @@
 import { useState, useRef } from 'react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
-import { getImage } from '@/app/lib/data';
+import { getImage } from '@/lib/data';
 import { Pencil } from 'lucide-react';
 
 export function EditableAvatar({ initialImageId }: { initialImageId: string }) {
