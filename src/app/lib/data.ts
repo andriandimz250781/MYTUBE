@@ -29,7 +29,6 @@ let currentApiIndex = 0;
 
 // --- Fungsi Helper untuk YouTube API ---
 async function fetchFromYouTubeAPI(endpoint: string, params: Record<string, string>) {
-  // Pindahkan logika pengambilan kunci ke dalam fungsi
   const API_KEYS = [
     process.env.NEXT_PUBLIC_YOUTUBE_API_KEYS_1,
     process.env.NEXT_PUBLIC_YOUTUBE_API_KEYS_2,
@@ -39,7 +38,7 @@ async function fetchFromYouTubeAPI(endpoint: string, params: Record<string, stri
   ].filter(key => key) as string[];
 
   if (API_KEYS.length === 0) {
-    console.warn("Tidak ada kunci API YouTube yang ditemukan di file .env.local. Menampilkan data kosong.");
+    console.warn("Tidak ada kunci API YouTube yang ditemukan atau dikonfigurasi di file .env.local. Menampilkan data kosong.");
     return null;
   }
 
@@ -79,7 +78,9 @@ async function fetchFromYouTubeAPI(endpoint: string, params: Record<string, stri
 }
 
 function formatViews(viewCount: string): string {
+    if (!viewCount) return '0';
     const num = parseInt(viewCount, 10);
+    if (isNaN(num)) return '0';
     if (num >= 1_000_000_000) return `${(num / 1_000_000_000).toFixed(1)}B`;
     if (num >= 1_000_000) return `${(num / 1_000_000).toFixed(1)}M`;
     if (num >= 1_000) return `${(num / 1_000).toFixed(1)}K`;
@@ -101,6 +102,34 @@ function formatDuration(isoDuration: string): string {
   return `${minutes}:${String(seconds).padStart(2, '0')}`;
 }
 
+function timeAgo(dateString: string): string {
+  if (!dateString) return '';
+  const date = new Date(dateString);
+  const now = new Date();
+  const seconds = Math.floor((now.getTime() - date.getTime()) / 1000);
+
+  let interval = seconds / 31536000;
+  if (interval > 1) {
+    return Math.floor(interval) + " years ago";
+  }
+  interval = seconds / 2592000;
+  if (interval > 1) {
+    return Math.floor(interval) + " months ago";
+  }
+  interval = seconds / 86400;
+  if (interval > 1) {
+    return Math.floor(interval) + " days ago";
+  }
+  interval = seconds / 3600;
+  if (interval > 1) {
+    return Math.floor(interval) + " hours ago";
+  }
+  interval = seconds / 60;
+  if (interval > 1) {
+    return Math.floor(interval) + " minutes ago";
+  }
+  return Math.floor(seconds) + " seconds ago";
+}
 
 // --- Fungsi Pengambilan Data Baru ---
 
@@ -140,7 +169,7 @@ export async function getTrendingVideos(): Promise<Video[]> {
     channelId: item.snippet.channelId,
     channelAvatarUrl: channelAvatars.get(item.snippet.channelId),
     views: formatViews(item.statistics.viewCount),
-    uploadedAt: new Date(item.snippet.publishedAt).toLocaleDateString(),
+    uploadedAt: timeAgo(item.snippet.publishedAt),
     description: item.snippet.description,
   }));
 }
@@ -192,7 +221,7 @@ export async function searchVideos(query: string): Promise<Video[]> {
     channelId: item.snippet.channelId,
     channelAvatarUrl: channelAvatars.get(item.snippet.channelId),
     views: formatViews(item.statistics.viewCount),
-    uploadedAt: new Date(item.snippet.publishedAt).toLocaleDateString(),
+    uploadedAt: timeAgo(item.snippet.publishedAt),
     description: item.snippet.description,
   }));
 }
@@ -224,7 +253,7 @@ export async function getVideo(id: string | undefined): Promise<Video | null> {
         channelId: item.snippet.channelId,
         channelAvatarUrl: channelData?.avatarUrl,
         views: formatViews(item.statistics.viewCount),
-        uploadedAt: new Date(item.snippet.publishedAt).toLocaleDateString(),
+        uploadedAt: timeAgo(item.snippet.publishedAt),
         description: item.snippet.description,
     };
 }
@@ -260,3 +289,5 @@ export async function getChannel(id: string | undefined): Promise<Channel | null
 // Namun, kita akan tetap menyimpannya untuk komponen yang mungkin masih menggunakannya sementara.
 export const getImage = (id: string | undefined) =>
   PlaceHolderImages.find(img => img.id === id);
+
+    

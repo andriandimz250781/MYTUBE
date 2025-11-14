@@ -64,22 +64,31 @@ export default function WatchPage() {
   const [channel, setChannel] = useState<Channel | null>(null);
   const [relatedVideos, setRelatedVideos] = useState<Video[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     if (!videoId) return;
 
     async function fetchData() {
       setLoading(true);
-      const videoData = await getVideo(videoId);
-      setVideo(videoData);
+      setError(null);
+      try {
+        const videoData = await getVideo(videoId);
+        setVideo(videoData);
 
-      if (videoData) {
-        const [channelData, relatedVideosData] = await Promise.all([
-          getChannel(videoData.channelId),
-          getTrendingVideos() // Simple "up next" for now
-        ]);
-        setChannel(channelData);
-        setRelatedVideos(relatedVideosData);
+        if (videoData) {
+          const [channelData, relatedVideosData] = await Promise.all([
+            getChannel(videoData.channelId),
+            getTrendingVideos() // Simple "up next" for now
+          ]);
+          setChannel(channelData);
+          setRelatedVideos(relatedVideosData.filter(v => v.id !== videoId));
+        } else {
+          setError('Video not found or could not be loaded.');
+        }
+      } catch (e) {
+        console.error(e);
+        setError('An error occurred while fetching video data.');
       }
       setLoading(false);
     }
@@ -91,8 +100,21 @@ export default function WatchPage() {
     return <WatchPageLoadingSkeleton />;
   }
   
+  if (error) {
+    return (
+        <div className="text-center py-10">
+            <p className="text-destructive font-semibold">Error</p>
+            <p className="text-muted-foreground">{error}</p>
+        </div>
+    );
+  }
+
   if (!video) {
-    return <div>Video not found</div>;
+    return (
+      <div className="text-center py-10">
+        <p className="text-muted-foreground">Video not found.</p>
+      </div>
+    );
   }
 
   return (
@@ -105,6 +127,7 @@ export default function WatchPage() {
               height="100%"
               controls
               playing
+              pip
             />
         </div>
         <div className="py-4">
@@ -162,9 +185,7 @@ export default function WatchPage() {
       <div className="lg:w-1/3 lg:max-w-md">
         <h2 className="font-headline text-xl font-bold mb-4">Up Next</h2>
         <div className="flex flex-col gap-4">
-          {relatedVideos
-            .filter(relatedVideo => relatedVideo.id !== videoId)
-            .map(relatedVideo => (
+          {relatedVideos.map(relatedVideo => (
               <CompactVideoCard key={relatedVideo.id} video={relatedVideo} />
             ))}
         </div>
@@ -172,3 +193,5 @@ export default function WatchPage() {
     </div>
   );
 }
+
+    
