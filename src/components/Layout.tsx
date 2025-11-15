@@ -7,7 +7,7 @@ export default function ResponsiveLayout({
   children: React.ReactNode;
 }) {
   return (
-    <main className="w-full max-w-5xl mx-auto px-3 md:px-6 lg:px-8 py-4">
+    <main className="w-full max-w-7xl mx-auto px-3 md:px-6 lg:px-8 py-4">
       {children}
     </main>
   );
