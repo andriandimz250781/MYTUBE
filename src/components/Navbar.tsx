@@ -2,6 +2,7 @@ import Link from 'next/link';
 import { Search, Video } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from './ui/button';
+import { ThemeToggle } from './theme-toggle';
 
 export function Navbar() {
   return (
@@ -32,6 +33,10 @@ export function Navbar() {
             <Search className="h-5 w-5 text-muted-foreground" />
           </Button>
         </form>
+      </div>
+
+      <div className="flex items-center">
+        <ThemeToggle />
       </div>
     </header>
   );
