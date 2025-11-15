@@ -20,7 +20,7 @@ export function Navbar() {
           <Input
             type="search"
             placeholder="Search videos..."
-            className="h-10 w-full rounded-full pl-10 pr-4 text-sm md:text-base"
+            className="h-auto w-full rounded-full py-3 pl-10 pr-4 text-base md:text-lg"
           />
           <Search className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-muted-foreground" />
         </div>
