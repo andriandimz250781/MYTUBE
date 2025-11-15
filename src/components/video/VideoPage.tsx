@@ -3,15 +3,13 @@ import React, { useEffect, useRef, useState } from "react";
 import Player from "./Player";
 import AutoNext from "./AutoNext";
 import SwipeWrapper from "./SwipeWrapper";
-import MiniPlayer from "./MiniPlayer";
 import VideoCard from "./VideoCard";
-import { getVideoById, getRecommendations, markPlayed } from "@/lib/videos";
+import { getVideoById, getRecommendations, markPlayed, type Video } from "../../lib/videos";
 import { useVideo } from "./VideoProvider";
 import { useRouter } from "next/navigation";
-import type { Video } from "@/lib/youtube";
 
 export default function VideoPage({ videoId }: { videoId: string }) {
-  const [video, setVideo] = useState<any>(null);
+  const [video, setVideo] = useState<Video | null>(null);
   const [recs, setRecs] = useState<Video[]>([]);
   const { videoEl, setFloating } = useVideo();
   const router = useRouter();
@@ -53,7 +51,7 @@ export default function VideoPage({ videoId }: { videoId: string }) {
       >
         {video ? (
           <>
-            <Player src={video.url} id={video.id} />
+            <Player src={video.src} id={video.id} />
             <AutoNext videoRef={localVideoRef} onNext={onNext} />
             <div className="mt-4">
               <h1 className="text-xl font-bold">{video.title}</h1>

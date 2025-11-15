@@ -1,60 +1,93 @@
-import { getRelatedVideos, getVideoById as getYTVideo, type Video } from "./youtube";
+
+import type { Video as YouTubeVideo } from "./youtube";
 
 // This is a placeholder file for video-related library functions.
+// simple in-memory mock and helpers for prefetch + recommendations
+export interface Video extends YouTubeVideo {
+  src: string;
+}
 
-/**
- * Prefetches the next video's data.
- * In a real implementation, this would fetch video details from an API.
- * @param currentId The ID of the current video.
- */
-export async function prefetchNext(currentId: string): Promise<void> {
-  console.log(`Prefetching video next to: ${currentId}`);
-  const related = await getRelatedVideos(currentId);
-  if (related && related.length > 0) {
-    // Prefetch the image for the next video
-    const nextVideo = related[0];
+const MOCK_DB: Video[] = [
+  // example records — replace with real data fetch from Firestore or YouTube API
+  {
+    id: "a",
+    title: "LoFi Chill Beats",
+    channelName: "Chillhop",
+    src: "https://storage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4",
+    thumbnail: "https://picsum.photos/seed/a/480/270",
+    duration: "10:33",
+    views: "120K",
+    uploadedAt: "2 weeks ago",
+    publishedAt: "2024-05-01T12:00:00Z",
+    description: "Chill beats to relax/study to."
+  },
+  {
+    id: "b",
+    title: "Top Hits 2025",
+    channelName: "DJ Mix",
+    src: "https://storage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4",
+    thumbnail: "https://picsum.photos/seed/b/480/270",
+    duration: "10:53",
+    views: "98K",
+    uploadedAt: "1 month ago",
+    publishedAt: "2024-04-15T12:00:00Z",
+    description: "The best hits of 2025."
+  },
+  {
+    id: "c",
+    title: "Deep House Live Set",
+    channelName: "Club Sounds",
+    src: "https://storage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4",
+    thumbnail: "https://picsum.photos/seed/c/480/270",
+    duration: "1:02:11",
+    views: "540K",
+    uploadedAt: "3 days ago",
+    publishedAt: "2024-05-12T12:00:00Z",
+    description: "Live from Ibiza."
+  },
+];
+
+export async function getVideoById(id: string): Promise<Video | null> {
+  // integrate with Firestore or YouTube API here
+  const found = MOCK_DB.find((v) => v.id === id) ?? MOCK_DB[0];
+  // simulate network
+  await new Promise((r) => setTimeout(r, 120));
+  return found;
+}
+
+export async function getRecommendations(seed: Video): Promise<Video[]> {
+    if (!seed) {
+        return MOCK_DB.slice(0, 10);
+    }
+  // naive scoring: just return other videos for now
+  const recs = MOCK_DB.filter(v => v.id !== seed.id);
+  
+  // simulate network
+  await new Promise((r) => setTimeout(r, 80));
+  return recs.slice(0, 10);
+}
+
+export async function prefetchNext(currentId: string) {
+  // attempt to fetch next metadata & thumbnail to cache
+  // here, just find next by index
+  const idx = MOCK_DB.findIndex((m) => m.id === currentId);
+  const next = MOCK_DB[(idx + 1) % MOCK_DB.length];
+  
+  if (typeof window !== 'undefined') {
     const link = document.createElement('link');
     link.rel = 'preload';
     link.as = 'image';
-    link.href = nextVideo.thumbnail;
+    link.href = next.thumbnail;
     document.head.appendChild(link);
   }
+
+  // simulate prefetch caching
+  await new Promise((r) => setTimeout(r, 60));
+  return next;
 }
 
-/**
- * Gets details for a specific video.
- * @param id The ID of the video to fetch.
- */
-export async function getVideoById(id: string) {
-    console.log(`Fetching details for video: ${id}`);
-    const ytVideo = await getYTVideo(id);
-    if (!ytVideo) return null;
-    
-    // In a real app, you might get a direct video URL from your own backend/storage.
-    // Here we use a placeholder.
-    return {
-        ...ytVideo,
-        url: "https://storage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4",
-    };
-}
-
-
-/**
- * Gets recommendations for a video.
- * @param video The current video object.
- */
-export async function getRecommendations(video: Video): Promise<Video[]> {
-    console.log(`Fetching recommendations for: ${video.title}`);
-    const related = await getRelatedVideos(video.id);
-    return related || [];
-}
-
-/**
- * Marks a video as played.
- * @param videoId The ID of the video.
- */
-export async function markPlayed(videoId: string): Promise<void> {
-    // In a real app, you would send this to your backend to record history.
-    console.log(`Marked video as played: ${videoId}`);
-    return Promise.resolve();
+export async function markPlayed(id: string) {
+  // hook to analytics / increment view count
+  console.log(`Marked video as played: ${id}`);
+  await Promise.resolve();
 }
