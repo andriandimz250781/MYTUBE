@@ -12,6 +12,7 @@ import WatchHistoryLogger from '@/components/WatchHistoryLogger';
 import { Card as CustomCard } from '@/components/Layout';
 import AutoNext from '@/components/AutoNext';
 import SwipeWrapper from '@/components/SwipeWrapper';
+import DominantColor from '@/components/DominantColor';
 
 interface WatchPageProps {
   params: {
@@ -59,6 +60,7 @@ async function VideoDetails({ videoId }: { videoId: string }) {
 
   return (
     <>
+      <DominantColor imageSrc={video.thumbnail} />
       <WatchHistoryLogger video={video} />
       <CustomCard>
         <div className="space-y-4">

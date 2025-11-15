@@ -80,6 +80,24 @@
     @apply bg-background text-foreground;
     font-family: 'Inter', sans-serif;
   }
+
+  body::before {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 50vh;
+    background: var(--dynamic-gradient);
+    z-index: -1;
+    opacity: 0;
+    transition: opacity 0.5s ease-in-out;
+  }
+
+  body.has-dynamic-bg::before {
+    opacity: 1;
+  }
+  
   h1, h2, h3, h4, h5, h6 {
     font-family: 'Inter', sans-serif;
   }
