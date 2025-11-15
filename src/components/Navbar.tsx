@@ -1,12 +1,18 @@
 "use client";
 
 import Link from 'next/link';
-import { Search, Video } from 'lucide-react';
+import { History, Search, Video } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from './ui/button';
 import { ThemeToggle } from './theme-toggle';
 import { useEffect, useState } from 'react';
 import { cn } from '@/lib/utils';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@/components/ui/tooltip';
 
 export function Navbar() {
   const [hidden, setHidden] = useState(false);
@@ -58,7 +64,22 @@ export function Navbar() {
         </form>
       </div>
 
-      <div className="flex items-center">
+      <div className="flex items-center gap-2">
+         <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button variant="ghost" size="icon" asChild>
+                  <Link href="/history">
+                    <History className="h-5 w-5" />
+                    <span className="sr-only">Watch History</span>
+                  </Link>
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>Watch History</p>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
         <ThemeToggle />
       </div>
     </header>

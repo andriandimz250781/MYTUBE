@@ -2,13 +2,14 @@ import { getVideoById, getRelatedVideos } from '@/lib/youtube';
 import { notFound } from 'next/navigation';
 import {
   PageContainer,
-  Card,
   AutoText,
   SectionTitle,
 } from '@/components/Layout';
 import { Suspense } from 'react';
 import VideoCard from '@/components/VideoCard';
 import VideoPlayer from '@/components/VideoPlayer';
+import WatchHistoryLogger from '@/components/WatchHistoryLogger';
+import { Card as CustomCard } from '@/components/Layout';
 
 interface WatchPageProps {
   params: {
@@ -24,7 +25,7 @@ function PlayerSkeleton() {
 
 function VideoDetailsSkeleton() {
   return (
-    <Card>
+    <CustomCard>
       <div className="space-y-4 animate-pulse">
         <div className="h-8 bg-muted rounded w-3/4"></div>
         <div className="flex items-center gap-4">
@@ -43,7 +44,7 @@ function VideoDetailsSkeleton() {
           </div>
         </div>
       </div>
-    </Card>
+    </CustomCard>
   );
 }
 
@@ -55,36 +56,39 @@ async function VideoDetails({ videoId }: { videoId: string }) {
   }
 
   return (
-    <Card>
-      <div className="space-y-4">
-        <h1 className="text-xl md:text-2xl lg:text-3xl font-bold">
-          {video.title}
-        </h1>
-        <div className="flex items-center gap-4">
-          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-secondary text-secondary-foreground">
-            {video.channelName?.charAt(0) || 'U'}
+    <>
+      <WatchHistoryLogger video={video} />
+      <CustomCard>
+        <div className="space-y-4">
+          <h1 className="text-xl md:text-2xl lg:text-3xl font-bold">
+            {video.title}
+          </h1>
+          <div className="flex items-center gap-4">
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-secondary text-secondary-foreground">
+              {video.channelName?.charAt(0) || 'U'}
+            </div>
+            <div className="flex flex-col">
+              <AutoText>
+                <p className="font-semibold">{video.channelName}</p>
+              </AutoText>
+              <AutoText>
+                <p className="text-sm text-muted-foreground">
+                  {video.views} views &bull; {video.uploadedAt}
+                </p>
+              </AutoText>
+            </div>
           </div>
-          <div className="flex flex-col">
+          <div>
+            <SectionTitle title="Description" />
             <AutoText>
-              <p className="font-semibold">{video.channelName}</p>
-            </AutoText>
-            <AutoText>
-              <p className="text-sm text-muted-foreground">
-                {video.views} views &bull; {video.uploadedAt}
+              <p className="text-sm whitespace-pre-wrap text-muted-foreground">
+                {video.description}
               </p>
             </AutoText>
           </div>
         </div>
-        <div>
-          <SectionTitle title="Description" />
-          <AutoText>
-            <p className="text-sm whitespace-pre-wrap text-muted-foreground">
-              {video.description}
-            </p>
-          </AutoText>
-        </div>
-      </div>
-    </Card>
+      </CustomCard>
+    </>
   );
 }
 
