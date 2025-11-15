@@ -1,3 +1,5 @@
+import { getRelatedVideos, getVideoById as getYTVideo, type Video } from "./youtube";
+
 // This is a placeholder file for video-related library functions.
 
 /**
@@ -7,28 +9,52 @@
  */
 export async function prefetchNext(currentId: string): Promise<void> {
   console.log(`Prefetching video next to: ${currentId}`);
-  // In a real app, you might fetch from an API like this:
-  // await fetch(`/api/video/related?id=${currentId}`);
-  return Promise.resolve();
+  const related = await getRelatedVideos(currentId);
+  if (related && related.length > 0) {
+    // Prefetch the image for the next video
+    const nextVideo = related[0];
+    const link = document.createElement('link');
+    link.rel = 'preload';
+    link.as = 'image';
+    link.href = nextVideo.thumbnail;
+    document.head.appendChild(link);
+  }
 }
 
 /**
  * Gets details for a specific video.
- * Placeholder for now.
  * @param id The ID of the video to fetch.
  */
-export async function getVideoDetails(id: string) {
+export async function getVideoById(id: string) {
     console.log(`Fetching details for video: ${id}`);
-    // Replace with your actual video data fetching logic
+    const ytVideo = await getYTVideo(id);
+    if (!ytVideo) return null;
+    
+    // In a real app, you might get a direct video URL from your own backend/storage.
+    // Here we use a placeholder.
     return {
-        id,
-        title: "Placeholder Video Title",
-        channelName: "Placeholder Channel",
-        views: "1M",
-        uploadedAt: "1 day ago",
-        description: "This is a placeholder video description.",
+        ...ytVideo,
         url: "https://storage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4",
-        thumbnail: `https://picsum.photos/seed/${id}/1280/720`,
-        nextId: "placeholderNextId", // Logic to determine the next video
     };
+}
+
+
+/**
+ * Gets recommendations for a video.
+ * @param video The current video object.
+ */
+export async function getRecommendations(video: Video): Promise<Video[]> {
+    console.log(`Fetching recommendations for: ${video.title}`);
+    const related = await getRelatedVideos(video.id);
+    return related || [];
+}
+
+/**
+ * Marks a video as played.
+ * @param videoId The ID of the video.
+ */
+export async function markPlayed(videoId: string): Promise<void> {
+    // In a real app, you would send this to your backend to record history.
+    console.log(`Marked video as played: ${videoId}`);
+    return Promise.resolve();
 }

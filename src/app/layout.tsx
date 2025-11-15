@@ -1,19 +1,51 @@
 "use client";
 
-import type { Metadata } from 'next';
-import { Inter } from 'next/font/google';
 import './globals.css';
+import { Inter } from 'next/font/google';
 import { Navbar } from '@/components/Navbar';
 import ResponsiveLayout from '@/components/Layout';
 import { ThemeProvider } from '@/components/theme-provider';
 import ScrollToTop from '@/components/ScrollToTop';
-import { VideoProvider } from '@/components/video/VideoProvider';
+import { VideoProvider, useVideo } from '@/components/video/VideoProvider';
 import MiniPlayer from '@/components/video/MiniPlayer';
+import { useEffect, useState } from 'react';
+import type { Video } from '@/lib/youtube';
+import { getVideoById } from '@/lib/youtube';
 
 const inter = Inter({ subsets: ['latin'] });
 
-// Since this is a client component now, we can't export metadata directly.
-// We'll set it in the <head> below.
+function AppContent({ children }: { children: React.ReactNode }) {
+  const { floating, currentId } = useVideo();
+  const [videoInfo, setVideoInfo] = useState<Video | null>(null);
+
+  useEffect(() => {
+    if (floating && currentId) {
+      getVideoById(currentId).then(video => {
+        if (video) {
+          setVideoInfo(video);
+        }
+      });
+    } else {
+      setVideoInfo(null);
+    }
+  }, [floating, currentId]);
+
+  return (
+    <>
+      <Navbar />
+      <ResponsiveLayout>{children}</ResponsiveLayout>
+      <ScrollToTop />
+      {floating && videoInfo && (
+         <MiniPlayer
+            id={videoInfo.id}
+            title={videoInfo.title}
+            thumbnail={videoInfo.thumbnail}
+        />
+      )}
+    </>
+  );
+}
+
 
 export default function RootLayout({
   children,
@@ -48,10 +80,7 @@ export default function RootLayout({
           disableTransitionOnChange
         >
           <VideoProvider>
-            <Navbar />
-            <ResponsiveLayout>{children}</ResponsiveLayout>
-            <ScrollToTop />
-            <MiniPlayer />
+            <AppContent>{children}</AppContent>
           </VideoProvider>
         </ThemeProvider>
       </body>
