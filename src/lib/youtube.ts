@@ -105,6 +105,24 @@ async function fetchFromYouTubeAPI(
   return null;
 }
 
+const mapYouTubeItemToVideo = (item: any): Video => ({
+    id: item.id,
+    title: item.snippet.title,
+    thumbnail:
+      item.snippet.thumbnails.maxres?.url ??
+      item.snippet.thumbnails.high?.url ??
+      item.snippet.thumbnails.default.url,
+    duration: formatDuration(item.contentDetails.duration),
+    channelName: item.snippet.channelTitle,
+    views: formatViews(item.statistics.viewCount),
+    uploadedAt: formatDistanceToNow(new Date(item.snippet.publishedAt), {
+      addSuffix: true,
+    }),
+    publishedAt: item.snippet.publishedAt,
+    description: item.snippet.description,
+});
+
+
 // Get trending videos (ID Region)
 export async function getTrendingVideos(): Promise<Video[] | null> {
   const data = await fetchFromYouTubeAPI('videos', {
@@ -116,23 +134,7 @@ export async function getTrendingVideos(): Promise<Video[] | null> {
 
   if (!data?.items) return [];
 
-  return data.items.map(
-    (item: any): Video => ({
-      id: item.id,
-      title: item.snippet.title,
-      thumbnail:
-        item.snippet.thumbnails.maxres?.url ??
-        item.snippet.thumbnails.high?.url ??
-        item.snippet.thumbnails.default.url,
-      duration: formatDuration(item.contentDetails.duration),
-      channelName: item.snippet.channelTitle,
-      views: formatViews(item.statistics.viewCount),
-      uploadedAt: formatDistanceToNow(new Date(item.snippet.publishedAt), {
-        addSuffix: true,
-      }),
-      publishedAt: item.snippet.publishedAt,
-    })
-  );
+  return data.items.map(mapYouTubeItemToVideo);
 }
 
 export async function searchVideos(query: string): Promise<Video[] | null> {
@@ -155,23 +157,7 @@ export async function searchVideos(query: string): Promise<Video[] | null> {
 
   if (!details?.items) return [];
 
-  return details.items.map(
-    (item: any): Video => ({
-      id: item.id,
-      title: item.snippet.title,
-      thumbnail:
-        item.snippet.thumbnails.maxres?.url ||
-        item.snippet.thumbnails.high?.url ||
-        item.snippet.thumbnails.default.url,
-      duration: formatDuration(item.contentDetails.duration),
-      channelName: item.snippet.channelTitle,
-      views: formatViews(item.statistics.viewCount),
-      uploadedAt: formatDistanceToNow(new Date(item.snippet.publishedAt), {
-        addSuffix: true,
-      }),
-      publishedAt: item.snippet.publishedAt,
-    })
-  );
+  return details.items.map(mapYouTubeItemToVideo);
 }
 
 export async function getVideoById(id: string): Promise<Video | null> {
@@ -184,20 +170,29 @@ export async function getVideoById(id: string): Promise<Video | null> {
 
   const item = details.items[0];
 
-  return {
-    id: item.id,
-    title: item.snippet.title,
-    thumbnail:
-      item.snippet.thumbnails.maxres?.url ||
-      item.snippet.thumbnails.high?.url ||
-      item.snippet.thumbnails.default.url,
-    duration: formatDuration(item.contentDetails.duration),
-    channelName: item.snippet.channelTitle,
-    views: formatViews(item.statistics.viewCount),
-    uploadedAt: formatDistanceToNow(new Date(item.snippet.publishedAt), {
-      addSuffix: true,
-    }),
-    publishedAt: item.snippet.publishedAt,
-    description: item.snippet.description,
-  };
+  return mapYouTubeItemToVideo(item);
+}
+
+
+export async function getRelatedVideos(videoId: string): Promise<Video[] | null> {
+    const searchData = await fetchFromYouTubeAPI('search', {
+        part: 'snippet',
+        relatedToVideoId: videoId,
+        type: 'video',
+        maxResults: '20',
+        regionCode: 'ID',
+    });
+
+    if (!searchData?.items) return [];
+
+    const videoIds = searchData.items.map((item: any) => item.id.videoId).join(',');
+
+    const details = await fetchFromYouTubeAPI('videos', {
+        part: 'snippet,contentDetails,statistics',
+        id: videoIds,
+    });
+
+    if (!details?.items) return [];
+
+    return details.items.map(mapYouTubeItemToVideo);
 }

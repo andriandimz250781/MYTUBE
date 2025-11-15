@@ -1,6 +1,6 @@
 'use server';
 
-import { getVideoById } from '@/lib/youtube';
+import { getVideoById, getRelatedVideos, type Video } from '@/lib/youtube';
 import { notFound } from 'next/navigation';
 import {
   PageContainer,
@@ -9,6 +9,7 @@ import {
   SectionTitle,
 } from '@/components/Layout';
 import { Suspense } from 'react';
+import VideoCard from '@/components/VideoCard';
 
 interface WatchPageProps {
   searchParams: {
@@ -100,6 +101,40 @@ async function VideoPlayer({ videoId }: { videoId: string }) {
   );
 }
 
+function RelatedVideosSkeleton() {
+    return (
+        <div className="space-y-4">
+            <SectionTitle title="Related Videos" />
+            {[...Array(5)].map((_, i) => (
+                <div key={i} className="flex gap-4 animate-pulse">
+                    <div className="w-32 h-20 bg-muted rounded-lg"></div>
+                    <div className="flex-1 space-y-2 py-1">
+                        <div className="h-4 bg-muted rounded w-3/4"></div>
+                        <div className="h-4 bg-muted rounded w-1/2"></div>
+                    </div>
+                </div>
+            ))}
+        </div>
+    );
+}
+
+async function RelatedVideos({ videoId }: { videoId: string }) {
+    const relatedVideos = await getRelatedVideos(videoId);
+
+    return (
+        <div className="space-y-4">
+            <SectionTitle title="Related Videos" />
+            {relatedVideos && relatedVideos.length > 0 ? (
+                relatedVideos.map((video) => (
+                    <VideoCard key={video.id} video={video} layout="horizontal" />
+                ))
+            ) : (
+                <p className="text-sm text-muted-foreground">No related videos found.</p>
+            )}
+        </div>
+    );
+}
+
 export default function WatchPage({ searchParams }: WatchPageProps) {
   const videoId = searchParams.v;
 
@@ -109,9 +144,18 @@ export default function WatchPage({ searchParams }: WatchPageProps) {
 
   return (
     <PageContainer>
-      <Suspense fallback={<><PlayerSkeleton /><VideoDetailsSkeleton /></>}>
-        <VideoPlayer videoId={videoId} />
-      </Suspense>
+        <div className="flex flex-col lg:flex-row gap-8">
+            <div className="flex-1 flex flex-col gap-4">
+                <Suspense fallback={<><PlayerSkeleton /><VideoDetailsSkeleton /></>}>
+                    <VideoPlayer videoId={videoId} />
+                </Suspense>
+            </div>
+            <aside className="w-full lg:w-80 xl:w-96 shrink-0">
+                <Suspense fallback={<RelatedVideosSkeleton />}>
+                    <RelatedVideos videoId={videoId} />
+                </Suspense>
+            </aside>
+        </div>
     </PageContainer>
   );
 }

@@ -4,12 +4,45 @@ import Image from "next/image";
 import Link from "next/link";
 import type { Video } from "@/lib/youtube";
 import { AutoText } from "./Layout";
+import { cn } from "@/lib/utils";
 
 interface VideoCardProps {
   video: Video;
+  layout?: 'grid' | 'horizontal';
 }
 
-export default function VideoCard({ video }: VideoCardProps) {
+export default function VideoCard({ video, layout = 'grid' }: VideoCardProps) {
+
+  if (layout === 'horizontal') {
+    return (
+      <Link
+        href={`/watch?v=${video.id}`}
+        className="group flex gap-3 w-full cursor-pointer"
+      >
+        <div className="relative w-32 sm:w-40 shrink-0 overflow-hidden rounded-lg bg-muted aspect-video">
+           <Image
+            src={video.thumbnail}
+            alt={video.title}
+            fill
+            className="object-cover transition-transform duration-300 group-hover:scale-105"
+          />
+           <span className="absolute bottom-1 right-1 rounded bg-black/80 px-1.5 py-0.5 text-[10px] text-white">
+            {video.duration}
+          </span>
+        </div>
+        <div className="flex flex-col py-1">
+          <h2 className="line-clamp-2 text-sm font-semibold leading-tight text-foreground group-hover:text-primary">
+            {video.title}
+          </h2>
+          <p className="text-xs text-muted-foreground mt-1">{video.channelName}</p>
+          <p className="text-xs text-muted-foreground">
+            {video.views} &bull; {video.uploadedAt}
+          </p>
+        </div>
+      </Link>
+    );
+  }
+
   return (
     <Link
       href={`/watch?v=${video.id}`}
