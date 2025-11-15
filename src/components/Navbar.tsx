@@ -10,7 +10,7 @@ export function Navbar() {
         className="flex items-center gap-2 text-lg font-semibold"
       >
         <Video className="h-7 w-7 text-primary" />
-        <span className="hidden font-bold text-xl text-primary sm:inline">
+        <span className="hidden font-bold text-lg md:text-xl text-primary sm:inline">
           ANDTUBE
         </span>
       </Link>
@@ -20,7 +20,7 @@ export function Navbar() {
           <Input
             type="search"
             placeholder="Search videos..."
-            className="h-10 w-full rounded-full pl-10 pr-4 text-base md:text-sm"
+            className="h-10 w-full rounded-full pl-10 pr-4 text-sm md:text-base"
           />
           <Search className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-muted-foreground" />
         </div>

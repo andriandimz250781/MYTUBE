@@ -34,7 +34,7 @@ export default async function Home() {
   return (
     <div className="space-y-10">
       <div>
-        <h2 className="mb-4 text-2xl font-bold">Trending</h2>
+        <h2 className="mb-4 text-xl font-bold md:text-2xl">Trending</h2>
         {videos && videos.length > 0 ? (
           <div className="grid grid-cols-1 gap-x-4 gap-y-8 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
             {videos.map(video => (

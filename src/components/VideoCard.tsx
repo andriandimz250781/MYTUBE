@@ -2,16 +2,10 @@
 
 import Image from "next/image";
 import Link from "next/link";
+import type { Video } from "@/lib/youtube";
 
 interface VideoCardProps {
-  video: {
-    id: string;
-    title: string;
-    thumbnail: string;
-    channelName: string;
-    publishedAt: string;
-    duration: string;
-  };
+  video: Video;
 }
 
 export default function VideoCard({ video }: VideoCardProps) {
@@ -32,18 +26,18 @@ export default function VideoCard({ video }: VideoCardProps) {
         </span>
       </div>
 
-      <div className="mt-3 flex gap-3">
+      <div className="mt-3 flex gap-3 p-1 md:p-0">
         <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-secondary text-secondary-foreground">
           {video.channelName?.charAt(0) || 'U'}
         </div>
 
         <div className="flex flex-col">
-          <h2 className="line-clamp-2 text-sm font-semibold leading-tight text-foreground">
+          <h2 className="line-clamp-2 text-sm md:text-base font-semibold leading-tight text-foreground">
             {video.title}
           </h2>
-          <p className="text-xs text-muted-foreground">{video.channelName}</p>
-          <p className="text-xs text-muted-foreground">
-            {new Date(video.publishedAt).toLocaleDateString()}
+          <p className="text-xs md:text-sm text-muted-foreground">{video.channelName}</p>
+          <p className="text-xs md:text-sm text-muted-foreground">
+            {video.views} views &bull; {video.uploadedAt}
           </p>
         </div>
       </div>

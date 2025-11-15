@@ -8,6 +8,7 @@ export interface Video {
   channelName: string;
   views: string;
   uploadedAt: string;
+  publishedAt: string;
 }
 
 let currentApiKeyIndex = 0;
@@ -127,6 +128,7 @@ export async function getTrendingVideos(): Promise<Video[] | null> {
       uploadedAt: formatDistanceToNow(new Date(item.snippet.publishedAt), {
         addSuffix: true,
       }),
+      publishedAt: item.snippet.publishedAt,
     })
   );
 }
@@ -165,6 +167,7 @@ export async function searchVideos(query: string): Promise<Video[] | null> {
       uploadedAt: formatDistanceToNow(new Date(item.snippet.publishedAt), {
         addSuffix: true,
       }),
+      publishedAt: item.snippet.publishedAt,
     })
   );
 }
