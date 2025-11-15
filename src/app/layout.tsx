@@ -5,6 +5,7 @@ import { Navbar } from '@/components/Navbar';
 import ResponsiveLayout from '@/components/Layout';
 import { ThemeProvider } from '@/components/theme-provider';
 import ScrollToTop from '@/components/ScrollToTop';
+import { VideoProvider } from '@/components/video/VideoProvider';
 
 const inter = Inter({ subsets: ['latin'] });
 
@@ -53,9 +54,11 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
-          <Navbar />
-          <ResponsiveLayout>{children}</ResponsiveLayout>
-          <ScrollToTop />
+          <VideoProvider>
+            <Navbar />
+            <ResponsiveLayout>{children}</ResponsiveLayout>
+            <ScrollToTop />
+          </VideoProvider>
         </ThemeProvider>
       </body>
     </html>

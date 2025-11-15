@@ -1,24 +1,27 @@
 "use client";
 
 import { useEffect } from "react";
-import { useRouter } from "next/navigation";
 
-export default function AutoNext({ nextId }: { nextId?: string }) {
-  const router = useRouter();
-
+export default function AutoNext({
+  videoRef,
+  onNext,
+}: {
+  videoRef: React.RefObject<HTMLVideoElement>;
+  onNext: () => void;
+}) {
   useEffect(() => {
-    if (!nextId) return;
+    const vid = videoRef.current;
+    if (!vid) return;
 
-    // Set a timer to navigate to the next video.
-    // We'll use a long delay for demonstration purposes.
-    const timer = setTimeout(() => {
-      router.push(`/watch/${nextId}`);
-    }, 120000); // 2 minutes
+    const handleEnd = () => {
+      setTimeout(() => {
+        onNext();
+      }, 1000); // 1s delay kaya YouTube
+    };
 
-    // Cleanup the timer if the component unmounts or nextId changes.
-    return () => clearTimeout(timer);
-  }, [nextId, router]);
+    vid.addEventListener("ended", handleEnd);
+    return () => vid.removeEventListener("ended", handleEnd);
+  }, [videoRef, onNext]);
 
-  // This component does not render any UI.
   return null;
 }
