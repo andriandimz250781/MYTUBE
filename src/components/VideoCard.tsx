@@ -12,7 +12,7 @@ interface VideoCardProps {
 export default function VideoCard({ video }: VideoCardProps) {
   return (
     <Link
-      href={`/watch/${video.id}`}
+      href={`/watch?v=${video.id}`}
       className="group block w-full cursor-pointer"
     >
       <div className="relative w-full overflow-hidden rounded-xl bg-muted aspect-video">
