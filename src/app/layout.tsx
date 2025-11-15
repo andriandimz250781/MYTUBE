@@ -4,6 +4,7 @@ import './globals.css';
 import { Navbar } from '@/components/Navbar';
 import ResponsiveLayout from '@/components/Layout';
 import { ThemeProvider } from '@/components/theme-provider';
+import ScrollToTop from '@/components/ScrollToTop';
 
 const inter = Inter({ subsets: ['latin'] });
 
@@ -28,6 +29,7 @@ export default function RootLayout({
         >
           <Navbar />
           <ResponsiveLayout>{children}</ResponsiveLayout>
+          <ScrollToTop />
         </ThemeProvider>
       </body>
     </html>
