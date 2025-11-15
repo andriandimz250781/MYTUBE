@@ -1,4 +1,4 @@
-import { VideoCard } from '@/components/VideoCard';
+import VideoCard from '@/components/VideoCard';
 import type { Video } from '@/lib/youtube';
 
 async function getVideos() {
