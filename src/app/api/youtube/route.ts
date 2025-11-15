@@ -4,31 +4,29 @@ import { getTrendingVideos, searchVideos } from '@/lib/youtube';
 export async function GET(req: Request) {
   try {
     const { searchParams } = new URL(req.url);
-    const query = searchParams.get("q"); // kalau ada q = pencarian
+    const query = searchParams.get('q');
 
-    // 🔍 Jika ada query → pencarian YouTube
-    if (query && query.trim().length > 0) {
-      const results = await searchVideos(query);
-      if (!results) {
+    // If a query is provided and it's not empty, search for videos.
+    // Otherwise, fetch trending videos.
+    if (query && query.trim()) {
+      const videos = await searchVideos(query);
+      if (!videos) {
         return NextResponse.json(
-          { error: 'Failed to fetch search results from YouTube.' },
+          { error: 'Failed to fetch search results.' },
           { status: 500 }
         );
       }
-      return NextResponse.json({ videos: results });
+      return NextResponse.json({ videos });
+    } else {
+      const videos = await getTrendingVideos();
+       if (!videos) {
+        return NextResponse.json(
+          { error: 'Failed to fetch trending videos.' },
+          { status: 500 }
+        );
+      }
+      return NextResponse.json({ videos });
     }
-
-    // 🔥 Jika tidak ada query → trending
-    const trending = await getTrendingVideos();
-    if (!trending) {
-      return NextResponse.json(
-        { error: 'Failed to fetch trending videos from YouTube.' },
-        { status: 500 }
-      );
-    }
-
-    return NextResponse.json({ videos: trending });
-
   } catch (error) {
     console.error('[YOUTUBE_API_ROUTE_ERROR]', error);
     return NextResponse.json(

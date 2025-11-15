@@ -1,4 +1,3 @@
-'use server';
 
 import { getVideoById, getRelatedVideos, type Video } from '@/lib/youtube';
 import { notFound } from 'next/navigation';
