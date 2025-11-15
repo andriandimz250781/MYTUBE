@@ -1,36 +1,10 @@
 import VideoCard from '@/components/VideoCard';
 import { PageContainer, SectionTitle } from '@/components/Layout';
 import type { Video } from '@/lib/youtube';
-
-async function getVideos() {
-  try {
-    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL;
-
-    if (!baseUrl) {
-      console.error("ERROR: NEXT_PUBLIC_BASE_URL is not set in .env.local");
-      return [];
-    }
-
-    const res = await fetch(`${baseUrl}/api/youtube`, {
-      cache: 'no-store',
-    });
-
-    if (!res.ok) {
-      const errorText = await res.text();
-      console.error('Error fetching videos from API route:', errorText);
-      return [];
-    }
-
-    const data = await res.json();
-    return data.videos as Video[];
-  } catch (error) {
-    console.error('Failed to fetch videos:', error);
-    return [];
-  }
-}
+import { getTrendingVideos } from '@/lib/youtube';
 
 export default async function Home() {
-  const videos = await getVideos();
+  const videos = await getTrendingVideos();
 
   return (
     <PageContainer>
