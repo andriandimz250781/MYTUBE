@@ -13,121 +13,65 @@ export default function Player({
   onProgress?: (percent: number) => void;
 }) {
   const { videoEl, setFloating, setCurrentId } = useVideo();
-  const localRef = useRef<HTMLVideoElement | null>(null);
-  const ref = videoEl; // shared ref
-
-  // ensure shared ref points to element
-  useEffect(() => {
-    if (localRef.current) {
-      ref.current = localRef.current;
-    }
-    return () => {
-      if (ref.current === localRef.current) {
-        ref.current = null;
-      }
-    };
-  }, [ref]);
+  const localRef = useRef<HTMLIFrameElement | null>(null);
+  
+  // The videoEl from context is for a <video> element, which we can't use with YouTube.
+  // We will keep our iframe logic self-contained here.
+  const ref = localRef;
 
   useEffect(() => {
     setCurrentId(id);
   }, [id, setCurrentId]);
 
-  // visibility & keepalive
-  useEffect(() => {
-    const vid = localRef.current;
-    if (!vid) return;
-
-    const handleVisibility = () => {
-      // attempt to keep playing when tab hidden (works only if allowed by browser)
-      if (document.visibilityState === "hidden") {
-        vid.play().catch(() => {});
-      }
-    };
-
-    const handlePause = () => {
-      // if the user didn't intentionally pause and video is still visible, try resume
-      // (be careful: don't fight user explicit pause)
-      // we allow resume only if document is hidden (prevent autoplay loops)
-      if (document.visibilityState === "hidden") {
-        vid.play().catch(() => {});
-      }
-    };
-
-    document.addEventListener("visibilitychange", handleVisibility);
-    vid.addEventListener("pause", handlePause);
-
-    return () => {
-      document.removeEventListener("visibilitychange", handleVisibility);
-      vid.removeEventListener("pause", handlePause);
-    };
-  }, []);
-
-  // progress handler -> prefetch next when >= 80%
-  useEffect(() => {
-    const vid = localRef.current;
-    if (!vid) return;
-
-    let didPrefetch = false;
-
-    const onTime = () => {
-      const percent = vid.duration ? vid.currentTime / vid.duration : 0;
-      onProgress?.(percent);
-      if (!didPrefetch && percent >= 0.8) {
-        didPrefetch = true;
-        prefetchNext(id).catch(() => {});
-      }
-    };
-
-    vid.addEventListener("timeupdate", onTime);
-    return () => vid.removeEventListener("timeupdate", onTime);
-  }, [id, onProgress]);
-
-  // Picture-in-Picture helper
+  // Picture-in-Picture helper for iframe
   const togglePiP = async () => {
-    const vid = localRef.current;
-    if (!vid) return;
+    const iframe = ref.current;
+    if (!iframe) return;
     try {
-      if ((document as any).pictureInPictureElement) {
-        await (document as any).exitPictureInPicture();
-      } else if ((vid as any).requestPictureInPicture) {
-        await (vid as any).requestPictureInPicture();
+      if (document.pictureInPictureElement) {
+        await document.exitPictureInPicture();
+      } else if (document.pictureInPictureEnabled) {
+        // A trick to enable PiP on an iframe: create a dummy video element
+        const video = document.createElement('video');
+        video.srcObject = new MediaStream(); // empty stream
+        video.muted = true;
+
+        video.addEventListener('enterpictureinpicture', () => {
+          iframe.classList.add('pip-active'); // you can style the placeholder if needed
+        });
+
+        video.addEventListener('leavepictureinpicture', () => {
+          iframe.classList.remove('pip-active');
+        });
+
+        await video.play();
+        await (video as any).requestPictureInPicture();
       } else {
-        // fallback: use floating mini-player
+        // fallback: use our custom floating mini-player
         setFloating(true);
       }
-    } catch {
+    } catch(e) {
+      console.error("PiP failed, falling back to mini-player.", e);
       setFloating(true);
     }
   };
 
   return (
-    <div className="w-full relative">
-      <video
-        ref={localRef}
+    <div className="w-full relative aspect-video bg-black rounded-lg overflow-hidden">
+      <iframe
+        ref={ref}
         src={src}
-        controls
-        autoPlay
-        playsInline
-        preload="auto"
-        className="w-full rounded bg-black"
-        controlsList="nodownload noremoteplayback"
-      />
-      <div className="absolute right-3 bottom-3 flex gap-2">
-        <button
-          onClick={() => {
-            const el = localRef.current;
-            if (!el) return;
-            if (el.paused) el.play().catch(() => {});
-            else el.pause();
-          }}
-          className="px-3 py-1 rounded bg-black/40 text-white text-sm"
-        >
-          ▶︎/❚❚
-        </button>
+        title="YouTube video player"
+        frameBorder="0"
+        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+        allowFullScreen
+        className="w-full h-full"
+      ></iframe>
 
+       <div className="absolute right-3 bottom-3 flex gap-2">
         <button
           onClick={togglePiP}
-          className="px-3 py-1 rounded bg-black/40 text-white text-sm"
+          className="px-3 py-1 rounded bg-black/40 text-white text-sm opacity-80 hover:opacity-100 transition-opacity"
         >
           PiP
         </button>
