@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import { Inter } from 'next/font/google';
 import './globals.css';
 import { Navbar } from '@/components/Navbar';
+import ResponsiveLayout from '@/components/Layout';
 
 const inter = Inter({ subsets: ['latin'] });
 
@@ -16,10 +17,10 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en">
+    <html lang="en" className="dark">
       <body className={inter.className}>
         <Navbar />
-        <main className="w-full max-w-4xl mx-auto px-3 md:px-6">{children}</main>
+        <ResponsiveLayout>{children}</ResponsiveLayout>
       </body>
     </html>
   );

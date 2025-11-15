@@ -3,6 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import type { Video } from "@/lib/youtube";
+import { AutoText } from "./Layout";
 
 interface VideoCardProps {
   video: Video;
@@ -32,13 +33,17 @@ export default function VideoCard({ video }: VideoCardProps) {
         </div>
 
         <div className="flex flex-col">
-          <h2 className="line-clamp-2 text-sm md:text-base font-semibold leading-tight text-foreground">
+          <h2 className="line-clamp-2 text-sm md:text-base font-semibold leading-tight text-foreground group-hover:text-primary">
             {video.title}
           </h2>
-          <p className="text-xs md:text-sm text-muted-foreground">{video.channelName}</p>
-          <p className="text-xs md:text-sm text-muted-foreground">
-            {video.views} views &bull; {video.uploadedAt}
-          </p>
+          <AutoText>
+            <p className="text-xs md:text-sm text-muted-foreground">{video.channelName}</p>
+          </AutoText>
+          <AutoText>
+            <p className="text-xs md:text-sm text-muted-foreground">
+              {video.views} views &bull; {video.uploadedAt}
+            </p>
+          </AutoText>
         </div>
       </div>
     </Link>

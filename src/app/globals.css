@@ -4,48 +4,65 @@
 
 @layer base {
   :root {
-    --background: 0 0% 8%; /* YouTube Dark BG */
-    --foreground: 0 0% 98%; /* White text */
-    --card: 0 0% 12%; /* Slightly lighter card BG */
-    --card-foreground: 0 0% 98%;
-    --popover: 0 0% 8%;
-    --popover-foreground: 0 0% 98%;
-    --primary: 5 88% 55%; /* YouTube Red */
+    --background: 222 83% 98%; /* #F9FAFB */
+    --foreground: 224 71% 4%; /* Almost black */
+
+    --card: 0 0% 100%;
+    --card-foreground: 224 71% 4%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 224 71% 4%;
+
+    --primary: 221 83% 33%; /* #1E3A8A - Deep Blue */
     --primary-foreground: 0 0% 98%;
-    --secondary: 0 0% 20%;
-    --secondary-foreground: 0 0% 98%;
-    --muted: 0 0% 20%;
-    --muted-foreground: 0 0% 63%; /* Lighter gray text */
-    --accent: 0 0% 25%;
+
+    --secondary: 215 28% 95%;
+    --secondary-foreground: 224 71% 4%;
+
+    --muted: 215 28% 95%;
+    --muted-foreground: 215 20% 65%;
+
+    --accent: 25 95% 53%; /* #EA580C - Vivid Orange */
     --accent-foreground: 0 0% 98%;
-    --destructive: 0 63% 31%;
+
+    --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 98%;
-    --border: 0 0% 25%;
-    --input: 0 0% 25%;
-    --ring: 5 88% 55%;
+
+    --border: 215 20% 90%;
+    --input: 215 20% 90%;
+    --ring: 221 83% 33%;
+
     --radius: 0.5rem;
   }
 
   .dark {
-    --background: 0 0% 8%;
-    --foreground: 0 0% 98%;
-    --card: 0 0% 12%;
+    --background: 224 71% 4%; /* Almost black */
+    --foreground: 0 0% 98%; /* White text */
+
+    --card: 224 71% 8%;
     --card-foreground: 0 0% 98%;
-    --popover: 0 0% 8%;
+
+    --popover: 224 71% 4%;
     --popover-foreground: 0 0% 98%;
-    --primary: 5 88% 55%;
+
+    --primary: 221 83% 43%; /* Brighter Blue for dark mode */
     --primary-foreground: 0 0% 98%;
-    --secondary: 0 0% 20%;
+
+    --secondary: 224 71% 10%;
     --secondary-foreground: 0 0% 98%;
-    --muted: 0 0% 20%;
-    --muted-foreground: 0 0% 63%;
-    --accent: 0 0% 25%;
+
+    --muted: 224 71% 10%;
+    --muted-foreground: 215 20% 65%;
+
+    --accent: 25 95% 58%; /* Brighter Orange for dark mode */
     --accent-foreground: 0 0% 98%;
+
     --destructive: 0 63% 31%;
     --destructive-foreground: 0 0% 98%;
-    --border: 0 0% 25%;
-    --input: 0 0% 25%;
-    --ring: 5 88% 55%;
+
+    --border: 224 71% 15%;
+    --input: 224 71% 15%;
+    --ring: 221 83% 43%;
   }
 }
 
@@ -61,5 +78,9 @@
   }
   body {
     @apply bg-background text-foreground;
+    font-family: 'Inter', sans-serif;
+  }
+  h1, h2, h3, h4, h5, h6 {
+    font-family: 'Inter', sans-serif;
   }
 }
