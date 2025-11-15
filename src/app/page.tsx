@@ -4,6 +4,7 @@ import type { Video } from '@/lib/youtube';
 import { getTrendingVideos } from '@/lib/youtube';
 import { Suspense } from 'react';
 import LoadingSkeleton from '@/components/LoadingSkeleton';
+import HomePageWrapper from '@/components/HomePageWrapper';
 
 async function TrendingVideos() {
   const videos = await getTrendingVideos();
@@ -23,11 +24,13 @@ async function TrendingVideos() {
 
 export default function Home() {
   return (
-    <PageContainer>
-      <SectionTitle title="Trending" />
-      <Suspense fallback={<LoadingSkeleton />}>
-        <TrendingVideos />
-      </Suspense>
-    </PageContainer>
+    <HomePageWrapper>
+      <PageContainer>
+        <SectionTitle title="Trending" />
+        <Suspense fallback={<LoadingSkeleton />}>
+          <TrendingVideos />
+        </Suspense>
+      </PageContainer>
+    </HomePageWrapper>
   );
 }
