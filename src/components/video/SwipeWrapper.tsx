@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useRef } from "react";
@@ -32,4 +31,3 @@ export default function SwipeWrapper({
 
   return <div ref={swipeRef}>{children}</div>;
 }
-

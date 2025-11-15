@@ -1,4 +1,4 @@
-import VideoCard from '@/components/VideoCard';
+import VideoCard from '@/components/video/VideoCard';
 import { getTrendingVideos, searchVideos, type Video } from '@/lib/youtube';
 import { PageContainer, SectionTitle } from '@/components/Layout';
 import { Suspense } from 'react';

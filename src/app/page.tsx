@@ -1,4 +1,4 @@
-import VideoCard from '@/components/VideoCard';
+import VideoCard from '@/components/video/VideoCard';
 import { PageContainer, SectionTitle } from '@/components/Layout';
 import type { Video } from '@/lib/youtube';
 import { getTrendingVideos } from '@/lib/youtube';

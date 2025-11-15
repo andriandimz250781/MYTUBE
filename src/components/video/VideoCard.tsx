@@ -1,10 +1,9 @@
-
 "use client";
 
 import Image from "next/image";
 import Link from "next/link";
 import type { Video } from "@/lib/youtube";
-import { AutoText } from "./Layout";
+import { AutoText } from "../Layout";
 import { cn } from "@/lib/utils";
 import { useRouter } from "next/navigation";
 

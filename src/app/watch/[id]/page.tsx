@@ -6,12 +6,12 @@ import {
   SectionTitle,
 } from '@/components/Layout';
 import { Suspense } from 'react';
-import VideoCard from '@/components/VideoCard';
-import VideoPlayer from '@/components/VideoPlayer';
+import VideoCard from '@/components/video/VideoCard';
+import VideoPlayer from '@/components/video/Player';
 import WatchHistoryLogger from '@/components/WatchHistoryLogger';
 import { Card as CustomCard } from '@/components/Layout';
-import AutoNext from '@/components/AutoNext';
-import SwipeWrapper from '@/components/SwipeWrapper';
+import AutoNext from '@/components/video/AutoNext';
+import SwipeWrapper from '@/components/video/SwipeWrapper';
 import DominantColor from '@/components/DominantColor';
 
 interface WatchPageProps {

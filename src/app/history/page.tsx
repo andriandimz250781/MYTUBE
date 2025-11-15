@@ -1,6 +1,6 @@
 "use client";
 
-import VideoCard from "@/components/VideoCard";
+import VideoCard from "@/components/video/VideoCard";
 import { PageContainer, SectionTitle } from "@/components/Layout";
 import { useWatchHistory } from "@/hooks/useWatchHistory";
 import { History } from "lucide-react";
