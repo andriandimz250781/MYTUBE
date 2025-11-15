@@ -3,7 +3,7 @@ import { formatDistanceToNow } from 'date-fns';
 export interface Video {
   id: string;
   title: string;
-  thumbnailUrl: string;
+  thumbnail: string;
   duration: string;
   channelName: string;
   views: string;
@@ -117,7 +117,7 @@ export async function getTrendingVideos(): Promise<Video[] | null> {
     (item: any): Video => ({
       id: item.id,
       title: item.snippet.title,
-      thumbnailUrl:
+      thumbnail:
         item.snippet.thumbnails.maxres?.url ??
         item.snippet.thumbnails.high?.url ??
         item.snippet.thumbnails.default.url,
@@ -155,7 +155,7 @@ export async function searchVideos(query: string): Promise<Video[] | null> {
     (item: any): Video => ({
       id: item.id,
       title: item.snippet.title,
-      thumbnailUrl:
+      thumbnail:
         item.snippet.thumbnails.maxres?.url ||
         item.snippet.thumbnails.high?.url ||
         item.snippet.thumbnails.default.url,
