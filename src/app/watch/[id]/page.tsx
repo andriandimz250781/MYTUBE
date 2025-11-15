@@ -11,6 +11,7 @@ import VideoPlayer from '@/components/VideoPlayer';
 import WatchHistoryLogger from '@/components/WatchHistoryLogger';
 import { Card as CustomCard } from '@/components/Layout';
 import AutoNext from '@/components/AutoNext';
+import SwipeWrapper from '@/components/SwipeWrapper';
 
 interface WatchPageProps {
   params: {
@@ -129,18 +130,23 @@ async function RelatedVideos({ videoId }: { videoId: string }) {
     );
 }
 
-export default function WatchPage({ params }: WatchPageProps) {
+export default async function WatchPage({ params }: WatchPageProps) {
   const videoId = params.id;
 
   if (!videoId) {
     notFound();
   }
+  
+  const relatedVideos = await getRelatedVideos(videoId);
+  const nextVideoId = relatedVideos?.[0]?.id;
 
   return (
     <PageContainer>
         <div className="flex flex-col lg:flex-row gap-8">
             <div className="flex-1 flex flex-col gap-4">
-                <VideoPlayer videoId={videoId} />
+                <SwipeWrapper nextId={nextVideoId}>
+                  <VideoPlayer videoId={videoId} />
+                </SwipeWrapper>
                 <Suspense fallback={<VideoDetailsSkeleton />}>
                     <VideoDetails videoId={videoId} />
                 </Suspense>
