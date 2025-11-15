@@ -16,7 +16,7 @@ export default function VideoCard({ video, layout = 'grid' }: VideoCardProps) {
   if (layout === 'horizontal') {
     return (
       <Link
-        href={`/watch?v=${video.id}`}
+        href={`/watch/${video.id}`}
         className="group flex gap-3 w-full cursor-pointer"
       >
         <div className="relative w-32 sm:w-40 shrink-0 overflow-hidden rounded-lg bg-muted aspect-video">
@@ -45,7 +45,7 @@ export default function VideoCard({ video, layout = 'grid' }: VideoCardProps) {
 
   return (
     <Link
-      href={`/watch?v=${video.id}`}
+      href={`/watch/${video.id}`}
       className="group block w-full cursor-pointer"
     >
       <div className="relative w-full overflow-hidden rounded-xl bg-muted aspect-video">

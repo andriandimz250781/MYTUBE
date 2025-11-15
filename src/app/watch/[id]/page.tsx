@@ -1,5 +1,4 @@
-
-import { getVideoById, getRelatedVideos, type Video } from '@/lib/youtube';
+import { getVideoById, getRelatedVideos } from '@/lib/youtube';
 import { notFound } from 'next/navigation';
 import {
   PageContainer,
@@ -12,8 +11,8 @@ import VideoCard from '@/components/VideoCard';
 import VideoPlayer from '@/components/VideoPlayer';
 
 interface WatchPageProps {
-  searchParams: {
-    v?: string;
+  params: {
+    id?: string;
   };
 }
 
@@ -123,8 +122,8 @@ async function RelatedVideos({ videoId }: { videoId: string }) {
     );
 }
 
-export default function WatchPage({ searchParams }: WatchPageProps) {
-  const videoId = searchParams.v;
+export default function WatchPage({ params }: WatchPageProps) {
+  const videoId = params.id;
 
   if (!videoId) {
     notFound();
