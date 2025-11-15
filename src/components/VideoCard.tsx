@@ -1,3 +1,4 @@
+
 "use client";
 
 import Image from "next/image";
@@ -5,6 +6,7 @@ import Link from "next/link";
 import type { Video } from "@/lib/youtube";
 import { AutoText } from "./Layout";
 import { cn } from "@/lib/utils";
+import { useRouter } from "next/navigation";
 
 interface VideoCardProps {
   video: Video;
@@ -12,12 +14,18 @@ interface VideoCardProps {
 }
 
 export default function VideoCard({ video, layout = 'grid' }: VideoCardProps) {
+  const router = useRouter();
+
+  const handleMouseEnter = () => {
+    router.prefetch(`/watch/${video.id}`);
+  };
 
   if (layout === 'horizontal') {
     return (
       <Link
         href={`/watch/${video.id}`}
         className="group flex gap-3 w-full cursor-pointer"
+        onMouseEnter={handleMouseEnter}
       >
         <div className="relative w-32 sm:w-40 shrink-0 overflow-hidden rounded-lg bg-muted aspect-video">
            <Image
@@ -47,6 +55,7 @@ export default function VideoCard({ video, layout = 'grid' }: VideoCardProps) {
     <Link
       href={`/watch/${video.id}`}
       className="group block w-full cursor-pointer"
+      onMouseEnter={handleMouseEnter}
     >
       <div className="relative w-full overflow-hidden rounded-xl bg-muted aspect-video">
         <Image
