@@ -1,12 +1,35 @@
+"use client";
+
 import Link from 'next/link';
 import { Search, Video } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from './ui/button';
 import { ThemeToggle } from './theme-toggle';
+import { useEffect, useState } from 'react';
+import { cn } from '@/lib/utils';
 
 export function Navbar() {
+  const [hidden, setHidden] = useState(false);
+
+  useEffect(() => {
+    let lastScrollY = window.scrollY;
+    const onScroll = () => {
+      const currentScrollY = window.scrollY;
+      const isScrollingDown = currentScrollY > lastScrollY;
+      // Hide navbar only if scrolling down and past the navbar's height
+      setHidden(isScrollingDown && currentScrollY > 80);
+      lastScrollY = currentScrollY;
+    };
+
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
+
   return (
-    <header className="sticky top-0 z-10 flex h-16 items-center gap-4 border-b bg-background/80 px-4 backdrop-blur-sm md:px-6">
+    <header className={cn(
+      "sticky top-0 z-10 flex h-16 items-center gap-4 border-b bg-background/80 px-4 backdrop-blur-sm transition-transform duration-300 md:px-6",
+      hidden ? "-translate-y-full" : "translate-y-0"
+    )}>
       <Link
         href="/"
         className="flex items-center gap-2 text-lg font-semibold text-primary"
