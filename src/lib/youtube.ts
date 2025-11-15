@@ -1,3 +1,4 @@
+
 import { formatDistanceToNow } from 'date-fns';
 
 export interface Video {
@@ -9,6 +10,7 @@ export interface Video {
   views: string;
   uploadedAt: string;
   publishedAt: string;
+  description?: string;
 }
 
 let currentApiKeyIndex = 0;
@@ -170,4 +172,32 @@ export async function searchVideos(query: string): Promise<Video[] | null> {
       publishedAt: item.snippet.publishedAt,
     })
   );
+}
+
+export async function getVideoById(id: string): Promise<Video | null> {
+  const details = await fetchFromYouTubeAPI('videos', {
+    part: 'snippet,contentDetails,statistics',
+    id: id,
+  });
+
+  if (!details?.items || details.items.length === 0) return null;
+
+  const item = details.items[0];
+
+  return {
+    id: item.id,
+    title: item.snippet.title,
+    thumbnail:
+      item.snippet.thumbnails.maxres?.url ||
+      item.snippet.thumbnails.high?.url ||
+      item.snippet.thumbnails.default.url,
+    duration: formatDuration(item.contentDetails.duration),
+    channelName: item.snippet.channelTitle,
+    views: formatViews(item.statistics.viewCount),
+    uploadedAt: formatDistanceToNow(new Date(item.snippet.publishedAt), {
+      addSuffix: true,
+    }),
+    publishedAt: item.snippet.publishedAt,
+    description: item.snippet.description,
+  };
 }
