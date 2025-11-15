@@ -10,6 +10,7 @@ import VideoCard from '@/components/VideoCard';
 import VideoPlayer from '@/components/VideoPlayer';
 import WatchHistoryLogger from '@/components/WatchHistoryLogger';
 import { Card as CustomCard } from '@/components/Layout';
+import AutoNext from '@/components/AutoNext';
 
 interface WatchPageProps {
   params: {
@@ -111,9 +112,11 @@ function RelatedVideosSkeleton() {
 
 async function RelatedVideos({ videoId }: { videoId: string }) {
     const relatedVideos = await getRelatedVideos(videoId);
+    const nextVideoId = relatedVideos?.[0]?.id;
 
     return (
         <div className="space-y-4">
+            <AutoNext nextId={nextVideoId} />
             <SectionTitle title="Related Videos" />
             {relatedVideos && relatedVideos.length > 0 ? (
                 relatedVideos.map((video) => (
