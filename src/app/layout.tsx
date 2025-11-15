@@ -1,3 +1,4 @@
+
 "use client";
 
 import './globals.css';
@@ -52,6 +53,23 @@ export default function RootLayout({
 }: {
   children: React.ReactNode;
 }) {
+  useEffect(() => {
+    if (
+      typeof window !== 'undefined' &&
+      'serviceWorker' in navigator &&
+      window.workbox !== undefined
+    ) {
+      const wb = window.workbox;
+      wb.active.then((worker) => {
+        console.log('Service worker activated.');
+      });
+
+      // Add this to your page to register the service worker.
+      // It will not be registered in development mode.
+      wb.register(); 
+    }
+  }, []);
+  
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
