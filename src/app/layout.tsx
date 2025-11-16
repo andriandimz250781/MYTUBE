@@ -14,14 +14,27 @@ import type { Video } from '@/lib/youtube';
 import { getVideoById } from '@/lib/youtube';
 import { Toaster } from "@/components/ui/toaster";
 import { useMiniPlayer } from '@/stores/useMiniPlayer';
+import { usePathname, useRouter } from 'next/navigation';
 
 const inter = Inter({ subsets: ['latin'] });
+
+function isTV() {
+  if (typeof window === "undefined") return false;
+  return /Android TV|SmartTV|TV|BRAVIA|AFTMM|AOSP on IA Emulator/i.test(navigator.userAgent);
+}
 
 function AppContent({ children }: { children: React.ReactNode }) {
   const { floating, currentId } = useVideo();
   const [videoInfo, setVideoInfo] = useState<Video | null>(null);
   const { playing, setPlaying } = useMiniPlayer();
+  const router = useRouter();
+  const pathname = usePathname();
 
+  useEffect(() => {
+    if (isTV() && !pathname.startsWith('/tv')) {
+      router.replace('/tv');
+    }
+  }, [pathname, router]);
 
   useEffect(() => {
     if (floating && currentId) {
@@ -34,6 +47,11 @@ function AppContent({ children }: { children: React.ReactNode }) {
       setVideoInfo(null);
     }
   }, [floating, currentId]);
+
+  // Hide Navbar and standard layout on TV page
+  if (pathname.startsWith('/tv')) {
+    return <>{children}</>;
+  }
 
   return (
     <>
@@ -51,6 +69,8 @@ export default function RootLayout({
 }: {
   children: React.ReactNode;
 }) {
+  const pathname = usePathname();
+  
   useEffect(() => {
     if (
       typeof window !== 'undefined' &&
@@ -68,6 +88,26 @@ export default function RootLayout({
     }
   }, []);
   
+  if (pathname.startsWith('/tv')) {
+    return (
+       <html lang="en" suppressHydrationWarning>
+         <body className={`${inter.className} bg-black`}>
+           <ThemeProvider
+            attribute="class"
+            defaultTheme="dark"
+            enableSystem={false}
+            disableTransitionOnChange
+          >
+              <VideoProvider>
+                <AppContent>{children}</AppContent>
+              </VideoProvider>
+              <Toaster />
+           </ThemeProvider>
+         </body>
+       </html>
+    )
+  }
+
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
