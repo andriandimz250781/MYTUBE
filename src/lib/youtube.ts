@@ -233,31 +233,10 @@ export async function getVideoById(id: string): Promise<Video | null> {
 }
 
 
-export async function getRelatedVideos(videoId: string): Promise<Video[] | null> {
-    const cacheKey = `related-${videoId}`;
+export async function getRecommendedVideos(videoId: string): Promise<Video[] | null> {
+    const cacheKey = `recommended-${videoId}`;
     const cacheHit = appCache.get(cacheKey);
     if (cacheHit) return cacheHit;
-
-    // --- Firestore Logic for keyword-based recommendations (commented out) ---
-    // const videoDoc = await getVideoById(videoId);
-    // const keywords = videoDoc?.description?.split(' ').slice(0, 5) || [];
-    // if (keywords.length > 0) {
-    //   const q = query(
-    //     collection(db, "videos"),
-    //     where("keywords", "array-contains-any", keywords),
-    //     limit(10)
-    //   );
-    //   const snap = await getDocs(q);
-    //   const results: Video[] = [];
-    //   snap.forEach((d) => {
-    //     if (d.id !== videoId) results.push({ id: d.id, ...d.data() } as Video);
-    //   });
-    //   if (results.length > 0) {
-    //       appCache.set(cacheKey, results);
-    //       return results;
-    //   }
-    // }
-    // ----------------------------------------------------------------------
     
     const searchData = await fetchFromYouTubeAPI('search', {
         part: 'snippet',
@@ -285,7 +264,7 @@ export async function getRelatedVideos(videoId: string): Promise<Video[] | null>
 }
 
 export async function prefetchNext(currentId: string) {
-  const recommendations = await getRelatedVideos(currentId);
+  const recommendations = await getRecommendedVideos(currentId);
   if (!recommendations || recommendations.length === 0) return null;
 
   const next = recommendations[0];

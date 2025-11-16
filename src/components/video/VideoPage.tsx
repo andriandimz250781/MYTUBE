@@ -2,7 +2,7 @@
 import React, { useEffect, useState, Suspense, useRef } from "react";
 import Player from "./Player";
 import VideoCard from "./VideoCard";
-import { getVideoById, getRelatedVideos, type Video, prefetchNext } from "@/lib/youtube";
+import { getVideoById, getRecommendedVideos, type Video, prefetchNext } from "@/lib/youtube";
 import { useRouter } from "next/navigation";
 import { Skeleton } from "@/components/ui/skeleton";
 import WatchHistoryLogger from "../WatchHistoryLogger";
@@ -74,7 +74,7 @@ function VideoContent({ videoId }: { videoId: string }) {
         return;
       };
       setVideo(v);
-      getRelatedVideos(v.id).then(related => {
+      getRecommendedVideos(v.id).then(related => {
         if(mounted && related) {
           const videoQueue = [v, ...related];
           setRecs(related);
