@@ -9,54 +9,44 @@ import { motion } from "framer-motion";
 
 export default function MiniPlayer() {
   const { active, close, playing, togglePlay } = useMiniPlayer();
-  const { current } = usePlayerQueue();
+  const { current, next, prev } = usePlayerQueue();
 
   if (!active || !current) return null;
 
-  const handleClose = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    e.preventDefault();
-    close();
-  };
-
   return (
     <motion.div
-      initial={{ opacity: 0, y: 40, scale: 0.95 }}
+      initial={{ opacity: 0, y: 24, scale: 0.95 }}
       animate={{ opacity: 1, y: 0, scale: 1 }}
-      exit={{ opacity: 0, y: 40, scale: 0.95 }}
-      transition={{ type: "spring", stiffness: 300, damping: 30, duration: 0.2 }}
+      transition={{ duration: 0.26 }}
       drag
       dragConstraints={{ left: 0, right: 0, top: 0, bottom: 0 }}
       dragElastic={0.2}
-      className="fixed bottom-4 right-4 w-80 bg-background/80 dark:bg-neutral-900/80 backdrop-blur-xl rounded-xl shadow-2xl overflow-hidden z-[999] border dark:border-white/10"
+      className="fixed z-50 right-4 bottom-4 w-72 bg-neutral-900 text-white rounded-xl shadow-lg overflow-hidden"
       style={{ touchAction: "none" }}
-      role="dialog"
     >
-      <div className="flex items-center p-2 gap-3">
-        <Link href={`/watch/${current.id}`} className="block flex-shrink-0">
+      <div className="flex items-center gap-3 p-2">
+        <Link href={`/watch/${current.id}`}>
           <Image
             src={current.thumbnail}
+            width={112}
+            height={63}
+            className="w-28 h-16 object-cover rounded"
             alt={current.title}
-            width={100}
-            height={56}
-            className="w-24 h-14 rounded-md object-cover active:scale-95 transition-transform"
           />
         </Link>
-
-        <div className="flex-1 min-w-0">
-            <Link href={`/watch/${current.id}`} className="block">
-                <p className="text-sm font-semibold truncate text-foreground">{current.title}</p>
-                <p className="text-xs text-muted-foreground truncate">{current.channelName}</p>
-            </Link>
+        <div className="flex-1">
+          <Link href={`/watch/${current.id}`}>
+            <div className="font-semibold line-clamp-2 text-sm">{current.title}</div>
+          </Link>
+          <div className="text-xs text-neutral-400">Now playing</div>
         </div>
-
-        <div className="flex items-center text-foreground pl-1">
-          <button onClick={togglePlay} className="p-2" aria-label={playing ? "Pause" : "Play"}>
-            {playing ? <Pause size={20} /> : <Play size={20} />}
-          </button>
-          <button onClick={handleClose} className="p-2" aria-label="Close Mini Player">
-            <X size={20} />
-          </button>
+        <div className="flex flex-col gap-2 items-center">
+            <button onClick={togglePlay} className="p-2 rounded bg-white/10">
+                {playing ? <Pause size={16} /> : <Play size={16} />}
+            </button>
+            <button onClick={close} className="p-1 rounded bg-white/10">
+                <X size={14} />
+            </button>
         </div>
       </div>
     </motion.div>

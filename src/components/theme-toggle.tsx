@@ -9,21 +9,11 @@ export function ThemeToggle() {
   const { theme, setTheme } = useTheme()
 
   return (
-    <Button
-      variant="ghost"
+    <button
       onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
-      className="px-3"
+      className="px-3 py-1 rounded-md bg-white/10 text-foreground"
     >
-      {theme === "dark" ? (
-        <>
-           <span className="mr-2">☀️</span> Light
-        </>
-      ) : (
-        <>
-            <span className="mr-2">🌙</span> Dark
-        </>
-      )}
-      <span className="sr-only">Toggle theme</span>
-    </Button>
+      {theme === "dark" ? "☀️ Light" : "🌙 Dark"}
+    </button>
   )
 }

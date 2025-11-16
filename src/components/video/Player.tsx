@@ -89,14 +89,15 @@ export default function Player({
         }
       }
     };
-  }, [id, setCurrentId, onEnded]);
+  }, [id, setCurrentId, onEnded, playing, togglePlay]);
 
   // Sync player with zustand state
   useEffect(() => {
     if (playerRef.current && typeof playerRef.current.getPlayerState === 'function') {
-        if (playing && playerRef.current.getPlayerState() !== 1) {
+        const playerState = playerRef.current.getPlayerState();
+        if (playing && playerState !== 1) { // 1 is YT.PlayerState.PLAYING
             playerRef.current.playVideo();
-        } else if (!playing && playerRef.current.getPlayerState() === 1) {
+        } else if (!playing && playerState === 1) {
             playerRef.current.pauseVideo();
         }
     }

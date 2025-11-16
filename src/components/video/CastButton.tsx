@@ -64,14 +64,16 @@ export default function CastButton() {
     <button
       onClick={handleCast}
       className={cn(
-        "p-2 rounded-md bg-black/50 text-white opacity-80 hover:opacity-100 transition-opacity flex items-center gap-1.5",
+        "p-2 rounded-md transition-opacity flex items-center gap-1.5",
+        "bg-black/50 text-white opacity-80 hover:opacity-100",
         !isCastAvailable && "cursor-not-allowed opacity-50"
       )}
       aria-label="Cast to TV"
       title="Cast to TV"
       disabled={!isCastAvailable}
+      style={{ backdropFilter: "blur(6px)" }}
     >
-       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M2 12.25c0-4.02.64-7.9 1.83-11.55A1 1 0 0 1 4.74 0h0a1 1 0 0 1 .91.56c1.13 3.56 1.7 7.23 1.7 10.94" opacity="0.4"></path><path d="M16.53 19.38c3.24-2.43 5.47-6.23 5.47-10.63H10.75c0 4.4 2.23 8.2 5.47 10.63a1 1 0 0 0 1.17-.12h0a1 1 0 0 0-.12-1.17Z"></path><path d="M12 20a12 12 0 0 1-12-12h1.5a10.5 10.5 0 0 0 10.5 10.5v1.5Z"></path></svg>
+       <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M21 3H3v4h2V7h14v10h-6v2h6a2 2 0 002-2V3z" fill="currentColor"/><path d="M3 19h2a3 3 0 013 3H3v-3z" fill="currentColor" opacity="0.6"/></svg>
        <span className="hidden sm:inline">Cast</span>
     </button>
   );

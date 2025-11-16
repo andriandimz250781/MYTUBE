@@ -149,6 +149,4 @@ export default function TVPage() {
             </div>
         }>
             <TVPageContent />
-        </React.Suspense>
-    )
-}
+        </

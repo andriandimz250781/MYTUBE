@@ -5,7 +5,7 @@ interface PlayerState {
   queue: Video[];
   currentIndex: number;
   current: Video | null;
-  setQueue: (list: Video[]) => void;
+  setQueue: (list: Video[], startIndex?: number) => void;
   playAt: (index: number) => void;
   next: () => void;
   prev: () => void;
@@ -18,25 +18,15 @@ export const usePlayerQueue = create<PlayerState>((set, get) => ({
   currentIndex: -1,
   current: null,
 
-  setQueue: (list) => {
-    const currentVideoId = get().current?.id;
-    // Try to find the current video in the new list to maintain position
-    const newCurrentIndex = list.findIndex(v => v.id === currentVideoId);
-    
-    if (newCurrentIndex !== -1) {
-      // If current video is in the new queue, just update the queue
-      set({ 
-        queue: list,
-        currentIndex: newCurrentIndex,
-        current: list[newCurrentIndex]
-      });
+  setQueue: (list, startIndex = 0) => {
+    if (list && list.length > 0) {
+        set({
+            queue: list,
+            currentIndex: startIndex,
+            current: list[startIndex],
+        });
     } else {
-      // If not found, start from the beginning of the new queue
-      set({
-        queue: list,
-        currentIndex: 0,
-        current: list[0] || null,
-      });
+        set({ queue: [], currentIndex: -1, current: null });
     }
   },
 

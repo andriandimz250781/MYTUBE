@@ -24,13 +24,14 @@ export function useSwipe(
     let isSwiping = false;
 
     const handleTouchStart = (e: TouchEvent) => {
+      if(e.touches.length === 0) return;
       startX = e.touches[0].clientX;
       startY = e.touches[0].clientY;
       isSwiping = true;
     };
 
     const handleTouchEnd = (e: TouchEvent) => {
-      if (!isSwiping) return;
+      if (!isSwiping || e.changedTouches.length === 0) return;
       isSwiping = false;
 
       const endX = e.changedTouches[0].clientX;
