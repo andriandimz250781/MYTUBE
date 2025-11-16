@@ -13,12 +13,15 @@ import { useEffect, useState } from 'react';
 import type { Video } from '@/lib/youtube';
 import { getVideoById } from '@/lib/youtube';
 import { Toaster } from "@/components/ui/toaster";
+import { useMiniPlayer } from '@/hooks/useMiniPlayer';
 
 const inter = Inter({ subsets: ['latin'] });
 
 function AppContent({ children }: { children: React.ReactNode }) {
   const { floating, currentId } = useVideo();
   const [videoInfo, setVideoInfo] = useState<Video | null>(null);
+  const { playing, setPlaying } = useMiniPlayer();
+
 
   useEffect(() => {
     if (floating && currentId) {
@@ -37,13 +40,7 @@ function AppContent({ children }: { children: React.ReactNode }) {
       <Navbar />
       <ResponsiveLayout>{children}</ResponsiveLayout>
       <ScrollToTop />
-      {floating && videoInfo && (
-         <MiniPlayer
-            id={videoInfo.id}
-            title={videoInfo.title}
-            thumbnail={videoInfo.thumbnail}
-        />
-      )}
+      <MiniPlayer />
     </>
   );
 }

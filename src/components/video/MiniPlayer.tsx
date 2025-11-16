@@ -1,86 +1,42 @@
 "use client";
-import React, { useEffect, useState } from "react";
+
+import { motion } from "framer-motion";
+import { X, Pause, Play } from "lucide-react";
+import { useMiniPlayer } from "@/hooks/useMiniPlayer";
 import { useVideo } from "./VideoProvider";
-import Link from "next/link";
-import { cn } from "@/lib/utils";
-import { getVideoById } from "@/lib/youtube";
 
 export default function MiniPlayer() {
-  const { videoEl, floating, setFloating, currentId } = useVideo();
-  const [playing, setPlaying] = useState(false);
-  const [videoInfo, setVideoInfo] = useState<{title?: string, thumbnail?: string} | null>(null);
-
-  useEffect(() => {
-    const v = videoEl.current;
-    if (!v) return;
-    const onPlay = () => setPlaying(true);
-    const onPause = () => setPlaying(false);
-
-    v.addEventListener("play", onPlay);
-    v.addEventListener("pause", onPause);
-    
-    if(v.played.length > 0 && !v.paused) {
-        setPlaying(true);
-    }
-
-    return () => {
-      v.removeEventListener("play", onPlay);
-      v.removeEventListener("pause", onPause);
-    };
-  }, [videoEl, floating]);
-
-  useEffect(() => {
-    if (floating && currentId) {
-        getVideoById(currentId).then(video => {
-            if(video) {
-                setVideoInfo({ title: video.title, thumbnail: video.thumbnail });
-            }
-        });
-    }
-  }, [floating, currentId]);
+  const { floating, setFloating, currentId } = useVideo();
+  const { playing, togglePlay } = useMiniPlayer();
 
   if (!floating || !currentId) return null;
 
   return (
-    <div
-      className={cn(
-        "fixed z-50 bottom-4 right-4 w-72 max-w-[80vw] rounded-lg overflow-hidden shadow-lg",
-        "bg-card text-card-foreground flex items-center gap-2 p-2 border"
-      )}
-      role="dialog"
+    <motion.div
+      drag
+      dragMomentum={false}
+      className="fixed bottom-4 right-4 w-64 bg-black rounded-xl overflow-hidden shadow-xl z-[9999]"
+      initial={{ opacity: 0, scale: 0.8 }}
+      animate={{ opacity: 1, scale: 1 }}
     >
-      {videoInfo?.thumbnail && 
-        <img
-            src={videoInfo.thumbnail}
-            alt=""
-            className="w-28 h-16 object-cover rounded"
-            style={{ flexShrink: 0 }}
+      <div onClick={() => (window.location.href = `/watch/${currentId}`)}>
+        <iframe
+          width="100%"
+          height="120"
+          src={`https://www.youtube.com/embed/${currentId}?autoplay=1&controls=0&modestbranding=1&rel=0`}
+          className="pointer-events-none"
         />
-      }
-      <div className="flex-1 overflow-hidden">
-        <div className="text-sm font-semibold line-clamp-2">{videoInfo?.title ?? 'Loading...'}</div>
-        <div className="text-xs text-muted-foreground">Playing</div>
       </div>
 
-      <div className="flex flex-col gap-2">
-        <button
-          onClick={() => {
-            const v = videoEl.current;
-            if (!v) return;
-            if (v.paused) v.play().catch(() => {});
-            else v.pause();
-          }}
-          className="px-2 py-1 rounded bg-secondary text-secondary-foreground hover:bg-muted"
-        >
-          {playing ? "❚❚" : "▶︎"}
+      <div className="flex items-center justify-between p-2 bg-neutral-900">
+        <button onClick={togglePlay} className="p-2 text-white">
+          {playing ? <Pause size={20} /> : <Play size={20} />}
         </button>
 
-        <Link href={`/watch/${currentId ?? ""}`} onClick={() => setFloating(false)}>
-          <button className="px-2 py-1 rounded bg-secondary text-secondary-foreground hover:bg-muted text-xs">
-            Open
-          </button>
-        </Link>
+        <button onClick={() => setFloating(false)} className="p-2 text-white">
+          <X size={20} />
+        </button>
       </div>
-    </div>
+    </motion.div>
   );
 }
