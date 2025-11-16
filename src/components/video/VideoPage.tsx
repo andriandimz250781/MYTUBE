@@ -1,3 +1,4 @@
+
 "use client";
 import React, { useEffect, useState, Suspense, useRef } from "react";
 import Player from "./Player";
@@ -10,34 +11,34 @@ import { useMiniPlayer } from "@/stores/useMiniPlayer";
 import { usePlayerQueue } from "@/stores/usePlayerQueue";
 import { useSwipe } from "@/hooks/useSwipe";
 import Image from "next/image";
+import { ThumbsDown } from "lucide-react";
 
 function VideoPlayerSkeleton() {
   return (
-    <div className="w-full max-w-4xl mx-auto">
-      <Skeleton className="w-full aspect-video rounded-lg" />
-      <div className="mt-4">
-        <Skeleton className="h-7 w-3/4 rounded" />
-        <Skeleton className="h-5 w-1/2 mt-2 rounded" />
+    <div className="flex flex-col lg:flex-row gap-8 w-full">
+      <div className="w-full">
+         <Skeleton className="w-full aspect-video rounded-lg" />
+        <div className="mt-4 space-y-2">
+            <Skeleton className="h-7 w-3/4 rounded" />
+            <Skeleton className="h-5 w-1/2 rounded" />
+        </div>
+      </div>
+       <div className="w-full lg:w-96 flex-shrink-0 space-y-4">
+        <Skeleton className="h-6 w-1/3 rounded" />
+        {Array.from({ length: 5 }).map((_, i) => (
+            <div key={i} className="flex gap-4">
+            <Skeleton className="w-40 aspect-video rounded-lg flex-shrink-0" />
+            <div className="flex-1 space-y-2">
+                <Skeleton className="h-5 w-5/6 rounded" />
+                <Skeleton className="h-4 w-1/2 rounded" />
+            </div>
+            </div>
+        ))}
       </div>
     </div>
   );
 }
 
-function RelatedVideosSkeleton() {
-  return (
-    <div className="space-y-4">
-      {Array.from({ length: 5 }).map((_, i) => (
-        <div key={i} className="flex gap-4">
-          <Skeleton className="w-40 aspect-video rounded-lg flex-shrink-0" />
-          <div className="flex-1 space-y-2">
-            <Skeleton className="h-5 w-5/6 rounded" />
-            <Skeleton className="h-4 w-1/2 rounded" />
-          </div>
-        </div>
-      ))}
-    </div>
-  );
-}
 
 function VideoContent({ videoId }: { videoId: string }) {
   const [video, setVideo] = useState<Video | null>(null);
@@ -118,46 +119,96 @@ function VideoContent({ videoId }: { videoId: string }) {
       <DominantColor imageSrc={video.thumbnail} />
       <WatchHistoryLogger video={video} />
      
-      <div className="w-full" ref={playerContainerRef}>
-        <Player 
-          id={video.id} 
-          onEnded={handleVideoEnd} 
-        />
-        <div className="mt-4">
-          <h1 className="text-xl md:text-2xl font-bold leading-tight">{video.title}</h1>
-          <div className="flex items-center gap-4 mt-2 text-sm text-muted-foreground">
-             <p>{video.channelName}</p>
-             <p>{video.views} views</p>
-             <p>{video.uploadedAt}</p>
-          </div>
-        </div>
-      </div>
-      <div className="w-full lg:w-96 flex-shrink-0 space-y-4">
-        <h2 className="text-lg font-semibold">Up Next</h2>
-        {recs.length > 0 ? (
-          recs.map((vid) => (
-             <div
-                key={vid.id}
-                className="flex gap-3 cursor-pointer hover:bg-muted rounded-lg p-2 transition"
-                onClick={() => router.push(`/watch/${vid.id}`)}
-              >
-                <Image
-                  src={vid.thumbnail}
-                  alt={vid.title}
-                  width={160}
-                  height={90}
-                  className="w-40 h-auto rounded-md object-cover aspect-video"
+      <div className="flex flex-col lg:flex-row gap-8 w-full">
+         <div className="w-full">
+            <div ref={playerContainerRef}>
+                <Player 
+                    id={video.id} 
+                    onEnded={handleVideoEnd} 
                 />
-
-                <div className="flex-1">
-                  <p className="font-semibold line-clamp-2 text-sm">{vid.title}</p>
-                  <p className="text-xs text-muted-foreground mt-1">{vid.channelName}</p>
+            </div>
+            <div className="mt-4">
+                <h1 className="text-xl md:text-2xl font-bold leading-tight">{video.title}</h1>
+                <div className="flex items-center gap-4 mt-2 text-sm text-muted-foreground">
+                    <p>{video.channelName}</p>
+                    <p>{video.views} views</p>
+                    <p>{video.uploadedAt}</p>
                 </div>
-              </div>
-          ))
-        ) : (
-          <RelatedVideosSkeleton />
-        )}
+            </div>
+
+            {/* PERSONAL RECOMMENDATIONS */}
+            <div className="mt-8">
+                <h2 className="font-bold text-lg mb-2">Rekomendasi Untuk Kamu</h2>
+                 {recs.length > 0 ? (
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                        {recs.slice(0, 4).map((v) => (
+                            <div key={v.id} className="rounded-xl overflow-hidden bg-card border">
+                                <Image
+                                    src={v.thumbnail}
+                                    alt={v.title}
+                                    width={200}
+                                    height={112}
+                                    className="w-full h-auto object-cover aspect-video cursor-pointer"
+                                    onClick={() => router.push(`/watch/${v.id}`)}
+                                />
+                                <div className="p-2">
+                                    <p className="text-sm font-semibold line-clamp-2">{v.title}</p>
+                                    <button className="text-xs text-muted-foreground hover:text-red-500 mt-1 flex items-center gap-1 transition-colors">
+                                    <ThumbsDown className="w-3 h-3" /> Jangan rekomendasikan
+                                    </button>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                ) : (
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                        {Array.from({ length: 4 }).map((_, i) => (
+                            <div key={i}>
+                                <Skeleton className="w-full aspect-video rounded-xl" />
+                                <Skeleton className="h-4 w-5/6 mt-2 rounded" />
+                                <Skeleton className="h-3 w-1/2 mt-1 rounded" />
+                            </div>
+                        ))}
+                    </div>
+                )}
+            </div>
+        </div>
+
+        <div className="w-full lg:w-96 flex-shrink-0 space-y-4">
+            <h2 className="text-lg font-semibold">Up Next</h2>
+            {recs.length > 0 ? (
+            recs.map((vid) => (
+                <div
+                    key={vid.id}
+                    className="flex gap-3 cursor-pointer hover:bg-muted rounded-lg p-2 transition"
+                    onClick={() => router.push(`/watch/${vid.id}`)}
+                >
+                    <Image
+                        src={vid.thumbnail}
+                        alt={vid.title}
+                        width={160}
+                        height={90}
+                        className="w-40 h-auto rounded-md object-cover aspect-video"
+                    />
+
+                    <div className="flex-1">
+                    <p className="font-semibold line-clamp-2 text-sm">{vid.title}</p>
+                    <p className="text-xs text-muted-foreground mt-1">{vid.channelName}</p>
+                    </div>
+                </div>
+            ))
+            ) : (
+                Array.from({ length: 5 }).map((_, i) => (
+                    <div key={i} className="flex gap-4">
+                        <Skeleton className="w-40 aspect-video rounded-lg flex-shrink-0" />
+                        <div className="flex-1 space-y-2">
+                            <Skeleton className="h-5 w-5/6 rounded" />
+                            <Skeleton className="h-4 w-1/2 rounded" />
+                        </div>
+                    </div>
+                ))
+            )}
+        </div>
       </div>
     </>
   );
@@ -165,10 +216,10 @@ function VideoContent({ videoId }: { videoId: string }) {
 
 export default function VideoPage({ videoId }: { videoId: string }) {
   return (
-    <div className="flex flex-col lg:flex-row gap-8 w-full">
-      <Suspense key={videoId} fallback={<VideoPlayerSkeleton />}>
+    <Suspense key={videoId} fallback={<VideoPlayerSkeleton />}>
         <VideoContent videoId={videoId} />
-      </Suspense>
-    </div>
+    </Suspense>
   );
 }
+
+    
