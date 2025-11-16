@@ -16,10 +16,17 @@ function TVPageContent() {
 
   const [video, setVideo] = useState<Video | null>(null);
   const [recs, setRecs] = useState<Video[]>([]);
-  const { setQueue, next } = usePlayerQueue();
+  const { setQueue, next, current } = usePlayerQueue();
 
   const upNextRef = useRef<HTMLDivElement>(null);
   useTVNavigation(upNextRef);
+
+  useEffect(() => {
+    // If the queue updates to a new video, navigate to it
+    if (current && videoId !== current.id) {
+      router.push(`/tv?v=${current.id}`);
+    }
+  }, [current, videoId, router]);
 
   useEffect(() => {
     if (!videoId) {
@@ -54,8 +61,29 @@ function TVPageContent() {
 
   if (!video) {
     return (
-      <div className="w-screen h-screen flex items-center justify-center bg-black">
-        <Skeleton className="w-full max-w-7xl aspect-video" />
+      <div className="w-screen h-screen flex flex-col lg:flex-row bg-black text-white overflow-hidden text-lg">
+          <div className="flex-1 flex flex-col">
+             <Skeleton className="w-full aspect-video" />
+             <div className="p-6 space-y-4">
+                <Skeleton className="h-10 w-3/4" />
+                <Skeleton className="h-6 w-1/2" />
+             </div>
+          </div>
+          <div className="w-full lg:w-[450px] bg-neutral-900/50 p-4 flex flex-col">
+              <Skeleton className="h-8 w-1/3 mb-4" />
+              <div className="space-y-4">
+                {Array.from({length: 5}).map((_, i) => (
+                    <div key={i} className="flex gap-4 p-4">
+                        <Skeleton className="w-48 h-28 rounded-lg" />
+                        <div className="flex-1 space-y-2">
+                            <Skeleton className="h-6 w-full" />
+                            <Skeleton className="h-6 w-2/3" />
+                            <Skeleton className="h-5 w-1/2 mt-2" />
+                        </div>
+                    </div>
+                ))}
+              </div>
+          </div>
       </div>
     );
   }

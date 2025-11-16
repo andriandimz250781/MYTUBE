@@ -1,5 +1,5 @@
 "use client";
-import React, { useEffect, useRef } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { useVideo } from "./VideoProvider";
 import { useMiniPlayer } from "@/stores/useMiniPlayer";
 import CastButton from "./CastButton";
@@ -16,12 +16,12 @@ export default function Player({
   const { setCurrentId, setFloating } = useVideo();
   const playerRef = useRef<any>(null);
   const playerContainerRef = useRef<HTMLDivElement>(null);
-  const { playing } = useMiniPlayer();
+  const { playing, togglePlay } = useMiniPlayer();
   const { toast } = useToast();
-  const [isMobile, setIsMobile] = React.useState(false);
+  const [isMobile, setIsMobile] = useState(false);
 
   useEffect(() => {
-    setIsMobile(window.innerWidth <= 768);
+    setIsMobile(/Mobi|Android/i.test(navigator.userAgent));
   }, []);
 
   useEffect(() => {
@@ -68,8 +68,13 @@ export default function Player({
     }
 
     const onPlayerStateChange = (event: any) => {
-      if (event.data === (window as any).YT.PlayerState.ENDED) {
+      const playerState = event.data;
+      if (playerState === (window as any).YT.PlayerState.ENDED) {
         onEnded?.();
+      } else if (playerState === (window as any).YT.PlayerState.PLAYING && !playing) {
+        togglePlay();
+      } else if (playerState === (window as any).YT.PlayerState.PAUSED && playing) {
+        togglePlay();
       }
     };
 
@@ -84,7 +89,7 @@ export default function Player({
         }
       }
     };
-  }, [id, setCurrentId, onEnded, playing]);
+  }, [id, setCurrentId, onEnded]);
 
   // Sync player with zustand state
   useEffect(() => {
@@ -130,8 +135,8 @@ export default function Player({
   return (
     <div ref={playerContainerRef} className="w-full relative aspect-video bg-black rounded-lg overflow-hidden">
       <div id={`youtube-player-${id}`} className="w-full h-full"></div>
-       <CastButton />
       <div className="absolute right-3 bottom-3 flex gap-2">
+        <CastButton />
          {isMobile && (
           <button
             onClick={enterImmersiveMode}

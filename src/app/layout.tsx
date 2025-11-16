@@ -7,46 +7,30 @@ import { Navbar } from '@/components/Navbar';
 import ResponsiveLayout from '@/components/Layout';
 import { ThemeProvider } from '@/components/theme-provider';
 import ScrollToTop from '@/components/ScrollToTop';
-import { VideoProvider, useVideo } from '@/components/video/VideoProvider';
+import { VideoProvider } from '@/components/video/VideoProvider';
 import MiniPlayer from '@/components/video/MiniPlayer';
-import { useEffect, useState } from 'react';
-import type { Video } from '@/lib/youtube';
-import { getVideoById } from '@/lib/youtube';
+import { useEffect } from 'react';
 import { Toaster } from "@/components/ui/toaster";
-import { useMiniPlayer } from '@/stores/useMiniPlayer';
 import { usePathname, useRouter } from 'next/navigation';
 
 const inter = Inter({ subsets: ['latin'] });
 
 function isTV() {
   if (typeof window === "undefined") return false;
-  return /Android TV|SmartTV|TV|BRAVIA|AFTMM|AOSP on IA Emulator/i.test(navigator.userAgent);
+  // A robust check for TV user agents
+  return /Android TV|SmartTV|TV|BRAVIA|AFTMM|AOSP on IA Emulator|HbbTV/i.test(navigator.userAgent);
 }
 
 function AppContent({ children }: { children: React.ReactNode }) {
-  const { floating, currentId } = useVideo();
-  const [videoInfo, setVideoInfo] = useState<Video | null>(null);
-  const { playing, setPlaying } = useMiniPlayer();
   const router = useRouter();
   const pathname = usePathname();
 
   useEffect(() => {
+    // Redirect to /tv if a TV device is detected and we are not already in TV mode
     if (isTV() && !pathname.startsWith('/tv')) {
       router.replace('/tv');
     }
   }, [pathname, router]);
-
-  useEffect(() => {
-    if (floating && currentId) {
-      getVideoById(currentId).then(video => {
-        if (video) {
-          setVideoInfo(video);
-        }
-      });
-    } else {
-      setVideoInfo(null);
-    }
-  }, [floating, currentId]);
 
   // Hide Navbar and standard layout on TV page
   if (pathname.startsWith('/tv')) {

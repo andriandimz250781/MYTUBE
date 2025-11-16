@@ -1,6 +1,6 @@
 "use client";
 
-import { X, Pause, Play, SkipBack, SkipForward } from "lucide-react";
+import { X, Pause, Play } from "lucide-react";
 import { useMiniPlayer } from "@/stores/useMiniPlayer";
 import Link from "next/link";
 import { usePlayerQueue } from "@/stores/usePlayerQueue";
@@ -8,9 +8,8 @@ import Image from "next/image";
 import { motion } from "framer-motion";
 
 export default function MiniPlayer() {
-  const { active, close, videoId } = useMiniPlayer();
-  const { current, next, prev, hasNext, hasPrev } = usePlayerQueue();
-  const { playing, togglePlay } = useMiniPlayer();
+  const { active, close, playing, togglePlay } = useMiniPlayer();
+  const { current } = usePlayerQueue();
 
   if (!active || !current) return null;
 
@@ -60,12 +59,6 @@ export default function MiniPlayer() {
           </button>
         </div>
       </div>
-      <motion.div 
-        className="h-1 bg-primary"
-        initial={{width: "0%"}}
-        animate={{width: "100%"}}
-        transition={{duration: current.duration ? parseInt(current.duration) * 60 : 300, ease: "linear"}}
-      />
     </motion.div>
   );
 }
