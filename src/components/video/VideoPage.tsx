@@ -1,7 +1,6 @@
 "use client";
 import React, { useEffect, useState, Suspense, useRef } from "react";
 import Player from "./Player";
-import VideoCard from "./VideoCard";
 import { getVideoById, getRecommendedVideos, type Video, prefetchNext } from "@/lib/youtube";
 import { useRouter } from "next/navigation";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -10,6 +9,7 @@ import DominantColor from "../DominantColor";
 import { useMiniPlayer } from "@/stores/useMiniPlayer";
 import { usePlayerQueue } from "@/stores/usePlayerQueue";
 import { useSwipe } from "@/hooks/useSwipe";
+import Image from "next/image";
 
 function VideoPlayerSkeleton() {
   return (
@@ -135,19 +135,25 @@ function VideoContent({ videoId }: { videoId: string }) {
       <div className="w-full lg:w-96 flex-shrink-0 space-y-4">
         <h2 className="text-lg font-semibold">Up Next</h2>
         {recs.length > 0 ? (
-          recs.map((r) => (
-            <VideoCard
-              key={r.id}
-              video={{
-                id: r.id,
-                title: r.title,
-                thumbnail: r.thumbnail,
-                channelName: r.channelName,
-                uploadedAt: r.uploadedAt,
-                duration: r.duration,
-                views: r.views,
-              }}
-            />
+          recs.map((vid) => (
+             <div
+                key={vid.id}
+                className="flex gap-3 cursor-pointer hover:bg-muted rounded-lg p-2 transition"
+                onClick={() => router.push(`/watch/${vid.id}`)}
+              >
+                <Image
+                  src={vid.thumbnail}
+                  alt={vid.title}
+                  width={160}
+                  height={90}
+                  className="w-40 h-auto rounded-md object-cover aspect-video"
+                />
+
+                <div className="flex-1">
+                  <p className="font-semibold line-clamp-2 text-sm">{vid.title}</p>
+                  <p className="text-xs text-muted-foreground mt-1">{vid.channelName}</p>
+                </div>
+              </div>
           ))
         ) : (
           <RelatedVideosSkeleton />
