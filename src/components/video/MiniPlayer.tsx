@@ -1,71 +1,63 @@
 "use client";
 
-import { motion } from "framer-motion";
 import { X, Pause, Play, SkipBack, SkipForward } from "lucide-react";
 import { useMiniPlayer } from "@/stores/useMiniPlayer";
-import { useVideo } from "./VideoProvider";
 import Link from "next/link";
 import { usePlayerQueue } from "@/stores/usePlayerQueue";
+import Image from "next/image";
 
 export default function MiniPlayer() {
-  const { floating, setFloating, currentId } = useVideo();
+  const { active, close } = useMiniPlayer();
+  const { current, next, prev, hasNext, hasPrev } = usePlayerQueue();
+  // For now, play/pause state is not synced with the actual iframe player,
+  // this is a placeholder for future deeper integration.
   const { playing, togglePlay } = useMiniPlayer();
-  const { next, prev, hasNext, hasPrev } = usePlayerQueue();
 
-  if (!floating || !currentId) return null;
-
-  const handleNext = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    e.preventDefault();
-    next();
-  }
-
-  const handlePrev = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    e.preventDefault();
-    prev();
-  }
+  if (!active || !current) return null;
 
   const handleClose = (e: React.MouseEvent) => {
     e.stopPropagation();
     e.preventDefault();
-    setFloating(false);
-  }
+    close();
+  };
 
   return (
-    <motion.div
-      drag
-      dragMomentum={false}
-      className="fixed bottom-4 right-4 w-64 bg-background border border-border rounded-xl overflow-hidden shadow-xl z-[9999]"
-      initial={{ opacity: 0, scale: 0.8 }}
-      animate={{ opacity: 1, scale: 1 }}
+    <div
+      className="fixed bottom-3 left-3 right-3 bg-card/80 backdrop-blur-xl
+                 rounded-xl shadow-2xl flex items-center p-2 z-[999]
+                 border border-white/10"
     >
-      <Link href={`/watch/${currentId}`} className="cursor-pointer block">
-        <div className="relative w-full h-[120px]">
-           <iframe
-            width="100%"
-            height="100%"
-            src={`https://www.youtube.com/embed/${currentId}?autoplay=1&controls=0&modestbranding=1&rel=0`}
-            className="absolute top-0 left-0 w-full h-full pointer-events-none"
-          />
-        </div>
+      {/* Thumbnail as Link */}
+      <Link href={`/watch/${current.id}`} className="block">
+        <Image
+          src={current.thumbnail}
+          alt={current.title}
+          width={80}
+          height={45}
+          className="w-20 h-[45px] rounded-md object-cover mr-3 active:scale-95 transition-transform"
+        />
       </Link>
 
-      <div className="flex items-center justify-between p-2 bg-card">
-         <button onClick={handlePrev} disabled={!hasPrev()} className="p-2 text-foreground disabled:opacity-50" aria-label="Previous Video">
+      {/* Title */}
+      <div className="flex-1 text-foreground text-sm font-medium overflow-hidden text-ellipsis whitespace-nowrap">
+        {current.title}
+      </div>
+
+      {/* Controls */}
+      <div className="flex items-center text-foreground px-2">
+        <button onClick={prev} disabled={!hasPrev()} className="p-2 disabled:opacity-50" aria-label="Previous Video">
           <SkipBack size={20} />
         </button>
-        <button onClick={togglePlay} className="p-2 text-foreground" aria-label={playing ? "Pause" : "Play"}>
-          {playing ? <Pause size={20} /> : <Play size={20} />}
+        <button onClick={togglePlay} className="p-2" aria-label={playing ? "Pause" : "Play"}>
+          {playing ? <Pause size={22} /> : <Play size={22} />}
         </button>
-         <button onClick={handleNext} disabled={!hasNext()} className="p-2 text-foreground disabled:opacity-50" aria-label="Next Video">
+        <button onClick={next} disabled={!hasNext()} className="p-2 disabled:opacity-50" aria-label="Next Video">
           <SkipForward size={20} />
         </button>
-
-        <button onClick={handleClose} className="p-2 text-foreground" aria-label="Close Mini Player">
+        <button onClick={handleClose} className="p-2 ml-2" aria-label="Close Mini Player">
           <X size={20} />
         </button>
       </div>
-    </motion.div>
+    </div>
   );
 }
