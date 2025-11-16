@@ -3,6 +3,8 @@ import React, { useEffect, useRef } from "react";
 import { useVideo } from "./VideoProvider";
 import { useMiniPlayer } from "@/stores/useMiniPlayer";
 import CastButton from "./CastButton";
+import { Expand, PictureInPicture } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
 
 export default function Player({
   id,
@@ -13,7 +15,14 @@ export default function Player({
 }) {
   const { setCurrentId, setFloating } = useVideo();
   const playerRef = useRef<any>(null);
-  const { playing, togglePlay } = useMiniPlayer();
+  const playerContainerRef = useRef<HTMLDivElement>(null);
+  const { playing } = useMiniPlayer();
+  const { toast } = useToast();
+  const [isMobile, setIsMobile] = React.useState(false);
+
+  useEffect(() => {
+    setIsMobile(window.innerWidth <= 768);
+  }, []);
 
   useEffect(() => {
     setCurrentId(id);
@@ -89,20 +98,55 @@ export default function Player({
   }, [playing]);
 
 
-  const togglePiP = async () => {
+  const togglePiP = () => {
     setFloating(true);
+  };
+  
+  const enterImmersiveMode = async () => {
+    const elem = playerContainerRef.current;
+    if (!elem) return;
+
+    try {
+      if (elem.requestFullscreen) {
+        await elem.requestFullscreen();
+        if (screen.orientation?.lock) {
+          try {
+            await screen.orientation.lock("landscape");
+          } catch (e) {
+            console.warn("Could not lock screen orientation.", e);
+          }
+        }
+      }
+    } catch (e) {
+      console.error("Fullscreen request failed.", e);
+      toast({
+        title: "Fullscreen Failed",
+        description: "Your browser might have blocked the request.",
+        variant: "destructive"
+      });
+    }
   };
 
   return (
-    <div className="w-full relative aspect-video bg-black rounded-lg overflow-hidden">
+    <div ref={playerContainerRef} className="w-full relative aspect-video bg-black rounded-lg overflow-hidden">
       <div id={`youtube-player-${id}`} className="w-full h-full"></div>
        <CastButton />
       <div className="absolute right-3 bottom-3 flex gap-2">
+         {isMobile && (
+          <button
+            onClick={enterImmersiveMode}
+            className="px-3 py-1 rounded-md bg-black/50 text-white text-sm opacity-80 hover:opacity-100 transition-opacity flex items-center gap-1.5"
+          >
+            <Expand size={14} />
+            <span className="hidden sm:inline">Fullscreen</span>
+          </button>
+        )}
         <button
           onClick={togglePiP}
-          className="px-3 py-1 rounded bg-black/40 text-white text-sm opacity-80 hover:opacity-100 transition-opacity"
+          className="px-3 py-1 rounded-md bg-black/50 text-white text-sm opacity-80 hover:opacity-100 transition-opacity flex items-center gap-1.5"
         >
-          PiP
+          <PictureInPicture size={14}/>
+          <span className="hidden sm:inline">PiP</span>
         </button>
       </div>
     </div>
