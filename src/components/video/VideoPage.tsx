@@ -43,13 +43,18 @@ function VideoContent({ videoId }: { videoId: string }) {
   const [video, setVideo] = useState<Video | null>(null);
   const [recs, setRecs] = useState<Video[]>([]);
   const router = useRouter();
-  const { open, close } = useMiniPlayer();
+  const { open, close, active: miniPlayerActive } = useMiniPlayer();
   const { setQueue, current, next, prev } = usePlayerQueue();
   const playerContainerRef = useRef<HTMLDivElement>(null);
 
   useSwipe(playerContainerRef, {
     onSwipeLeft: next,
     onSwipeRight: prev,
+    onSwipeDown: () => {
+      if (!miniPlayerActive) {
+        open(videoId);
+      }
+    }
   });
 
   useEffect(() => {
@@ -66,8 +71,6 @@ function VideoContent({ videoId }: { videoId: string }) {
 
     getVideoById(videoId).then((v) => {
       if (!mounted || !v) {
-        // Handle video not found, maybe redirect or show an error
-        // router.push('/');
         return;
       };
       setVideo(v);
@@ -76,7 +79,6 @@ function VideoContent({ videoId }: { videoId: string }) {
           const videoQueue = [v, ...related];
           setRecs(related);
           setQueue(videoQueue);
-          // Prefetch next video's data
           if (related.length > 0) {
             prefetchNext(related[0].id).catch(console.error);
           }
@@ -85,11 +87,12 @@ function VideoContent({ videoId }: { videoId: string }) {
     });
 
      const handler = () => {
-      const threshold = 300; // scroll 300px → aktif
-      if (window.scrollY > threshold) {
-        open(videoId);
+      if (!playerContainerRef.current) return;
+      const { bottom } = playerContainerRef.current.getBoundingClientRect();
+      if (bottom < 0) {
+        if (!miniPlayerActive) open(videoId);
       } else {
-        close();
+        if (miniPlayerActive) close();
       }
     };
 
@@ -98,9 +101,9 @@ function VideoContent({ videoId }: { videoId: string }) {
     return () => {
       mounted = false;
       window.removeEventListener("scroll", handler);
-      close(); // Close mini player on navigation
+      close();
     };
-  }, [videoId, router, open, close, setQueue]);
+  }, [videoId, router, open, close, setQueue, miniPlayerActive]);
   
   if (!video) {
     return <VideoPlayerSkeleton />;
