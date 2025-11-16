@@ -69,19 +69,19 @@ function TVPageContent() {
   }
 
   return (
-    <div className="w-screen h-screen flex flex-col lg:flex-row bg-black text-white overflow-hidden">
+    <div className="w-screen h-screen flex flex-col lg:flex-row bg-black text-white overflow-hidden text-lg">
       <div className="flex-1 flex flex-col">
         <div className="w-full aspect-video">
           <Player id={video.id} onEnded={handleVideoEnd} />
         </div>
         <div className="p-6">
-          <h1 className="text-3xl font-bold">{video.title}</h1>
-          <p className="text-lg text-neutral-400 mt-2">{video.channelName}</p>
+          <h1 className="text-4xl font-bold">{video.title}</h1>
+          <p className="text-xl text-neutral-400 mt-2">{video.channelName}</p>
         </div>
       </div>
 
       <div ref={upNextRef} role="list" className="w-full lg:w-[450px] bg-neutral-900/50 p-4 flex flex-col">
-        <h2 className="text-2xl font-semibold mb-4">Up Next</h2>
+        <h2 className="text-3xl font-semibold mb-4 px-4">Up Next</h2>
         <div className="space-y-4 overflow-y-auto">
           {recs.map((vid) => (
             <div
@@ -93,16 +93,16 @@ function TVPageContent() {
                 if (e.key === 'Enter') handleItemActivate(vid.id);
               }}
               onClick={() => handleItemActivate(vid.id)}
-              className="flex gap-4 p-3 rounded-lg cursor-pointer outline-none focus:ring-4 focus:ring-accent bg-neutral-900 focus:bg-neutral-800"
+              className="flex gap-4 p-4 rounded-xl cursor-pointer outline-none focus:ring-4 focus:ring-accent bg-neutral-900 focus:bg-neutral-800"
             >
               <img
                 src={vid.thumbnail}
                 alt={vid.title}
-                className="w-48 h-28 rounded-md object-cover"
+                className="w-48 h-28 rounded-lg object-cover"
               />
               <div className="flex-1">
-                <p className="font-semibold text-lg line-clamp-2">{vid.title}</p>
-                <p className="text-md text-neutral-400 mt-1">{vid.channelName}</p>
+                <p className="font-semibold text-xl line-clamp-2">{vid.title}</p>
+                <p className="text-lg text-neutral-400 mt-1">{vid.channelName}</p>
               </div>
             </div>
           ))}
