@@ -20,7 +20,7 @@ export default function Player({
 
     // Function to load the IFrame Player API code asynchronously.
     const loadYouTubeAPI = () => {
-      if (!window.YT) {
+      if (!(window as any).YT) {
         const tag = document.createElement('script');
         tag.src = "https://www.youtube.com/iframe_api";
         const firstScriptTag = document.getElementsByTagName('script')[0];
@@ -37,7 +37,7 @@ export default function Player({
        if (playerRef.current) {
         playerRef.current.destroy();
       }
-      playerRef.current = new window.YT.Player(ref.current, {
+      playerRef.current = new (window as any).YT.Player(ref.current, {
         events: {
           'onStateChange': onPlayerStateChange
         }
@@ -46,11 +46,11 @@ export default function Player({
 
     // This function creates an <iframe> (and YouTube player)
     // after the API code downloads.
-    window.onYouTubeIframeAPIReady = createPlayer;
+    (window as any).onYouTubeIframeAPIReady = createPlayer;
 
     const onPlayerStateChange = (event: any) => {
       // YT.PlayerState.ENDED is 0
-      if (event.data === window.YT.PlayerState.ENDED) {
+      if (event.data === (window as any).YT.PlayerState.ENDED) {
         onEnded?.();
       }
     }
