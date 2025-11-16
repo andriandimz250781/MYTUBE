@@ -9,6 +9,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import WatchHistoryLogger from "../WatchHistoryLogger";
 import DominantColor from "../DominantColor";
 import AutoNext from "./AutoNext";
+import { useMiniPlayer } from "@/stores/useMiniPlayer";
 
 
 function VideoPlayerSkeleton() {
@@ -44,6 +45,7 @@ function VideoContent({ videoId }: { videoId: string }) {
   const [recs, setRecs] = useState<Video[]>([]);
   const { setFloating, videoEl } = useVideo();
   const router = useRouter();
+  const { open, close } = useMiniPlayer();
 
   useEffect(() => {
     let mounted = true;
@@ -68,10 +70,23 @@ function VideoContent({ videoId }: { videoId: string }) {
       });
     });
 
+     const handler = () => {
+      const threshold = 300; // scroll 300px → aktif
+      if (window.scrollY > threshold) {
+        open(videoId);
+      } else {
+        close();
+      }
+    };
+
+    window.addEventListener("scroll", handler);
+
     return () => {
       mounted = false;
+      window.removeEventListener("scroll", handler);
+      close(); // Close mini player on navigation
     };
-  }, [videoId, router]);
+  }, [videoId, router, open, close]);
   
   const handleNext = () => {
     if (recs.length > 0) {
@@ -89,10 +104,7 @@ function VideoContent({ videoId }: { videoId: string }) {
     <>
       <DominantColor imageSrc={video.thumbnail} />
       <WatchHistoryLogger video={video} />
-       {/* The AutoNext component is now conceptual and doesn't directly use a ref if we use iframes.
-           The logic will be handled differently, perhaps via the YouTube IFrame Player API if we were to implement it.
-           For now, we can simulate the "ended" event or use a timeout.
-           A simple approach is to just let the user click on the next video.
+       {/* The AutoNext component is now conceptual and doesn't directly use iframes.
            For a true auto-next with iframe, a more complex setup is needed.
            Let's keep it simple and rely on the recommendation list for now.
       */}
