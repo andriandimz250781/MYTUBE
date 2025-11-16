@@ -33,7 +33,7 @@ export function Navbar() {
 
   return (
     <header className={cn(
-      "sticky top-0 z-10 flex h-16 items-center gap-4 border-b bg-background/80 px-4 backdrop-blur-sm transition-transform duration-300 md:px-6",
+      "sticky top-0 z-10 flex h-auto flex-wrap items-center gap-x-4 border-b bg-background/80 px-4 py-2 backdrop-blur-sm transition-transform duration-300 md:h-16 md:flex-nowrap md:px-6",
       hidden ? "-translate-y-full" : "translate-y-0"
     )}>
       <Link
@@ -44,7 +44,7 @@ export function Navbar() {
         <span className="hidden font-bold sm:inline-block">ANDTUBE</span>
       </Link>
 
-      <div className="flex flex-1 justify-center px-4 md:px-8 lg:px-16">
+      <div className="order-last flex w-full flex-1 justify-center md:order-none md:px-8 lg:px-16">
         <form action="/search" className="relative w-full max-w-lg">
           <Input
             type="search"
@@ -64,7 +64,7 @@ export function Navbar() {
         </form>
       </div>
 
-      <div className="flex items-center gap-2">
+      <div className="ml-auto flex items-center gap-2">
          <TooltipProvider>
             <Tooltip>
               <TooltipTrigger asChild>
