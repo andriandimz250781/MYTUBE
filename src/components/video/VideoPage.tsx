@@ -8,8 +8,8 @@ import { useRouter } from "next/navigation";
 import { Skeleton } from "@/components/ui/skeleton";
 import WatchHistoryLogger from "../WatchHistoryLogger";
 import DominantColor from "../DominantColor";
-import AutoNext from "./AutoNext";
 import { useMiniPlayer } from "@/stores/useMiniPlayer";
+import { usePlayerQueue } from "@/stores/usePlayerQueue";
 
 
 function VideoPlayerSkeleton() {
@@ -46,6 +46,14 @@ function VideoContent({ videoId }: { videoId: string }) {
   const { setFloating, videoEl } = useVideo();
   const router = useRouter();
   const { open, close } = useMiniPlayer();
+  const { setQueue, current } = usePlayerQueue();
+
+  useEffect(() => {
+    if (current && current.id !== videoId) {
+        router.push(`/watch/${current.id}`);
+    }
+  }, [current, videoId, router]);
+
 
   useEffect(() => {
     let mounted = true;
@@ -55,13 +63,15 @@ function VideoContent({ videoId }: { videoId: string }) {
     getVideoById(videoId).then((v) => {
       if (!mounted || !v) {
         // Handle video not found, maybe redirect or show an error
-        router.push('/');
+        // router.push('/');
         return;
       };
       setVideo(v);
       getRelatedVideos(v.id).then(related => {
         if(mounted && related) {
+          const videoQueue = [v, ...related];
           setRecs(related);
+          setQueue(videoQueue);
           // Prefetch next video's data
           if (related.length > 0) {
             prefetchNext(related[0].id).catch(console.error);
@@ -86,30 +96,19 @@ function VideoContent({ videoId }: { videoId: string }) {
       window.removeEventListener("scroll", handler);
       close(); // Close mini player on navigation
     };
-  }, [videoId, router, open, close]);
+  }, [videoId, router, open, close, setQueue]);
   
-  const handleNext = () => {
-    if (recs.length > 0) {
-      router.push(`/watch/${recs[0].id}`);
-    }
-  }
-
   if (!video) {
     return <VideoPlayerSkeleton />;
   }
   
-  const videoSrc = `https://www.youtube.com/embed/${video.id}?autoplay=1&modestbranding=1&rel=0`;
+  const videoSrc = `https://www.youtube.com/embed/${video.id}?autoplay=1&modestbranding=1&rel=0&enablejsapi=1`;
 
   return (
     <>
       <DominantColor imageSrc={video.thumbnail} />
       <WatchHistoryLogger video={video} />
-       {/* The AutoNext component is now conceptual and doesn't directly use iframes.
-           For a true auto-next with iframe, a more complex setup is needed.
-           Let's keep it simple and rely on the recommendation list for now.
-      */}
-      {/* <AutoNext videoRef={videoEl} onNext={handleNext} /> */}
-
+     
       <div className="w-full">
         <Player src={videoSrc} id={video.id} />
         <div className="mt-4">
