@@ -6,6 +6,7 @@ import Link from "next/link";
 import { usePlayerQueue } from "@/stores/usePlayerQueue";
 import Image from "next/image";
 import CastButton from "./CastButton";
+import { cn } from "@/lib/utils";
 
 export default function MiniPlayer() {
   const { active, close } = useMiniPlayer();
@@ -57,11 +58,15 @@ export default function MiniPlayer() {
         <button onClick={next} disabled={!hasNext()} className="p-2 disabled:opacity-50" aria-label="Next Video">
           <SkipForward size={20} />
         </button>
-        {playing && (
-          <div className="ml-1">
-             <CastButton />
-          </div>
-        )}
+        
+        {/* Conditional Cast Button with Transition */}
+        <div className={cn(
+            "transition-opacity duration-300",
+            playing ? 'opacity-100' : 'opacity-0'
+        )}>
+          <CastButton />
+        </div>
+        
         <button onClick={handleClose} className="p-2 ml-1" aria-label="Close Mini Player">
           <X size={20} />
         </button>
