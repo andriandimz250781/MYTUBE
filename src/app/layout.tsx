@@ -12,6 +12,7 @@ import MiniPlayer from '@/components/video/MiniPlayer';
 import { useEffect, useState } from 'react';
 import type { Video } from '@/lib/youtube';
 import { getVideoById } from '@/lib/youtube';
+import { Toaster } from "@/components/ui/toaster";
 
 const inter = Inter({ subsets: ['latin'] });
 
@@ -57,10 +58,10 @@ export default function RootLayout({
     if (
       typeof window !== 'undefined' &&
       'serviceWorker' in navigator &&
-      window.workbox !== undefined
+      (window as any).workbox !== undefined
     ) {
-      const wb = window.workbox;
-      wb.active.then((worker) => {
+      const wb = (window as any).workbox;
+      wb.active.then((worker: any) => {
         console.log('Service worker activated.');
       });
 
@@ -100,6 +101,7 @@ export default function RootLayout({
           <VideoProvider>
             <AppContent>{children}</AppContent>
           </VideoProvider>
+          <Toaster />
         </ThemeProvider>
       </body>
     </html>

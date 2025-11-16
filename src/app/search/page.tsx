@@ -34,7 +34,15 @@ async function SearchResults({ query }: { query?: string }) {
         <SectionTitle title={title} />
         <div className="grid grid-cols-1 gap-x-4 gap-y-8 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
           {videos.map((video) => (
-            <VideoCard key={video.id} video={video} />
+            <VideoCard key={video.id} video={{
+                id: video.id,
+                title: video.title,
+                thumbnail: video.thumbnail,
+                channelName: video.channelName,
+                uploadedAt: video.uploadedAt,
+                duration: video.duration,
+                views: video.views,
+            }} />
           ))}
         </div>
     </>

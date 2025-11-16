@@ -1,127 +1,122 @@
 "use client";
 import React, { useEffect, useState, Suspense } from "react";
 import Player from "./Player";
-import AutoNext from "./AutoNext";
-import SwipeWrapper from "./SwipeWrapper";
 import VideoCard from "./VideoCard";
-import { getVideoById, getRecommendations, markPlayed, type Video } from "../../lib/videos";
+import { getVideoById, getRelatedVideos, type Video } from "@/lib/youtube";
 import { useVideo } from "./VideoProvider";
 import { useRouter } from "next/navigation";
 import { Skeleton } from "@/components/ui/skeleton";
+import WatchHistoryLogger from "../WatchHistoryLogger";
+import DominantColor from "../DominantColor";
 
 function VideoPlayerSkeleton() {
   return (
-    <div className="w-full max-w-3xl mx-auto px-4 py-6">
+    <div className="w-full max-w-4xl mx-auto">
       <Skeleton className="w-full aspect-video rounded-lg" />
       <div className="mt-4">
         <Skeleton className="h-7 w-3/4 rounded" />
         <Skeleton className="h-5 w-1/2 mt-2 rounded" />
       </div>
-       <div className="mt-6">
-        <Skeleton className="h-6 w-1/3 mb-3 rounded" />
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <div className="flex flex-col gap-2">
-            <Skeleton className="w-full aspect-video rounded-lg" />
-            <Skeleton className="h-5 w-5/6 rounded" />
-            <Skeleton className="h-4 w-1/2 rounded" />
-          </div>
-           <div className="flex flex-col gap-2">
-            <Skeleton className="w-full aspect-video rounded-lg" />
+    </div>
+  );
+}
+
+function RelatedVideosSkeleton() {
+  return (
+    <div className="space-y-4">
+      {Array.from({ length: 5 }).map((_, i) => (
+        <div key={i} className="flex gap-4">
+          <Skeleton className="w-40 aspect-video rounded-lg flex-shrink-0" />
+          <div className="flex-1 space-y-2">
             <Skeleton className="h-5 w-5/6 rounded" />
             <Skeleton className="h-4 w-1/2 rounded" />
           </div>
         </div>
-      </div>
+      ))}
     </div>
-  )
+  );
 }
 
-
-export default function VideoPage({ videoId }: { videoId: string }) {
+function VideoContent({ videoId }: { videoId: string }) {
   const [video, setVideo] = useState<Video | null>(null);
   const [recs, setRecs] = useState<Video[]>([]);
-  const { videoEl, setFloating } = useVideo();
+  const { setFloating } = useVideo();
   const router = useRouter();
-  const localVideoRef = videoEl; // This ref is for the <video> element which we are not using with iframe.
 
   useEffect(() => {
     let mounted = true;
-    setVideo(null); // Clear previous video
-    setRecs([]); // Clear previous recommendations
+    setVideo(null);
+    setRecs([]);
+
     getVideoById(videoId).then((v) => {
-      if (!mounted || !v) return;
+      if (!mounted || !v) {
+        // Handle video not found, maybe redirect or show an error
+        router.push('/');
+        return;
+      };
       setVideo(v);
-      getRecommendations(v).then(setRecs);
-      markPlayed(videoId).catch(() => {});
+      getRelatedVideos(v.id).then(related => {
+        if(mounted && related) setRecs(related);
+      });
     });
+
     return () => {
       mounted = false;
     };
-  }, [videoId]);
-
-  const onNext = () => {
-    // pick first recommendation as next
-    if (recs?.length) {
-      const next = recs[0];
-      router.push(`/watch/${next.id}`);
-      // keep floating if user minimized
-      setFloating(false);
-    }
-  };
+  }, [videoId, router]);
 
   if (!video) {
     return <VideoPlayerSkeleton />;
   }
+  
+  const videoSrc = `https://www.youtube.com/embed/${video.id}?autoplay=1&modestbranding=1&rel=0`;
 
   return (
-    <div className="w-full max-w-3xl mx-auto px-4 py-6">
-      <SwipeWrapper
-        onSwipeUp={() => {
-          // In a real app, this could reveal comments or description
-          console.log("open details");
-        }}
-        onSwipeDown={() => {
-          // Minimize to mini player
-          setFloating(true);
-        }}
-      >
-        <>
-          <Player src={video.src} id={video.id} />
-          {/* AutoNext relies on <video> events, which we don't have with iframe. 
-              The auto-play feature of the YouTube embed will handle playing the next related video.
-              We can remove AutoNext component or adapt it later.
-          <AutoNext videoRef={localVideoRef} onNext={onNext} /> 
-          */}
-          <div className="mt-4">
-            <h1 className="text-xl font-bold">{video.title}</h1>
-            <p className="text-sm text-muted-foreground">{video.channelName}</p>
-            <p className="text-xs text-muted-foreground mt-1">{video.views} views &bull; {video.uploadedAt}</p>
+    <>
+      <DominantColor imageSrc={video.thumbnail} />
+      <WatchHistoryLogger video={video} />
+      <div className="w-full">
+        <Player src={videoSrc} id={video.id} />
+        <div className="mt-4">
+          <h1 className="text-xl md:text-2xl font-bold leading-tight">{video.title}</h1>
+          <div className="flex items-center gap-4 mt-2 text-sm text-muted-foreground">
+             <p>{video.channelName}</p>
+             <p>{video.views} views</p>
+             <p>{video.uploadedAt}</p>
           </div>
+        </div>
+      </div>
+      <div className="w-full lg:w-96 flex-shrink-0 space-y-4">
+        <h2 className="text-lg font-semibold">Up Next</h2>
+        {recs.length > 0 ? (
+          recs.map((r) => (
+            <VideoCard
+              key={r.id}
+              video={{
+                id: r.id,
+                title: r.title,
+                thumbnail: r.thumbnail,
+                channelName: r.channelName,
+                uploadedAt: r.uploadedAt,
+                duration: r.duration,
+                views: r.views,
+              }}
+            />
+          ))
+        ) : (
+          <RelatedVideosSkeleton />
+        )}
+      </div>
+    </>
+  );
+}
 
-          <div className="mt-6">
-            <h2 className="text-lg font-semibold mb-3">Recommended</h2>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              {recs.map((r) => (
-                <VideoCard
-                  key={r.id}
-                  id={r.id}
-                  thumbnail={r.thumbnail}
-                  title={r.title}
-                  channel={r.channelName}
-                  views={r.views}
-                />
-              ))}
-              {recs.length === 0 && Array.from({length: 4}).map((_, i) => (
-                 <div key={i} className="flex flex-col gap-2">
-                  <Skeleton className="w-full aspect-video rounded-lg" />
-                  <Skeleton className="h-5 w-5/6 rounded" />
-                  <Skeleton className="h-4 w-1/2 rounded" />
-                </div>
-              ))}
-            </div>
-          </div>
-        </>
-      </SwipeWrapper>
+export default function VideoPage({ videoId }: { videoId: string }) {
+  return (
+    <div className="flex flex-col lg:flex-row gap-8 w-full">
+      <Suspense key={videoId} fallback={<VideoPlayerSkeleton />}>
+        <VideoContent videoId={videoId} />
+      </Suspense>
     </div>
   );
 }
