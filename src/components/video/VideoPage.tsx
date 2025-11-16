@@ -2,12 +2,14 @@
 import React, { useEffect, useState, Suspense } from "react";
 import Player from "./Player";
 import VideoCard from "./VideoCard";
-import { getVideoById, getRelatedVideos, type Video } from "@/lib/youtube";
+import { getVideoById, getRelatedVideos, type Video, prefetchNext } from "@/lib/youtube";
 import { useVideo } from "./VideoProvider";
 import { useRouter } from "next/navigation";
 import { Skeleton } from "@/components/ui/skeleton";
 import WatchHistoryLogger from "../WatchHistoryLogger";
 import DominantColor from "../DominantColor";
+import AutoNext from "./AutoNext";
+
 
 function VideoPlayerSkeleton() {
   return (
@@ -40,7 +42,7 @@ function RelatedVideosSkeleton() {
 function VideoContent({ videoId }: { videoId: string }) {
   const [video, setVideo] = useState<Video | null>(null);
   const [recs, setRecs] = useState<Video[]>([]);
-  const { setFloating } = useVideo();
+  const { setFloating, videoEl } = useVideo();
   const router = useRouter();
 
   useEffect(() => {
@@ -58,9 +60,9 @@ function VideoContent({ videoId }: { videoId: string }) {
       getRelatedVideos(v.id).then(related => {
         if(mounted && related) {
           setRecs(related);
-          // Prefetch next video
+          // Prefetch next video's data
           if (related.length > 0) {
-            getVideoById(related[0].id);
+            prefetchNext(related[0].id).catch(console.error);
           }
         }
       });
@@ -70,6 +72,12 @@ function VideoContent({ videoId }: { videoId: string }) {
       mounted = false;
     };
   }, [videoId, router]);
+  
+  const handleNext = () => {
+    if (recs.length > 0) {
+      router.push(`/watch/${recs[0].id}`);
+    }
+  }
 
   if (!video) {
     return <VideoPlayerSkeleton />;
@@ -81,6 +89,15 @@ function VideoContent({ videoId }: { videoId: string }) {
     <>
       <DominantColor imageSrc={video.thumbnail} />
       <WatchHistoryLogger video={video} />
+       {/* The AutoNext component is now conceptual and doesn't directly use a ref if we use iframes.
+           The logic will be handled differently, perhaps via the YouTube IFrame Player API if we were to implement it.
+           For now, we can simulate the "ended" event or use a timeout.
+           A simple approach is to just let the user click on the next video.
+           For a true auto-next with iframe, a more complex setup is needed.
+           Let's keep it simple and rely on the recommendation list for now.
+      */}
+      {/* <AutoNext videoRef={videoEl} onNext={handleNext} /> */}
+
       <div className="w-full">
         <Player src={videoSrc} id={video.id} />
         <div className="mt-4">
