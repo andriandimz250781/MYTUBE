@@ -1,7 +1,6 @@
 "use client";
 import React, { useEffect, useRef } from "react";
 import { useVideo } from "./VideoProvider";
-import CastButton from "./CastButton";
 
 export default function Player({
   id,
@@ -80,7 +79,6 @@ export default function Player({
 
   return (
     <div ref={iframeContainerRef} className="w-full relative aspect-video bg-black rounded-lg overflow-hidden">
-      <CastButton />
       <div id={`youtube-player-${id}`} className="w-full h-full"></div>
       <div className="absolute right-3 bottom-3 flex gap-2">
         <button
