@@ -40,7 +40,7 @@ export default function CastButton() {
       className="absolute top-2 right-2 z-10 p-2 rounded-full bg-black/50 text-white hover:bg-black/75 transition-colors backdrop-blur-sm"
       aria-label="Cast to TV"
     >
-      <Cast size={20} />
+      <Cast size={20} className="animate-pulse" />
     </button>
   );
 }
