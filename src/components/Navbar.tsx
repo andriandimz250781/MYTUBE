@@ -1,7 +1,7 @@
 "use client";
 
 import Link from 'next/link';
-import { History, Search, Video } from 'lucide-react';
+import { History, Search, Tv, Video } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from './ui/button';
 import { ThemeToggle } from './theme-toggle';
@@ -77,6 +77,19 @@ export function Navbar() {
               </TooltipTrigger>
               <TooltipContent>
                 <p>Watch History</p>
+              </TooltipContent>
+            </Tooltip>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button variant="ghost" size="icon" asChild>
+                  <Link href="/tv">
+                    <Tv className="h-5 w-5" />
+                    <span className="sr-only">TV Mode</span>
+                  </Link>
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>TV Mode</p>
               </TooltipContent>
             </Tooltip>
           </TooltipProvider>
