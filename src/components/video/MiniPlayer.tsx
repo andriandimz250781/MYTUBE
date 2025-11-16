@@ -17,12 +17,20 @@ export default function MiniPlayer() {
 
   const handleNext = (e: React.MouseEvent) => {
     e.stopPropagation();
+    e.preventDefault();
     next();
   }
 
   const handlePrev = (e: React.MouseEvent) => {
     e.stopPropagation();
+    e.preventDefault();
     prev();
+  }
+
+  const handleClose = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    e.preventDefault();
+    setFloating(false);
   }
 
   return (
@@ -33,27 +41,29 @@ export default function MiniPlayer() {
       initial={{ opacity: 0, scale: 0.8 }}
       animate={{ opacity: 1, scale: 1 }}
     >
-      <Link href={`/watch/${currentId}`} className="cursor-pointer">
-        <iframe
-          width="100%"
-          height="120"
-          src={`https://www.youtube.com/embed/${currentId}?autoplay=1&controls=0&modestbranding=1&rel=0`}
-          className="pointer-events-none"
-        />
+      <Link href={`/watch/${currentId}`} className="cursor-pointer block">
+        <div className="relative w-full h-[120px]">
+           <iframe
+            width="100%"
+            height="100%"
+            src={`https://www.youtube.com/embed/${currentId}?autoplay=1&controls=0&modestbranding=1&rel=0`}
+            className="absolute top-0 left-0 w-full h-full pointer-events-none"
+          />
+        </div>
       </Link>
 
       <div className="flex items-center justify-between p-2 bg-card">
-         <button onClick={handlePrev} disabled={!hasPrev()} className="p-2 text-foreground disabled:opacity-50">
+         <button onClick={handlePrev} disabled={!hasPrev()} className="p-2 text-foreground disabled:opacity-50" aria-label="Previous Video">
           <SkipBack size={20} />
         </button>
-        <button onClick={togglePlay} className="p-2 text-foreground">
+        <button onClick={togglePlay} className="p-2 text-foreground" aria-label={playing ? "Pause" : "Play"}>
           {playing ? <Pause size={20} /> : <Play size={20} />}
         </button>
-         <button onClick={handleNext} disabled={!hasNext()} className="p-2 text-foreground disabled:opacity-50">
+         <button onClick={handleNext} disabled={!hasNext()} className="p-2 text-foreground disabled:opacity-50" aria-label="Next Video">
           <SkipForward size={20} />
         </button>
 
-        <button onClick={() => setFloating(false)} className="p-2 text-foreground">
+        <button onClick={handleClose} className="p-2 text-foreground" aria-label="Close Mini Player">
           <X size={20} />
         </button>
       </div>

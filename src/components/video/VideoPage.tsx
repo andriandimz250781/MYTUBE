@@ -1,5 +1,5 @@
 "use client";
-import React, { useEffect, useState, Suspense } from "react";
+import React, { useEffect, useState, Suspense, useRef } from "react";
 import Player from "./Player";
 import VideoCard from "./VideoCard";
 import { getVideoById, getRelatedVideos, type Video, prefetchNext } from "@/lib/youtube";
@@ -10,7 +10,7 @@ import WatchHistoryLogger from "../WatchHistoryLogger";
 import DominantColor from "../DominantColor";
 import { useMiniPlayer } from "@/stores/useMiniPlayer";
 import { usePlayerQueue } from "@/stores/usePlayerQueue";
-
+import { useSwipe } from "@/hooks/useSwipe";
 
 function VideoPlayerSkeleton() {
   return (
@@ -43,10 +43,15 @@ function RelatedVideosSkeleton() {
 function VideoContent({ videoId }: { videoId: string }) {
   const [video, setVideo] = useState<Video | null>(null);
   const [recs, setRecs] = useState<Video[]>([]);
-  const { setFloating, videoEl } = useVideo();
   const router = useRouter();
   const { open, close } = useMiniPlayer();
-  const { setQueue, current } = usePlayerQueue();
+  const { setQueue, current, next, prev } = usePlayerQueue();
+  const playerContainerRef = useRef<HTMLDivElement>(null);
+
+  useSwipe(playerContainerRef, {
+    onSwipeLeft: next,
+    onSwipeRight: prev,
+  });
 
   useEffect(() => {
     if (current && current.id !== videoId) {
@@ -104,13 +109,21 @@ function VideoContent({ videoId }: { videoId: string }) {
   
   const videoSrc = `https://www.youtube.com/embed/${video.id}?autoplay=1&modestbranding=1&rel=0&enablejsapi=1`;
 
+  const handleVideoEnd = () => {
+    next();
+  }
+
   return (
     <>
       <DominantColor imageSrc={video.thumbnail} />
       <WatchHistoryLogger video={video} />
      
-      <div className="w-full">
-        <Player src={videoSrc} id={video.id} />
+      <div className="w-full" ref={playerContainerRef}>
+        <Player 
+          src={videoSrc} 
+          id={video.id} 
+          onEnded={handleVideoEnd} 
+        />
         <div className="mt-4">
           <h1 className="text-xl md:text-2xl font-bold leading-tight">{video.title}</h1>
           <div className="flex items-center gap-4 mt-2 text-sm text-muted-foreground">

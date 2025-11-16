@@ -20,13 +20,24 @@ export const usePlayerQueue = create<PlayerState>((set, get) => ({
 
   setQueue: (list) => {
     const currentVideoId = get().current?.id;
+    // Try to find the current video in the new list to maintain position
     const newCurrentIndex = list.findIndex(v => v.id === currentVideoId);
     
-    set({ 
-      queue: list, 
-      currentIndex: newCurrentIndex !== -1 ? newCurrentIndex : 0,
-      current: newCurrentIndex !== -1 ? list[newCurrentIndex] : list[0] || null
-    })
+    if (newCurrentIndex !== -1) {
+      // If current video is in the new queue, just update the queue
+      set({ 
+        queue: list,
+        currentIndex: newCurrentIndex,
+        current: list[newCurrentIndex]
+      });
+    } else {
+      // If not found, start from the beginning of the new queue
+      set({
+        queue: list,
+        currentIndex: 0,
+        current: list[0] || null,
+      });
+    }
   },
 
   playAt: (index) => {
@@ -54,7 +65,7 @@ export const usePlayerQueue = create<PlayerState>((set, get) => ({
   
   hasNext: () => {
     const { currentIndex, queue } = get();
-    return currentIndex + 1 < queue.length;
+    return currentIndex < queue.length - 1;
   },
   
   hasPrev: () => {

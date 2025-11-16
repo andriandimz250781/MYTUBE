@@ -5,50 +5,71 @@ import { useVideo } from "./VideoProvider";
 export default function Player({
   src,
   id,
-  onProgress,
+  onEnded,
 }: {
   src: string;
   id: string;
-  onProgress?: (percent: number) => void;
+  onEnded?: () => void;
 }) {
   const { setCurrentId, setFloating } = useVideo();
   const ref = useRef<HTMLIFrameElement | null>(null);
+  const playerRef = useRef<any>(null); // To hold the YouTube player instance
 
   useEffect(() => {
     setCurrentId(id);
-  }, [id, setCurrentId]);
+
+    // Function to load the IFrame Player API code asynchronously.
+    const loadYouTubeAPI = () => {
+      if (!window.YT) {
+        const tag = document.createElement('script');
+        tag.src = "https://www.youtube.com/iframe_api";
+        const firstScriptTag = document.getElementsByTagName('script')[0];
+        if (firstScriptTag && firstScriptTag.parentNode) {
+          firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
+        }
+      } else {
+        // If API is already loaded, create the player
+        createPlayer();
+      }
+    };
+    
+    const createPlayer = () => {
+       if (playerRef.current) {
+        playerRef.current.destroy();
+      }
+      playerRef.current = new window.YT.Player(ref.current, {
+        events: {
+          'onStateChange': onPlayerStateChange
+        }
+      });
+    }
+
+    // This function creates an <iframe> (and YouTube player)
+    // after the API code downloads.
+    window.onYouTubeIframeAPIReady = createPlayer;
+
+    const onPlayerStateChange = (event: any) => {
+      // YT.PlayerState.ENDED is 0
+      if (event.data === window.YT.PlayerState.ENDED) {
+        onEnded?.();
+      }
+    }
+
+    loadYouTubeAPI();
+
+    return () => {
+      // Cleanup
+      if (playerRef.current) {
+        playerRef.current.destroy();
+      }
+    }
+
+  }, [id, setCurrentId, onEnded]);
+
 
   // Picture-in-Picture helper for iframe
   const togglePiP = async () => {
-    const iframe = ref.current;
-    if (!iframe) return;
-    try {
-      if (document.pictureInPictureElement) {
-        await document.exitPictureInPicture();
-      } else if (document.pictureInPictureEnabled) {
-        // A trick to enable PiP on an iframe: create a dummy video element
-        const video = document.createElement('video');
-        video.srcObject = new MediaStream(); // empty stream
-        video.muted = true;
-
-        video.addEventListener('enterpictureinpicture', () => {
-          iframe.classList.add('pip-active'); // you can style the placeholder if needed
-        });
-
-        video.addEventListener('leavepictureinpicture', () => {
-          iframe.classList.remove('pip-active');
-        });
-
-        await video.play();
-        await (video as any).requestPictureInPicture();
-      } else {
-        // fallback: use our custom floating mini-player
-        setFloating(true);
-      }
-    } catch(e) {
-      console.error("PiP failed, falling back to mini-player.", e);
-      setFloating(true);
-    }
+    setFloating(true);
   };
 
   return (
@@ -61,6 +82,7 @@ export default function Player({
         allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
         allowFullScreen
         className="w-full h-full"
+        id="youtube-player"
       ></iframe>
 
        <div className="absolute right-3 bottom-3 flex gap-2">

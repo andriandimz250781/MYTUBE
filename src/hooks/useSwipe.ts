@@ -21,13 +21,18 @@ export function useSwipe(
 
     let startX = 0;
     let startY = 0;
+    let isSwiping = false;
 
     const handleTouchStart = (e: TouchEvent) => {
       startX = e.touches[0].clientX;
       startY = e.touches[0].clientY;
+      isSwiping = true;
     };
 
     const handleTouchEnd = (e: TouchEvent) => {
+      if (!isSwiping) return;
+      isSwiping = false;
+
       const endX = e.changedTouches[0].clientX;
       const endY = e.changedTouches[0].clientY;
 
@@ -50,7 +55,7 @@ export function useSwipe(
         }
       }
     };
-
+    
     element.addEventListener("touchstart", handleTouchStart, { passive: true });
     element.addEventListener("touchend", handleTouchEnd, { passive: true });
 
