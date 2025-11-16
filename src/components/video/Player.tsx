@@ -1,7 +1,6 @@
 "use client";
 import React, { useEffect, useRef } from "react";
 import { useVideo } from "./VideoProvider";
-import { prefetchNext } from "../../lib/videos";
 
 export default function Player({
   src,
@@ -12,12 +11,8 @@ export default function Player({
   id: string;
   onProgress?: (percent: number) => void;
 }) {
-  const { videoEl, setFloating, setCurrentId } = useVideo();
-  const localRef = useRef<HTMLIFrameElement | null>(null);
-  
-  // The videoEl from context is for a <video> element, which we can't use with YouTube.
-  // We will keep our iframe logic self-contained here.
-  const ref = localRef;
+  const { setCurrentId, setFloating } = useVideo();
+  const ref = useRef<HTMLIFrameElement | null>(null);
 
   useEffect(() => {
     setCurrentId(id);

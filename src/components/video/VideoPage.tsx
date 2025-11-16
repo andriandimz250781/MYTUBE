@@ -56,7 +56,13 @@ function VideoContent({ videoId }: { videoId: string }) {
       };
       setVideo(v);
       getRelatedVideos(v.id).then(related => {
-        if(mounted && related) setRecs(related);
+        if(mounted && related) {
+          setRecs(related);
+          // Prefetch next video
+          if (related.length > 0) {
+            getVideoById(related[0].id);
+          }
+        }
       });
     });
 
