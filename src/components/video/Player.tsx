@@ -1,6 +1,8 @@
 "use client";
 import React, { useEffect, useRef } from "react";
 import { useVideo } from "./VideoProvider";
+import { useMiniPlayer } from "@/stores/useMiniPlayer";
+import CastButton from "./CastButton";
 
 export default function Player({
   id,
@@ -10,8 +12,8 @@ export default function Player({
   onEnded?: () => void;
 }) {
   const { setCurrentId, setFloating } = useVideo();
-  const playerRef = useRef<any>(null); // To hold the YouTube player instance
-  const iframeContainerRef = useRef<HTMLDivElement | null>(null);
+  const playerRef = useRef<any>(null);
+  const { playing, togglePlay } = useMiniPlayer();
 
   useEffect(() => {
     setCurrentId(id);
@@ -51,7 +53,9 @@ export default function Player({
     (window as any).onYouTubeIframeAPIReady = createPlayer;
 
     const onPlayerReady = (event: any) => {
-        event.target.playVideo();
+        if (playing) {
+          event.target.playVideo();
+        }
     }
 
     const onPlayerStateChange = (event: any) => {
@@ -71,15 +75,28 @@ export default function Player({
         }
       }
     };
-  }, [id, setCurrentId, onEnded]);
+  }, [id, setCurrentId, onEnded, playing]);
+
+  // Sync player with zustand state
+  useEffect(() => {
+    if (playerRef.current && typeof playerRef.current.getPlayerState === 'function') {
+        if (playing && playerRef.current.getPlayerState() !== 1) {
+            playerRef.current.playVideo();
+        } else if (!playing && playerRef.current.getPlayerState() === 1) {
+            playerRef.current.pauseVideo();
+        }
+    }
+  }, [playing]);
+
 
   const togglePiP = async () => {
     setFloating(true);
   };
 
   return (
-    <div ref={iframeContainerRef} className="w-full relative aspect-video bg-black rounded-lg overflow-hidden">
+    <div className="w-full relative aspect-video bg-black rounded-lg overflow-hidden">
       <div id={`youtube-player-${id}`} className="w-full h-full"></div>
+       <CastButton />
       <div className="absolute right-3 bottom-3 flex gap-2">
         <button
           onClick={togglePiP}
