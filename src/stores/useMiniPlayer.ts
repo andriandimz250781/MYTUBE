@@ -1,13 +1,21 @@
-import { create } from 'zustand';
+import { create } from "zustand";
 
 interface MiniPlayerState {
+  active: boolean;
+  videoId: string | null;
   playing: boolean;
-  setPlaying: (playing: boolean) => void;
+  open: (videoId: string) => void;
+  close: () => void;
   togglePlay: () => void;
 }
 
 export const useMiniPlayer = create<MiniPlayerState>((set) => ({
-  playing: false,
-  setPlaying: (playing) => set({ playing }),
-  togglePlay: () => set((state) => ({ playing: !state.playing })),
+  active: false,
+  videoId: null,
+  playing: true,
+
+  open: (videoId) => set({ active: true, videoId, playing: true }),
+  close: () => set({ active: false, videoId: null, playing: false }),
+  togglePlay: () =>
+    set((state) => ({ playing: !state.playing })),
 }));

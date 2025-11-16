@@ -2,7 +2,7 @@
 
 import { motion } from "framer-motion";
 import { X, Pause, Play } from "lucide-react";
-import { useMiniPlayer } from "@/hooks/useMiniPlayer";
+import { useMiniPlayer } from "@/stores/useMiniPlayer";
 import { useVideo } from "./VideoProvider";
 
 export default function MiniPlayer() {

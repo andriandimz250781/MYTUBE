@@ -13,7 +13,7 @@ import { useEffect, useState } from 'react';
 import type { Video } from '@/lib/youtube';
 import { getVideoById } from '@/lib/youtube';
 import { Toaster } from "@/components/ui/toaster";
-import { useMiniPlayer } from '@/hooks/useMiniPlayer';
+import { useMiniPlayer } from '@/stores/useMiniPlayer';
 
 const inter = Inter({ subsets: ['latin'] });
 
