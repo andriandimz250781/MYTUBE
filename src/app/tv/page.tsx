@@ -7,7 +7,7 @@ import Player from "@/components/video/Player";
 import { getVideoById, getRecommendedVideos, type Video } from "@/lib/youtube";
 import { usePlayerQueue } from "@/stores/usePlayerQueue";
 import { useTVNavigation } from "@/hooks/useTVNavigation";
-import { Skeleton }largura="100%" />
+import { Skeleton } from "@/components/ui/skeleton";
 
 function TVPageContent() {
   const searchParams = useSearchParams();
@@ -80,19 +80,20 @@ function TVPageContent() {
         </div>
       </div>
 
-      <div ref={upNextRef} className="w-full lg:w-[450px] bg-neutral-900/50 p-4 flex flex-col">
+      <div ref={upNextRef} role="list" className="w-full lg:w-[450px] bg-neutral-900/50 p-4 flex flex-col">
         <h2 className="text-2xl font-semibold mb-4">Up Next</h2>
         <div className="space-y-4 overflow-y-auto">
           {recs.map((vid) => (
             <div
               key={vid.id}
-              tabIndex={-1}
+              role="listitem"
+              tabIndex={0}
               data-tv-item
               onKeyDown={(e) => {
                 if (e.key === 'Enter') handleItemActivate(vid.id);
               }}
               onClick={() => handleItemActivate(vid.id)}
-              className="flex gap-4 p-3 rounded-lg cursor-pointer outline-none focus:bg-neutral-800 focus:outline-accent focus:outline-4"
+              className="flex gap-4 p-3 rounded-lg cursor-pointer outline-none focus:ring-4 focus:ring-accent bg-neutral-900 focus:bg-neutral-800"
             >
               <img
                 src={vid.thumbnail}
