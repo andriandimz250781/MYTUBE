@@ -1,9 +1,26 @@
 "use client";
 
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { Cast } from "lucide-react";
 
 export default function CastButton() {
+  const [isCastAvailable, setIsCastAvailable] = useState(false);
+
+  useEffect(() => {
+    // Heuristic detection:
+    // 1. Check for ChromeCast API availability on non-Android devices.
+    // The actual availability is confirmed by the Google Cast SDK loader, 
+    // but the presence of the API object is a good indicator.
+    const hasChromeCastAPI = typeof window !== 'undefined' && (window as any).chrome?.cast;
+
+    // 2. Assume Android devices always have a system-level cast option (Miracast/Smart View).
+    const isAndroid = typeof window !== 'undefined' && /android/i.test(navigator.userAgent);
+
+    if (hasChromeCastAPI || isAndroid) {
+      setIsCastAvailable(true);
+    }
+  }, []);
+
   const handleCast = () => {
     // Case 1: Chrome with Chromecast capability
     // The Google Cast SDK needs to be loaded for this to work.
@@ -23,16 +40,20 @@ export default function CastButton() {
     // Case 2: Android device (suggest using system UI)
     if (/android/i.test(navigator.userAgent)) {
       alert(
-        "Untuk melakukan cast di Android, silakan gunakan opsi 'Cast' atau 'Transmisikan' dari panel notifikasi atau pengaturan cepat sistem Anda."
+        "To cast on Android, please use the 'Cast' or 'Smart View' option from your phone's system notification panel or quick settings."
       );
       return;
     }
 
     // Fallback for other devices/browsers
     alert(
-      "Fitur Cast tidak didukung di browser atau perangkat ini. Coba gunakan Google Chrome untuk fungsionalitas Chromecast."
+      "Cast feature not supported on this browser or device. Try using Google Chrome for Chromecast functionality."
     );
   };
+
+  if (!isCastAvailable) {
+    return null; // Or render a disabled button if you prefer
+  }
 
   return (
     <button
