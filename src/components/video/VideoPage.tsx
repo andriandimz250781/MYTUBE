@@ -3,7 +3,6 @@ import React, { useEffect, useState, Suspense, useRef } from "react";
 import Player from "./Player";
 import VideoCard from "./VideoCard";
 import { getVideoById, getRelatedVideos, type Video, prefetchNext } from "@/lib/youtube";
-import { useVideo } from "./VideoProvider";
 import { useRouter } from "next/navigation";
 import { Skeleton } from "@/components/ui/skeleton";
 import WatchHistoryLogger from "../WatchHistoryLogger";
@@ -94,7 +93,7 @@ function VideoContent({ videoId }: { videoId: string }) {
       }
     };
 
-    window.addEventListener("scroll", handler);
+    window.addEventListener("scroll", handler, { passive: true });
 
     return () => {
       mounted = false;

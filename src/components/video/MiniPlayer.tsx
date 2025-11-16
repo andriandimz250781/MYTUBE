@@ -4,7 +4,6 @@ import { motion } from "framer-motion";
 import { X, Pause, Play, SkipBack, SkipForward } from "lucide-react";
 import { useMiniPlayer } from "@/stores/useMiniPlayer";
 import { useVideo } from "./VideoProvider";
-import { cn } from "@/lib/utils";
 import Link from "next/link";
 import { usePlayerQueue } from "@/stores/usePlayerQueue";
 

@@ -3,22 +3,19 @@ import React, { useEffect, useRef } from "react";
 import { useVideo } from "./VideoProvider";
 
 export default function Player({
-  src,
   id,
   onEnded,
 }: {
-  src: string;
   id: string;
   onEnded?: () => void;
 }) {
   const { setCurrentId, setFloating } = useVideo();
-  const ref = useRef<HTMLIFrameElement | null>(null);
   const playerRef = useRef<any>(null); // To hold the YouTube player instance
+  const iframeContainerRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
     setCurrentId(id);
 
-    // Function to load the IFrame Player API code asynchronously.
     const loadYouTubeAPI = () => {
       if (!(window as any).YT) {
         const tag = document.createElement('script');
@@ -28,64 +25,62 @@ export default function Player({
           firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
         }
       } else {
-        // If API is already loaded, create the player
         createPlayer();
       }
     };
-    
+
     const createPlayer = () => {
-       if (playerRef.current) {
+      if (playerRef.current) {
         playerRef.current.destroy();
       }
-      playerRef.current = new (window as any).YT.Player(ref.current, {
+      playerRef.current = new (window as any).YT.Player(`youtube-player-${id}`, {
+        videoId: id,
+        playerVars: {
+            autoplay: 1,
+            controls: 1,
+            modestbranding: 1,
+            rel: 0,
+        },
         events: {
+          'onReady': onPlayerReady,
           'onStateChange': onPlayerStateChange
         }
       });
-    }
+    };
 
-    // This function creates an <iframe> (and YouTube player)
-    // after the API code downloads.
     (window as any).onYouTubeIframeAPIReady = createPlayer;
 
+    const onPlayerReady = (event: any) => {
+        event.target.playVideo();
+    }
+
     const onPlayerStateChange = (event: any) => {
-      // YT.PlayerState.ENDED is 0
       if (event.data === (window as any).YT.PlayerState.ENDED) {
         onEnded?.();
       }
-    }
+    };
 
     loadYouTubeAPI();
 
     return () => {
-      // Cleanup
       if (playerRef.current) {
-        playerRef.current.destroy();
+        try {
+            playerRef.current.destroy();
+        } catch (e) {
+            console.error("Error destroying player", e);
+        }
       }
-    }
-
+    };
   }, [id, setCurrentId, onEnded]);
 
-
-  // Picture-in-Picture helper for iframe
   const togglePiP = async () => {
     setFloating(true);
   };
 
   return (
-    <div className="w-full relative aspect-video bg-black rounded-lg overflow-hidden">
-      <iframe
-        ref={ref}
-        src={src}
-        title="YouTube video player"
-        frameBorder="0"
-        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-        allowFullScreen
-        className="w-full h-full"
-        id="youtube-player"
-      ></iframe>
-
-       <div className="absolute right-3 bottom-3 flex gap-2">
+    <div ref={iframeContainerRef} className="w-full relative aspect-video bg-black rounded-lg overflow-hidden">
+      <div id={`youtube-player-${id}`} className="w-full h-full"></div>
+      <div className="absolute right-3 bottom-3 flex gap-2">
         <button
           onClick={togglePiP}
           className="px-3 py-1 rounded bg-black/40 text-white text-sm opacity-80 hover:opacity-100 transition-opacity"
