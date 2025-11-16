@@ -105,8 +105,6 @@ function VideoContent({ videoId }: { videoId: string }) {
   if (!video) {
     return <VideoPlayerSkeleton />;
   }
-  
-  const videoSrc = `https://www.youtube.com/embed/${video.id}?autoplay=1&modestbranding=1&rel=0&enablejsapi=1`;
 
   const handleVideoEnd = () => {
     next();
@@ -119,7 +117,6 @@ function VideoContent({ videoId }: { videoId: string }) {
      
       <div className="w-full" ref={playerContainerRef}>
         <Player 
-          src={videoSrc} 
           id={video.id} 
           onEnded={handleVideoEnd} 
         />
