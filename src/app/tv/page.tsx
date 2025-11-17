@@ -142,13 +142,13 @@ function TVPageContent() {
 
 
 export default function TVPage() {
-    return (
-        <Suspense fallback={
-            <div className="w-screen h-screen flex items-center justify-center bg-black">
-                <p className="text-white text-2xl">Loading...</p>
-            </div>
-        }>
-            <TVPageContent />
-        </Suspense>
-    );
+  return (
+    <Suspense fallback={
+        <div className="w-screen h-screen flex items-center justify-center bg-black">
+            <p className="text-white text-2xl">Loading...</p>
+        </div>
+    }>
+        <TVPageContent />
+    </Suspense>
+  );
 }
