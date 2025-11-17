@@ -1,4 +1,3 @@
-
 /// <reference lib="webworker" />
 
 const CACHE_NAME = "video-prefetch-cache-v2";
@@ -40,8 +39,10 @@ self.addEventListener("fetch", (event) => {
         if (cached) return cached;
 
         return fetch(event.request).then((fetched) => {
-          caches.open(CACHE_NAME).then((c) => c.put(event.request, fetched.clone()));
-          return fetched;
+          return caches.open(CACHE_NAME).then((c) => {
+             c.put(event.request, fetched.clone());
+             return fetched;
+          });
         });
       })
     );
