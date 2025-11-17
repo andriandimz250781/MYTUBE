@@ -61,7 +61,7 @@ export default function RootLayout({
       'serviceWorker' in navigator &&
       process.env.NODE_ENV === 'production'
     ) {
-        navigator.serviceWorker.register('/sw.js');
+      navigator.serviceWorker.register('/sw.js');
     }
   }, []);
   
