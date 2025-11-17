@@ -1,7 +1,7 @@
 
 "use client";
 
-import React, { useEffect, useState, useRef, Suspense } from "react";
+import { useEffect, useState, useRef, Suspense } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import Player from "@/components/video/Player";
 import { getVideoById, getRecommendedVideos, type Video } from "@/lib/youtube";
