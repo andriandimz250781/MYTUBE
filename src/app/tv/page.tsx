@@ -1,7 +1,7 @@
 
 "use client";
 
-import React, { useEffect, useState, useRef } from "react";
+import React, { useEffect, useState, useRef, Suspense } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import Player from "@/components/video/Player";
 import { getVideoById, getRecommendedVideos, type Video } from "@/lib/youtube";
@@ -143,10 +143,12 @@ function TVPageContent() {
 
 export default function TVPage() {
     return (
-        <React.Suspense fallback={
+        <Suspense fallback={
             <div className="w-screen h-screen flex items-center justify-center bg-black">
                 <p className="text-white text-2xl">Loading...</p>
             </div>
         }>
             <TVPageContent />
-        </
+        </Suspense>
+    );
+}
