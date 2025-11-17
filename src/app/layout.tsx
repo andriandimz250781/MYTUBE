@@ -31,6 +31,18 @@ function AppContent({ children }: { children: React.ReactNode }) {
       router.replace('/tv');
     }
   }, [pathname, router]);
+  
+  useEffect(() => {
+    if (
+      typeof window !== 'undefined' &&
+      'serviceWorker' in navigator &&
+      process.env.NODE_ENV === 'production'
+    ) {
+        navigator.serviceWorker.register('/sw.js').catch(err => {
+          console.error("Service Worker registration failed:", err);
+        });
+    }
+  }, []);
 
   // Hide Navbar and standard layout on TV page
   if (pathname.startsWith('/tv')) {
@@ -54,18 +66,6 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   const pathname = usePathname();
-  
-  useEffect(() => {
-    if (
-      typeof window !== 'undefined' &&
-      'serviceWorker' in navigator &&
-      process.env.NODE_ENV === 'production'
-    ) {
-        navigator.serviceWorker.register('/sw.js').catch(err => {
-          console.error("Service Worker registration failed:", err);
-        });
-    }
-  }, []);
   
   if (pathname.startsWith('/tv')) {
     return (
