@@ -11,7 +11,7 @@ const withPWA = require('@ducanh2912/next-pwa').default({
   workboxOptions: {
     disableDevLogs: true,
   },
-  swSrc: 'src/app/worker.ts',
+  swSrc: 'src/worker.ts',
 });
 
 const nextConfig: NextConfig = {

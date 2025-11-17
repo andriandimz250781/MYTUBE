@@ -59,16 +59,12 @@ export default function RootLayout({
     if (
       typeof window !== 'undefined' &&
       'serviceWorker' in navigator &&
-      (window as any).workbox !== undefined
+      process.env.NODE_ENV === 'production'
     ) {
-      const wb = (window as any).workbox;
-      wb.active.then((worker: any) => {
-        console.log('Service worker activated.');
-      });
-
-      // Add this to your page to register the service worker.
-      // It will not be registered in development mode.
-      wb.register(); 
+        const wb = (window as any).workbox;
+        if (wb) {
+            wb.register();
+        }
     }
   }, []);
   
