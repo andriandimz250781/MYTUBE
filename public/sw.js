@@ -14,7 +14,11 @@ async function cacheURL(url) {
   try {
     const cache = await caches.open(CACHE_NAME);
     const res = await fetch(url, { mode: "no-cors" });
-    await cache.put(url, res.clone());
+    if (res.ok || res.type === 'opaque') {
+      await cache.put(url, res.clone());
+    } else {
+      console.error("Prefetch failed: Bad response for", url, res.status);
+    }
   } catch (e) {
     console.error("Prefetch failed:", url, e);
   }
@@ -36,13 +40,17 @@ self.addEventListener("fetch", (event) => {
   if (isVideoAsset) {
     event.respondWith(
       caches.match(event.request).then((cached) => {
-        if (cached) return cached;
+        if (cached) {
+          return cached;
+        }
 
         return fetch(event.request).then((fetched) => {
-          return caches.open(CACHE_NAME).then((c) => {
-             c.put(event.request, fetched.clone());
-             return fetched;
-          });
+          const fetchedClone = fetched.clone();
+          caches.open(CACHE_NAME).then((c) => c.put(event.request, fetchedClone));
+          return fetched;
+        }).catch(err => {
+          console.error('Fetch failed, could not cache:', event.request.url, err);
+          // Potentially return a fallback response here if needed
         });
       })
     );
